@@ -1,1818 +1,1132 @@
-<html lang="zh-TW"><head>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>幻想冒險</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
-        
+        :root {
+            --bg-color: #1a1a1a;
+            --panel-color: #2d2d2d;
+            --text-color: #e0e0e0;
+            --accent-color: #ff9800;
+            --border-radius: 8px;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            
+            /* Rarity Colors */
+            --common: #b0b0b0;
+            --uncommon: #4caf50;
+            --rare: #2196f3;
+            --epic: #9c27b0;
+            --legendary: #ffd700;
+            
+            /* Buff Colors */
+            --buff-angel: #4fc3f7;
+            --buff-demon: #ef5350;
+        }
+
         body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
             min-height: 100vh;
+            overflow-x: hidden;
         }
-        
-        .game-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .btn {
-            transition: all 0.3s ease;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .btn:active {
-            transform: translateY(0);
-        }
-        
-        .item {
-            border: 2px solid transparent;
-            transition: all 0.2s;
-        }
-        
-        .item:hover {
-            transform: translateY(-2px);
-        }
-        
-        .rarity-white {
-            border-color: #f8fafc;
-            background-color: rgba(248, 250, 252, 0.1);
-        }
-        
-        .rarity-green {
-            border-color: #4ade80;
-            background-color: rgba(74, 222, 128, 0.1);
-        }
-        
-        .rarity-blue {
-            border-color: #60a5fa;
-            background-color: rgba(96, 165, 250, 0.1);
-        }
-        
-        .rarity-purple {
-            border-color: #c084fc;
-            background-color: rgba(192, 132, 252, 0.1);
-        }
-        
-        .rarity-gold {
-            border-color: #facc15;
-            background-color: rgba(250, 204, 21, 0.1);
-            animation: glow 2s infinite alternate;
-        }
-        
-        @keyframes glow {
-            from {
-                box-shadow: 0 0 5px rgba(250, 204, 21, 0.5);
-            }
-            to {
-                box-shadow: 0 0 15px rgba(250, 204, 21, 0.8);
-            }
-        }
-        
-        .critical {
-            color: #ef4444;
-            font-weight: bold;
-            animation: shake 0.5s;
-        }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.5s;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .monster-image {
-            width: 100px;
-            height: 100px;
-            margin: 0 auto;
-        }
-        
-        .progress-bar {
-            height: 20px;
-            border-radius: 10px;
-            overflow: hidden;
-            background-color: #334155;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background-color: #ef4444;
-            transition: width 0.3s ease;
-        }
-        
-        .inventory-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 10px;
-        }
-        
-        .code-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
+
+        #game-container {
             width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
+            max-width: 600px;
+            background-color: var(--panel-color);
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            position: relative;
+        }
+
+        /* Animations */
+        @keyframes spawn-pop {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes damage-shake {
+            0% { transform: translate(0, 0); filter: none; }
+            20% { transform: translate(-10px, 0) rotate(-5deg); filter: brightness(2) sepia(1) hue-rotate(-50deg) saturate(5); }
+            40% { transform: translate(10px, 0) rotate(5deg); }
+            60% { transform: translate(-5px, 0); }
+            80% { transform: translate(5px, 0); }
+            100% { transform: translate(0, 0); filter: none; }
+        }
+
+        @keyframes attack-lunge {
+            0% { transform: translateY(0) scale(1); }
+            30% { transform: translateY(20px) scale(1.2); }
+            100% { transform: translateY(0) scale(1); }
+        }
+
+        @keyframes screen-shake {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(-5px, 5px); }
+            50% { transform: translate(5px, -5px); }
+            75% { transform: translate(-5px, -5px); }
+            100% { transform: translate(0, 0); }
+        }
+
+        @keyframes float-up {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            50% { transform: translateY(-30px) scale(1.2); opacity: 1; }
+            100% { transform: translateY(-60px) scale(1); opacity: 0; }
+        }
+
+        .anim-spawn { animation: spawn-pop 0.5s ease-out forwards; }
+        .anim-damage { animation: damage-shake 0.4s ease-in-out; }
+        .anim-lunge { animation: attack-lunge 0.3s ease-in-out; }
+        .anim-screen-shake { animation: screen-shake 0.3s ease-in-out; }
+
+        .floating-text {
+            position: absolute;
+            left: 50%;
+            top: 40%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            font-size: 1.5em;
+            pointer-events: none;
+            text-shadow: 2px 2px 0 #000;
+            z-index: 100;
+            animation: float-up 1s ease-out forwards;
+        }
+
+        header {
+            border-bottom: 2px solid #444;
+            padding-bottom: 10px;
             display: flex;
             justify-content: center;
             align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            background: #222;
+            padding: 10px;
+            border-radius: var(--border-radius);
+            font-size: 0.9em;
+        }
+
+        .stat-item span {
+            font-weight: bold;
+            color: var(--accent-color);
         }
         
-        .code-modal.active {
-            opacity: 1;
-            pointer-events: auto;
+        #buff-display {
+            grid-column: span 2;
+            border-top: 1px solid #444;
+            padding-top: 5px;
+            margin-top: 5px;
+            font-size: 0.85em;
+            color: #aaa;
         }
-        
-        .code-content {
-            background-color: #1e293b;
-            width: 90%;
-            max-width: 1000px;
-            height: 80%;
-            border-radius: 8px;
+
+        #event-display {
+            min-height: 200px;
+            background: #222;
+            border-radius: var(--border-radius);
             padding: 20px;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
-        }
-        
-        .code-header {
-            display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: center;
+            text-align: center;
+            border: 1px solid #444;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .monster-icon { font-size: 4em; margin-bottom: 10px; display: inline-block; }
+        .monster-elite { filter: drop-shadow(0 0 10px #2196f3); }
+        .monster-boss { filter: drop-shadow(0 0 15px #f44336); transform: scale(1.2); }
+
+        .log-entry { margin: 5px 0; font-size: 0.95em; }
+        .damage-text { color: #ff5252; font-weight: bold; }
+        .crit-text { color: #ff0000; font-size: 1.2em; font-weight: bold; text-shadow: 0 0 5px #fff; }
+        .heal-text { color: #69f0ae; }
+        .gold-text { color: #ffd700; }
+        .block-text { color: #2196f3; font-weight: bold; }
+        .pierce-text { color: #ff9800; font-weight: bold; }
+        .angel-text { color: var(--buff-angel); font-weight: bold; }
+        .demon-text { color: var(--buff-demon); font-weight: bold; }
+
+        #controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: 0.2s;
+            background: #444;
+            color: white;
+        }
+
+        button:hover { background: #555; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .btn-primary { background: var(--accent-color); color: #000; }
+        .btn-primary:hover { background: #ffb74d; }
+        
+        #inventory-section {
+            background: #222;
+            padding: 10px;
+            border-radius: var(--border-radius);
+        }
+
+        .equipment-slots {
+            display: flex;
+            gap: 5px;
             margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #444;
         }
-        
-        .code-body {
+
+        .equip-slot {
             flex: 1;
-            overflow-y: auto;
-            background-color: #0f172a;
+            background: #333;
+            padding: 8px;
             border-radius: 4px;
-            padding: 15px;
-            white-space: pre-wrap;
-            font-family: monospace;
-            font-size: 14px;
-            line-height: 1.5;
+            text-align: center;
+            font-size: 0.75em;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid #444;
+        }
+
+        .item-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .item {
+            padding: 5px 10px;
+            background: #333;
+            border-radius: 4px;
+            font-size: 0.85em;
+            cursor: pointer;
+            border: 1px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         
-        /* 新增菁英和首領怪物的發光效果 */
-        .monster-elite {
-            animation: eliteGlow 2s infinite alternate;
+        .item:hover { background: #444; }
+
+        .rarity-common { color: var(--common); border-color: #555; }
+        .rarity-uncommon { color: var(--uncommon); border-color: var(--uncommon); }
+        .rarity-rare { color: var(--rare); border-color: var(--rare); }
+        .rarity-epic { color: var(--epic); border-color: var(--epic); box-shadow: 0 0 5px var(--epic); }
+        .rarity-legendary { color: var(--legendary); border-color: var(--legendary); box-shadow: 0 0 8px var(--legendary); background: linear-gradient(45deg, #333, #443300); animation: shine 2s infinite linear; }
+
+        @keyframes shine {
+            0% { border-color: var(--legendary); }
+            50% { border-color: #fff; }
+            100% { border-color: var(--legendary); }
         }
-        
-        .monster-boss {
-            animation: bossGlow 2s infinite alternate;
+
+        .merchant-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            width: 100%;
         }
-        
-        @keyframes eliteGlow {
-            from {
-                filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.5));
-            }
-            to {
-                filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.9));
-            }
+        .merchant-item {
+            display: flex;
+            flex-direction: column;
+            background: #333;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid #444;
         }
-        
-        @keyframes bossGlow {
-            from {
-                filter: drop-shadow(0 0 3px rgba(239, 68, 68, 0.5));
-            }
-            to {
-                filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.9));
-            }
-        }
+        .merchant-item:hover { background: #444; }
+        .m-top { display: flex; justify-content: space-between; font-weight: bold; }
+        .m-desc { font-size: 0.8em; color: #aaa; margin-top: 4px; }
+
+        .hidden { display: none !important; }
+        h3 { margin-top: 0; border-bottom: 1px solid #444; padding-bottom: 5px;}
     </style>
-<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.16 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.col-span-full{grid-column:1 / -1}.mb-1{margin-bottom:0.25rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-32{height:8rem}.min-h-\[300px\]{min-height:300px}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-between{justify-content:space-between}.gap-2{gap:0.5rem}.gap-4{gap:1rem}.overflow-y-auto{overflow-y:auto}.rounded{border-radius:0.25rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.border{border-width:1px}.border-l{border-left-width:1px}.border-slate-600{--tw-border-opacity:1;border-color:rgb(71 85 105 / var(--tw-border-opacity, 1))}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.bg-amber-500{--tw-bg-opacity:1;background-color:rgb(245 158 11 / var(--tw-bg-opacity, 1))}.bg-amber-600{--tw-bg-opacity:1;background-color:rgb(217 119 6 / var(--tw-bg-opacity, 1))}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.p-2{padding:0.5rem}.p-4{padding:1rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-10{padding-top:2.5rem;padding-bottom:2.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-4{padding-top:1rem;padding-bottom:1rem}.pl-4{padding-left:1rem}.text-center{text-align:center}.text-2xl{font-size:1.5rem;line-height:2rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36 / var(--tw-text-opacity, 1))}.text-blue-400{--tw-text-opacity:1;color:rgb(96 165 250 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.hover\:bg-amber-600:hover{--tw-bg-opacity:1;background-color:rgb(217 119 6 / var(--tw-bg-opacity, 1))}.hover\:text-amber-300:hover{--tw-text-opacity:1;color:rgb(252 211 77 / var(--tw-text-opacity, 1))}.hover\:text-blue-300:hover{--tw-text-opacity:1;color:rgb(147 197 253 / var(--tw-text-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}</style><style data-id="immersive-translate-input-injected-css">.immersive-translate-input {
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  bottom: 0;
-  z-index: 2147483647;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.immersive-translate-attach-loading::after {
-  content: " ";
-
-  --loading-color: #f78fb6;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  display: block;
-  margin: 12px auto;
-  position: relative;
-  color: white;
-  left: -100px;
-  box-sizing: border-box;
-  animation: immersiveTranslateShadowRolling 1.5s linear infinite;
-
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-2000%, -50%);
-  z-index: 100;
-}
-
-.immersive-translate-loading-spinner {
-  vertical-align: middle !important;
-  width: 10px !important;
-  height: 10px !important;
-  display: inline-block !important;
-  margin: 0 4px !important;
-  border: 2px rgba(221, 244, 255, 0.6) solid !important;
-  border-top: 2px rgba(0, 0, 0, 0.375) solid !important;
-  border-left: 2px rgba(0, 0, 0, 0.375) solid !important;
-  border-radius: 50% !important;
-  padding: 0 !important;
-  -webkit-animation: immersive-translate-loading-animation 0.6s infinite linear !important;
-  animation: immersive-translate-loading-animation 0.6s infinite linear !important;
-}
-
-@-webkit-keyframes immersive-translate-loading-animation {
-  from {
-    -webkit-transform: rotate(0deg);
-  }
-
-  to {
-    -webkit-transform: rotate(359deg);
-  }
-}
-
-@keyframes immersive-translate-loading-animation {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(359deg);
-  }
-}
-
-.immersive-translate-input-loading {
-  --loading-color: #f78fb6;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  display: block;
-  margin: 12px auto;
-  position: relative;
-  color: white;
-  left: -100px;
-  box-sizing: border-box;
-  animation: immersiveTranslateShadowRolling 1.5s linear infinite;
-}
-
-@keyframes immersiveTranslateShadowRolling {
-  0% {
-    box-shadow: 0px 0 rgba(255, 255, 255, 0), 0px 0 rgba(255, 255, 255, 0),
-      0px 0 rgba(255, 255, 255, 0), 0px 0 rgba(255, 255, 255, 0);
-  }
-
-  12% {
-    box-shadow: 100px 0 var(--loading-color), 0px 0 rgba(255, 255, 255, 0),
-      0px 0 rgba(255, 255, 255, 0), 0px 0 rgba(255, 255, 255, 0);
-  }
-
-  25% {
-    box-shadow: 110px 0 var(--loading-color), 100px 0 var(--loading-color),
-      0px 0 rgba(255, 255, 255, 0), 0px 0 rgba(255, 255, 255, 0);
-  }
-
-  36% {
-    box-shadow: 120px 0 var(--loading-color), 110px 0 var(--loading-color),
-      100px 0 var(--loading-color), 0px 0 rgba(255, 255, 255, 0);
-  }
-
-  50% {
-    box-shadow: 130px 0 var(--loading-color), 120px 0 var(--loading-color),
-      110px 0 var(--loading-color), 100px 0 var(--loading-color);
-  }
-
-  62% {
-    box-shadow: 200px 0 rgba(255, 255, 255, 0), 130px 0 var(--loading-color),
-      120px 0 var(--loading-color), 110px 0 var(--loading-color);
-  }
-
-  75% {
-    box-shadow: 200px 0 rgba(255, 255, 255, 0), 200px 0 rgba(255, 255, 255, 0),
-      130px 0 var(--loading-color), 120px 0 var(--loading-color);
-  }
-
-  87% {
-    box-shadow: 200px 0 rgba(255, 255, 255, 0), 200px 0 rgba(255, 255, 255, 0),
-      200px 0 rgba(255, 255, 255, 0), 130px 0 var(--loading-color);
-  }
-
-  100% {
-    box-shadow: 200px 0 rgba(255, 255, 255, 0), 200px 0 rgba(255, 255, 255, 0),
-      200px 0 rgba(255, 255, 255, 0), 200px 0 rgba(255, 255, 255, 0);
-  }
-}
-
-.immersive-translate-toast {
-  display: flex;
-  position: fixed;
-  z-index: 2147483647;
-  left: 0;
-  right: 0;
-  top: 1%;
-  width: fit-content;
-  padding: 12px 20px;
-  margin: auto;
-  overflow: auto;
-  background: #fef6f9;
-  box-shadow: 0px 4px 10px 0px rgba(0, 10, 30, 0.06);
-  font-size: 15px;
-  border-radius: 8px;
-  color: #333;
-}
-
-.immersive-translate-toast-content {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-.immersive-translate-toast-hidden {
-  margin: 0 20px 0 72px;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.immersive-translate-toast-close {
-  color: #666666;
-  font-size: 20px;
-  font-weight: bold;
-  padding: 0 10px;
-  cursor: pointer;
-}
-
-@media screen and (max-width: 768px) {
-  .immersive-translate-toast {
-    top: 0;
-    padding: 12px 0px 0 10px;
-  }
-  .immersive-translate-toast-content {
-    flex-direction: column;
-    text-align: center;
-  }
-  .immersive-translate-toast-hidden {
-    margin: 10px auto;
-  }
-}
-
-.immersive-translate-modal {
-  display: none;
-  position: fixed;
-  z-index: 2147483647;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgb(0, 0, 0);
-  background-color: rgba(0, 0, 0, 0.4);
-  font-size: 15px;
-}
-
-.immersive-translate-modal-content {
-  background-color: #fefefe;
-  margin: 10% auto;
-  padding: 40px 24px 24px;
-  border: 1px solid #888;
-  border-radius: 10px;
-  width: 80%;
-  max-width: 270px;
-  font-family: system-ui, -apple-system, "Segoe UI", "Roboto", "Ubuntu",
-    "Cantarell", "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol", "Noto Color Emoji";
-  position: relative;
-}
-
-@media screen and (max-width: 768px) {
-  .immersive-translate-modal-content {
-    margin: 50% auto !important;
-  }
-}
-
-.immersive-translate-modal .immersive-translate-modal-content-in-input {
-  max-width: 500px;
-}
-.immersive-translate-modal-content-in-input .immersive-translate-modal-body {
-  text-align: left;
-  max-height: unset;
-}
-
-.immersive-translate-modal-title {
-  text-align: center;
-  font-size: 16px;
-  font-weight: 700;
-  color: #333333;
-}
-
-.immersive-translate-modal-body {
-  text-align: center;
-  font-size: 14px;
-  font-weight: 400;
-  color: #333333;
-  word-break: break-all;
-  margin-top: 24px;
-}
-
-@media screen and (max-width: 768px) {
-  .immersive-translate-modal-body {
-    max-height: 250px;
-    overflow-y: auto;
-  }
-}
-
-.immersive-translate-close {
-  color: #666666;
-  position: absolute;
-  right: 16px;
-  top: 16px;
-  font-size: 20px;
-  font-weight: bold;
-}
-
-.immersive-translate-close:hover,
-.immersive-translate-close:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.immersive-translate-modal-footer {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 24px;
-}
-
-.immersive-translate-btn {
-  width: fit-content;
-  color: #fff;
-  background-color: #ea4c89;
-  border: none;
-  font-size: 16px;
-  margin: 0 8px;
-  padding: 9px 30px;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.immersive-translate-btn:hover {
-  background-color: #f082ac;
-}
-.immersive-translate-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-.immersive-translate-btn:disabled:hover {
-  background-color: #ea4c89;
-}
-
-.immersive-translate-cancel-btn {
-  /* gray color */
-  background-color: rgb(89, 107, 120);
-}
-
-.immersive-translate-cancel-btn:hover {
-  background-color: hsl(205, 20%, 32%);
-}
-
-.immersive-translate-action-btn {
-  background-color: transparent;
-  color: #ea4c89;
-  border: 1px solid #ea4c89;
-}
-
-.immersive-translate-btn svg {
-  margin-right: 5px;
-}
-
-.immersive-translate-link {
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-drag: none;
-  text-decoration: none;
-  color: #007bff;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
-}
-
-.immersive-translate-primary-link {
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-drag: none;
-  text-decoration: none;
-  color: #ea4c89;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
-}
-
-.immersive-translate-modal input[type="radio"] {
-  margin: 0 6px;
-  cursor: pointer;
-}
-
-.immersive-translate-modal label {
-  cursor: pointer;
-}
-
-.immersive-translate-close-action {
-  position: absolute;
-  top: 2px;
-  right: 0px;
-  cursor: pointer;
-}
-
-.imt-image-status {
-  background-color: rgba(0, 0, 0, 0.5) !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border-radius: 16px !important;
-}
-.imt-image-status img,
-.imt-image-status svg,
-.imt-img-loading {
-  width: 28px !important;
-  height: 28px !important;
-  margin: 0 0 8px 0 !important;
-  min-height: 28px !important;
-  min-width: 28px !important;
-  position: relative !important;
-}
-.imt-img-loading {
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAMAAACfWMssAAAAtFBMVEUAAAD////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////oK74hAAAAPHRSTlMABBMIDyQXHwyBfFdDMSw+OjXCb+5RG51IvV/k0rOqlGRM6KKMhdvNyZBz9MaupmxpWyj437iYd/yJVNZeuUC7AAACt0lEQVRIx53T2XKiUBCA4QYOiyCbiAsuuGBcYtxiYtT3f6/pbqoYHVFO5r+iivpo6DpAWYpqeoFfr9f90DsYAuRSWkFnPO50OgR9PwiCUFcl2GEcx+N/YBh6pvKaefHlUgZd1zVe0NbYcQjGBfzrPE8Xz8aF+71D8gG6DHFPpc4a7xFiCDuhaWgKgGIJQ3d5IMGDrpS4S5KgpIm+en9f6PlAhKby4JwEIxlYJV9h5k5nee9GoxHJ2IDSNB0dwdad1NAxDJ/uXDHYmebdk4PdbkS58CIVHdYSUHTYYRWOJblWSyu2lmy3KNFVJNBhxcuGW4YBVCbYGRZwIooipHsNqjM4FbgOQqQqSKQQU9V8xmi1QlgHqQQ6DDBvRUVCDirs+EzGDGOQTCATgtYTnbCVLgsVgRE0T1QE0qHCFAht2z6dLvJQs3Lo2FQoDxWNUiBhaP4eRgwNkI+dAjVOA/kUrIDwf3CG8NfNOE0eiFotSuo+rBiq8tD9oY4Qzc6YJw99hl1wzpQvD7ef2M8QgnOGJfJw+EltQc+oX2yn907QB22WZcvlUpd143dqQu+8pCJZuGE4xCuPXJqqcs5sNpsI93Rmzym1k4Npk+oD1SH3/a3LOK/JpUBpWfqNySxWzCfNCUITuDG5dtuphrUJ1myeIE9bIsPiKrfqTai5WZxbhtNphYx6GEIHihyGFTI69lje/rxajdh0s0msZ0zYxyPLhYCb1CyHm9Qsd2H37Y3lugVwL9kNh8Ot8cha6fUNQ8nuXi5z9/ExsAO4zQrb/ev1yrCB7lGyQzgYDGuxq1toDN/JGvN+HyWNHKB7zEoK+PX11e12G431erGYzwmytAWU56fkMHY5JJnDRR2eZji3AwtIcrEV8Cojat/BdQ7XOwGV1e1hDjGGjXbdArm8uJZtCH5MbcctVX8A1WpqumJHwckAAAAASUVORK5CYII=");
-  background-size: 28px 28px;
-  animation: image-loading-rotate 1s linear infinite !important;
-}
-
-.imt-image-status span {
-  color: var(--bg-2, #fff) !important;
-  font-size: 14px !important;
-  line-height: 14px !important;
-  font-weight: 500 !important;
-  font-family: "PingFang SC", Arial, sans-serif !important;
-}
-
-@keyframes image-loading-rotate {
-  from {
-    transform: rotate(360deg);
-  }
-  to {
-    transform: rotate(0deg);
-  }
-}
-</style></head>
+</head>
 <body>
-    <div class="game-container">
-        <div class="text-center mb-6">
-            <h1 class="text-4xl font-bold text-amber-400 mb-2">幻想冒險</h1>
-            <p class="text-slate-300">踏上未知的旅程，探索神秘的世界</p>
-        </div>
-        
-        <!-- 玩家狀態 -->
-        <div id="player-stats" class="bg-slate-800 rounded-lg p-4 mb-6 shadow-lg">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">🧍‍♂️ 冒險者狀態</h2>
-                <span class="bg-amber-600 text-white px-3 py-1 rounded-full text-sm">探索深度: <span id="depth">0</span></span>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <div class="flex justify-between mb-1">
-                        <span>生命值</span>
-                        <span id="hp-text">100/100</span>
-                    </div>
-                    <div class="progress-bar mb-3">
-                        <div id="hp-bar" class="progress-fill" style="width: 100%;"></div>
-                    </div>
-                    
-                    <div class="flex justify-between mb-1">
-                        <span>攻擊力</span>
-                        <span id="attack">5</span>
-                    </div>
-                    
-                    <div class="flex justify-between">
-                        <span>金幣</span>
-                        <span id="gold">0</span>
-                    </div>
-                </div>
-                
-                <div class="border-l border-slate-600 pl-4">
-                    <h3 class="font-medium mb-2">裝備</h3>
-                    <div class="flex flex-col gap-2">
-                        <div class="flex justify-between">
-                            <span>武器</span>
-                            <span id="weapon">無</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>防具</span>
-                            <span id="armor">無</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 事件區域 -->
-        <div id="event-area" class="bg-slate-800 rounded-lg p-4 mb-6 shadow-lg min-h-[300px]">
-            <div class="text-center py-10">
-                <h2 class="text-2xl font-bold mb-4">準備開始冒險</h2>
-                <p class="mb-6 text-slate-300">點擊下方按鈕開始你的旅程</p>
-                <button id="start-btn" class="btn bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg">
-                    開始冒險
-                </button>
-            </div>
-        </div>
-        
-        <!-- 背包 -->
-        <div class="bg-slate-800 rounded-lg p-4 shadow-lg mb-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">🎒 背包 </h2>
-                <div class="flex gap-2">
-                    
-                    <button id="toggle-inventory" class="text-amber-400 hover:text-amber-300">
-                        顯示/隱藏
-                    </button>
-                </div>
-            </div>
-            
-            <div id="inventory" class="hidden">
-                <div id="inventory-items" class="inventory-grid">
-                    <div class="text-center text-slate-400 col-span-full py-4">
-                        背包是空的
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 遊戲日誌 -->
-        <div class="bg-slate-800 rounded-lg p-4 shadow-lg mb-6">
-            <div class="flex justify-between items-center mb-2">
-                <h2 class="text-xl font-bold">📜 冒險日誌</h2>
-                <button id="clear-log" class="text-amber-400 hover:text-amber-300 text-sm">
-                    清空
-                </button>
-            </div>
-            
-            <div id="game-log" class="h-32 overflow-y-auto text-sm text-slate-300 border border-slate-700 rounded p-2 bg-slate-900">
-                <div class="log-entry">歡迎來到幻想冒險！</div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 程式碼查看模態框 -->
-    <div id="code-modal" class="code-modal">
-        <div class="code-content">
-            <div class="code-header">
-                <h2 class="text-xl font-bold">遊戲程式碼</h2>
-                <button id="close-code-btn" class="text-slate-300 hover:text-white">
-                    關閉
-                </button>
-            </div>
-            <div id="code-body" class="code-body">
-                <!-- 程式碼將在這裡顯示 -->
-            </div>
-        </div>
+
+<div id="game-container">
+    <header>
+        <div style="font-weight: bold; font-size: 1.2em;">⚔️ 幻想冒險</div>
+    </header>
+
+    <div class="stats-grid">
+        <div class="stat-item">生命: <span id="hp-val">100</span> / <span id="max-hp-val">100</span></div>
+        <div class="stat-item">攻擊: <span id="atk-val">5</span></div>
+        <div class="stat-item">金幣: <span id="gold-val">0</span></div>
+        <div class="stat-item">深度: <span id="depth-val">0</span> 層</div>
+        <div id="buff-display">狀態: 無</div>
     </div>
 
-    <script>
-        // 遊戲狀態
-        const gameState = {
-            player: {
-                maxHp: 100,
-                hp: 100,
-                attack: 5,
-                gold: 0,
-                depth: 0,
-                equipment: {
-                    weapon: null,
-                    armor: null
-                },
-                inventory: []
-            },
-            currentEvent: null,
-            currentMonster: null,
-            inBattle: false,
-            gameOver: false,
-            merchantInventory: null // 儲存商人的商品列表
-        };
+    <div id="event-display">
+        <div id="event-icon" class="monster-icon">🎲</div>
+        <h3 id="event-title">準備冒險</h3>
+        <div id="event-desc">按下按鈕開始你的旅程...</div>
+        <div id="merchant-area" class="hidden"></div>
+    </div>
+
+    <div id="controls">
+        <button id="btn-main" class="btn-primary" onclick="Game.nextEvent()">開始冒險</button>
+        <button id="btn-sub" onclick="Game.handleSubAction()" disabled>...</button>
+    </div>
+
+    <div id="inventory-section">
+        <h3>🎒 背包 <small>(點擊物品查看/裝備/出售)</small></h3>
+        <div class="equipment-slots">
+            <div class="equip-slot" id="slot-weapon" onclick="Game.unequip('weapon')">無武器</div>
+            <div class="equip-slot" id="slot-armor" onclick="Game.unequip('armor')">無防具</div>
+            <div class="equip-slot" id="slot-shield" onclick="Game.unequip('shield')">無盾牌</div>
+        </div>
+        <div class="item-list" id="backpack-list">
+            </div>
+    </div>
+</div>
+
+<script>
+/**
+ * 遊戲數據配置
+ */
+const CONFIG = {
+    rarityProb: { common: 0.5, uncommon: 0.3, rare: 0.15, epic: 0.04, legendary: 0.01 },
+    rarityDisplay: {
+        common: { color: "rarity-common", label: "一般" },
+        uncommon: { color: "rarity-uncommon", label: "優質" },
+        rare: { color: "rarity-rare", label: "稀有" },
+        epic: { color: "rarity-epic", label: "史詩" },
+        legendary: { color: "rarity-legendary", label: "傳說" }
+    },
+    buffs: {
+        angel_song: { id: 'angel_song', name: '👼 天使的歌頌', type: 'angel', desc: '每次事件恢復 5 HP' },
+        angel_protection: { id: 'angel_protection', name: '🛡️ 天使的加護', type: 'angel', desc: '怪物傷害減少 30%' },
+        angel_courage: { id: 'angel_courage', name: '⚔️ 天使的勇氣', type: 'angel', desc: '致命一擊機率提升至 20%' },
+        angel_wings: { id: 'angel_wings', name: '🕊️ 天使的翅膀', type: 'angel', desc: '逃跑成功率提升至 60%' },
+        demon_wealth: { id: 'demon_wealth', name: '💰 惡魔的財富', type: 'demon', desc: '攻擊得5金幣，逃跑失敗扣5金幣' },
+        demon_destruction: { id: 'demon_destruction', name: '💀 惡魔的破壞', type: 'demon', desc: '10%機率秒殺，觸發後扣90%當前血量' },
+        demon_enhance: { id: 'demon_enhance', name: '🔥 惡魔的強化', type: 'demon', desc: '雙方致命一擊機率變為 50%' },
+        demon_wager: { id: 'demon_wager', name: '🎲 惡魔的賭約', type: 'demon', desc: '逃跑率80%，但逃跑時1%機率死亡' }
+    },
+    monsters: [
+        { name: "史萊姆", weight: 13.5, icon: "🦠", hp: 20, atk: 3, drop: "史萊姆黏液", eliteDrop: "史萊姆精華", bossDrop: "史萊姆王冠" },
+        { name: "哥布林", weight: 13.5, icon: "👺", hp: 35, atk: 5, drop: "破布", eliteDrop: "哥布林耳環", bossDrop: "哥布林金牙" },
+        { name: "狂狼", weight: 13.5, icon: "🐺", hp: 50, atk: 8, drop: "狼皮", eliteDrop: "狼牙", bossDrop: "狼王披風" },
+        { name: "骷髏兵", weight: 13.5, icon: "💀", hp: 60, atk: 10, drop: "骨頭", eliteDrop: "靈魂碎片", bossDrop: "死靈頭骨" },
+        { name: "半獸人", weight: 13.5, icon: "👹", hp: 90, atk: 12, drop: "斷劍", eliteDrop: "半獸人護符", bossDrop: "戰爭號角" },
+        { name: "幽靈", weight: 13.5, icon: "👻", hp: 70, atk: 15, drop: "靈質", eliteDrop: "怨念集合體", bossDrop: "幽靈提燈" },
+        { name: "石巨人", weight: 10, icon: "🗿", hp: 150, atk: 20, drop: "石塊", eliteDrop: "魔力核心", bossDrop: "大地之心" },
+        { name: "食人妖", weight: 5, icon: "🧟", hp: 200, atk: 25, drop: "巨棒", eliteDrop: "食人妖之血", bossDrop: "食人妖圖騰" },
+        { name: "雙足飛龍", weight: 3, icon: "🐉", hp: 300, atk: 35, drop: "龍鱗", eliteDrop: "龍之淚", bossDrop: "龍心" },
+        { name: "魔王", weight: 1, icon: "👿", hp: 500, atk: 50, drop: "黑暗物質", eliteDrop: "魔王印記", bossDrop: "魔神之眼" }
+    ],
+    // 戰利品資料庫：設定價格、稀有度與圖示
+    lootData: {
+        "史萊姆黏液": { price: 10, rarity: "common", icon: "💧" },
+        "史萊姆精華": { price: 50, rarity: "uncommon", icon: "✨" },
+        "史萊姆王冠": { price: 200, rarity: "rare", icon: "👑" },
         
-        // 怪物資料庫
-        const monsters = [
-            { 
-                id: 1, name: "史萊姆", hp: 15, attack: 3, 
-                loot: [{ name: "史萊姆黏液", type: "material", rarity: "white", value: 10, chance: 0.4 }],
-                eliteLoot: [{ name: "史萊姆精華", type: "material", rarity: "green", value: 20, chance: 0.15 }],
-                bossLoot: [{ name: "史萊姆王冠", type: "material", rarity: "gold", value: 200, chance: 0.03 }],
-                weight: 10,
-                svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="60" r="40" fill="#88ddff" /><circle cx="35" cy="50" r="5" fill="black" /><circle cx="65" cy="50" r="5" fill="black" /><path d="M 30 70 Q 50 80 70 70" stroke="black" stroke-width="2" fill="none" /></svg>`
-            },
-            { 
-                id: 2, name: "哥布林", hp: 25, attack: 5, 
-                loot: [{ name: "哥布林耳朵", type: "material", rarity: "white", value: 20, chance: 0.3 }],
-                eliteLoot: [{ name: "哥布林匕首", type: "weapon", rarity: "green", value: 30, attack: 3, chance: 0.15 }],
-                bossLoot: [{ name: "哥布林酋長面具", type: "armor", rarity: "blue", value: 300, hp: 15, chance: 0.03 }],
-                weight: 8,
-                svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 50 20 L 30 40 L 30 70 L 70 70 L 70 40 L 50 20" fill="#8eff8e" /><circle cx="35" cy="45" r="5" fill="black" /><circle cx="65" cy="45" r="5" fill="black" /><path d="M 40 60 L 60 60" stroke="black" stroke-width="2" fill="none" /><path d="M 25 35 L 35 30" stroke="#8eff8e" stroke-width="5" /><path d="M 75 35 L 65 30" stroke="#8eff8e" stroke-width="5" /></svg>`
-            },
-            { 
-                id: 3, name: "骷髏戰士", hp: 30, attack: 7, 
-                loot: [{ name: "骨頭碎片", type: "material", rarity: "white", value: 20, chance: 0.4 }],
-                eliteLoot: [{ name: "骷髏劍", type: "weapon", rarity: "blue", value: 80, attack: 8, chance: 0.1 }],
-                bossLoot: [{ name: "亡靈之盔", type: "armor", rarity: "purple", value: 350, hp: 25, chance: 0.02 }],
-                weight: 7,
-                svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="40" r="20" fill="#f0f0f0" /><circle cx="40" cy="35" r="5" fill="black" /><circle cx="60" cy="35" r="5" fill="black" /><path d="M 45 45 L 55 45" stroke="black" stroke-width="2" /><path d="M 40 60 L 40 90" stroke="#f0f0f0" stroke-width="8" /><path d="M 60 60 L 60 90" stroke="#f0f0f0" stroke-width="8" /><path d="M 30 60 L 70 60" stroke="#f0f0f0" stroke-width="8" /></svg>`
-            },
-            { 
-                id: 4, name: "蜥蜴人", hp: 35, attack: 6, 
-                loot: [{ name: "蜥蜴鱗片", type: "material", rarity: "green", value: 30, chance: 0.3 }],
-                eliteLoot: [{ name: "蜥蜴人尾巴", type: "material", rarity: "blue", value: 80, chance: 0.1 }],
-                bossLoot: [{ name: "蜥蜴王盾牌", type: "armor", rarity: "purple", value: 350, hp: 30, chance: 0.03 }],
-                weight: 6,
-                svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 50 30 L 30 50 L 30 80 L 70 80 L 70 50 L 50 30" fill="#80ff80" /><circle cx="40" cy="45" r="5" fill="yellow" /><circle cx="60" cy="45" r="5" fill="yellow" /><path d="M 40 60 L 60 60" stroke="black" stroke-width="2" /><path d="M 70 60 Q 90 70 85 90" stroke="#80ff80" stroke-width="8" fill="none" /></svg>`
-            },
-            { 
-                id: 5, name: "狼人", hp: 45, attack: 9, 
-                loot: [{ name: "狼毛", type: "material", rarity: "white", value: 30, chance: 0.5 }],
-                eliteLoot: [{ name: "狼人爪", type: "weapon", rarity: "blue", value: 120, attack: 10, chance: 0.1 }],
-                bossLoot: [{ name: "狼王皮甲", type: "armor", rarity: "purple", value: 400, hp: 35, chance: 0.02 }],
-                weight: 5,
-                svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 50 20 L 30 40 L 30 80 L 70 80 L 70 40 L 50 20" fill="#a0a0a0" /><circle cx="40" cy="40" r="5" fill="red" /><circle cx="60" cy="40" r="5" fill="red" /><path d="M 40 55 L 60 55" stroke="black" stroke-width="2" /><path d="M 30 20 L 40 30" stroke="#a0a0a0" stroke-width="8" /><path d="M 70 20 L 60 30" stroke="#a0a0a0" stroke-width="8" /></svg>`
-            },
-            { 
-                id: 6, name: "食人魔", hp: 60, attack: 12, 
-                loot: [{ name: "食人魔牙齒", type: "material", rarity: "blue", value: 80, chance: 0.2 }],
-                eliteLoot: [{ name: "食人魔棍棒", type: "weapon", rarity: "blue", value: 150, attack: 15, chance: 0.15 }],
-                bossLoot: [{ name: "食人魔王護甲", type: "armor", rarity: "gold", value: 700, hp: 50, chance: 0.01 }],
-                weight: 4,
-                svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 50 20 L 25 40 L 25 80 L 75 80 L 75 40 L 50 20" fill="#c08040" /><circle cx="40" cy="45" r="6" fill="yellow" /><circle cx="60" cy="45" r="6" fill="yellow" /><path d="M 35 65 Q 50 75 65 65" stroke="black" stroke-width="3" fill="none" /><path d="M 30 30 L 40 35" stroke="#c08040" stroke-width="10" /><path d="M 70 30 L 60 35" stroke="#c08040" stroke-width="10" /></svg>`
-            },
-            { 
-                id: 7, name: "幽靈", hp: 30, attack: 15, 
-                loot: [{ name: "幽靈精華", type: "material", rarity: "blue", value: 50, chance: 0.4 }],
-                eliteLoot: [{ name: "幽魂之刃", type: "weapon", rarity: "purple", value: 200, attack: 20, chance: 0.08 }],
-                bossLoot: [{ name: "幽靈王冠", type: "armor", rarity: "gold", value: 650, hp: 40, chance: 0.01 }],
-                weight: 3,
-                svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 30 30 Q 50 20 70 30 Q 80 50 70 70 Q 60 80 50 70 Q 40 80 30 70 Q 20 50 30 30" fill="#c0c0ff" fill-opacity="0.7" /><circle cx="40" cy="40" r="5" fill="black" /><circle cx="60" cy="40" r="5" fill="black" /><path d="M 40 55 Q 50 65 60 55" stroke="black" stroke-width="2" fill="none" /></svg>`
-            },
-            { 
-                id: 8, name: "石像鬼", hp: 50, attack: 10, 
-                loot: [{ name: "石像碎片", type: "material", rarity: "green", value: 70, chance: 0.3 }],
-                eliteLoot: [{ name: "石像鬼翅膀", type: "material", rarity: "purple", value: 150, chance: 0.1 }],
-                bossLoot: [{ name: "石像鬼王槍", type: "weapon", rarity: "gold", value: 650, attack: 30, chance: 0.01 }],
-                weight: 3,
-                svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 50 30 L 30 50 L 30 70 L 70 70 L 70 50 L 50 30" fill="#808080" /><circle cx="40" cy="45" r="5" fill="red" /><circle cx="60" cy="45" r="5" fill="red" /><path d="M 40 60 L 60 60" stroke="black" stroke-width="2" /><path d="M 20 40 L 40 30" stroke="#808080" stroke-width="8" /><path d="M 80 40 L 60 30" stroke="#808080" stroke-width="8" /></svg>`
-            },
-            { 
-                id: 9, name: "巨龍", hp: 80, attack: 18, 
-                loot: [{ name: "龍鱗", type: "material", rarity: "purple", value: 100, chance: 0.25 }],
-                eliteLoot: [{ name: "龍牙", type: "weapon", rarity: "purple", value: 300, attack: 25, chance: 0.1 }],
-                bossLoot: [{ name: "龍王之心", type: "material", rarity: "gold", value: 800, chance: 0.02 }],
-                weight: 2,
-                svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 50 20 L 20 40 L 20 70 L 80 70 L 80 40 L 50 20" fill="#ff4040" /><circle cx="35" cy="40" r="5" fill="yellow" /><circle cx="65" cy="40" r="5" fill="yellow" /><path d="M 40 55 L 60 55" stroke="black" stroke-width="3" /><path d="M 50 70 Q 60 90 80 95" stroke="#ff4040" stroke-width="10" fill="none" /><path d="M 20 30 L 30 20" stroke="#ff4040" stroke-width="5" /><path d="M 80 30 L 70 20" stroke="#ff4040" stroke-width="5" /></svg>`
-            },
-            { 
-                id: 10, name: "死亡騎士", hp: 70, attack: 15, 
-                loot: [{ name: "黑鐵碎片", type: "material", rarity: "blue", value: 90, chance: 0.3 }],
-                eliteLoot: [{ name: "死亡騎士劍", type: "weapon", rarity: "purple", value: 250, attack: 22, chance: 0.12 }],
-                bossLoot: [{ name: "死亡領主盔甲", type: "armor", rarity: "gold", value: 750, hp: 60, chance: 0.01 }],
-                weight: 1,
-                svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 50 20 L 30 40 L 30 80 L 70 80 L 70 40 L 50 20" fill="#404040" /><circle cx="40" cy="40" r="5" fill="#ff0000" /><circle cx="60" cy="40" r="5" fill="#ff0000" /><rect x="40" y="60" width="20" height="5" fill="black" /><path d="M 50 80 L 50 90 L 70 90" stroke="#808080" stroke-width="5" fill="none" /></svg>`
-            }
-        ];
+        "破布": { price: 15, rarity: "common", icon: "🧶" },
+        "哥布林耳環": { price: 60, rarity: "uncommon", icon: "💍" },
+        "哥布林金牙": { price: 250, rarity: "rare", icon: "🦷" },
         
-        // 裝備資料庫
-        const equipment = {
-            weapons: [
-                { name: "木棒", rarity: "white", attack: 2, value: 15 },
-                { name: "銅劍", rarity: "white", attack: 3, value: 25 },
-                { name: "鐵劍", rarity: "green", attack: 5, value: 50 },
-                { name: "鋼劍", rarity: "green", attack: 8, value: 75 },
-                { name: "銀劍", rarity: "blue", attack: 12, value: 120 },
-                { name: "魔法杖", rarity: "blue", attack: 15, value: 180 },
-                { name: "符文劍", rarity: "purple", attack: 20, value: 250 },
-                { name: "屠龍刀", rarity: "purple", attack: 25, value: 320 },
-                { name: "神聖之劍", rarity: "gold", attack: 35, value: 550 },
-                { name: "末日審判", rarity: "gold", attack: 50, value: 999 }
-            ],
-            armors: [
-                { name: "布衣", rarity: "white", hp: 5, value: 20 },
-                { name: "皮甲", rarity: "white", hp: 10, value: 30 },
-                { name: "鎖甲", rarity: "green", hp: 15, value: 60 },
-                { name: "鐵甲", rarity: "green", hp: 20, value: 80 },
-                { name: "銀甲", rarity: "blue", hp: 30, value: 150 },
-                { name: "魔法長袍", rarity: "blue", hp: 35, value: 200 },
-                { name: "符文甲", rarity: "purple", hp: 45, value: 280 },
-                { name: "龍鱗甲", rarity: "purple", hp: 55, value: 350 },
-                { name: "神聖護甲", rarity: "gold", hp: 70, value: 500 },
-                { name: "不朽之甲", rarity: "gold", hp: 100, value: 750 }
-            ]
-        };
+        "狼皮": { price: 20, rarity: "common", icon: "🧵" },
+        "狼牙": { price: 80, rarity: "uncommon", icon: "🦴" },
+        "狼王披風": { price: 300, rarity: "rare", icon: "🧣" },
         
-        // 消耗品資料庫
-        const consumables = [
-            { name: "小型治療藥水", effect: "恢復20點生命值", value: 30, hp: 20 },
-            { name: "中型治療藥水", effect: "恢復50點生命值", value: 75, hp: 50 },
-            { name: "大型治療藥水", effect: "恢復100點生命值", value: 120, hp: 100 }
-      ];
+        "骨頭": { price: 25, rarity: "common", icon: "🦴" },
+        "靈魂碎片": { price: 100, rarity: "uncommon", icon: "👻" },
+        "死靈頭骨": { price: 350, rarity: "rare", icon: "💀" },
         
-        // DOM 元素
-        const elements = {
-            eventArea: document.getElementById('event-area'),
-            startBtn: document.getElementById('start-btn'),
-            hpText: document.getElementById('hp-text'),
-            hpBar: document.getElementById('hp-bar'),
-            attack: document.getElementById('attack'),
-            gold: document.getElementById('gold'),
-            depth: document.getElementById('depth'),
-            weapon: document.getElementById('weapon'),
-            armor: document.getElementById('armor'),
-            gameLog: document.getElementById('game-log'),
-            inventory: document.getElementById('inventory'),
-            inventoryItems: document.getElementById('inventory-items'),
-            toggleInventory: document.getElementById('toggle-inventory'),
-            clearLog: document.getElementById('clear-log'),
-            viewCodeBtn: document.getElementById('view-code-btn'),
-            codeModal: document.getElementById('code-modal'),
-            closeCodeBtn: document.getElementById('close-code-btn'),
-            codeBody: document.getElementById('code-body')
-        };
+        "斷劍": { price: 30, rarity: "common", icon: "🗡️" },
+        "半獸人護符": { price: 120, rarity: "uncommon", icon: "🧿" },
+        "戰爭號角": { price: 400, rarity: "rare", icon: "📯" },
         
-        // 事件監聽器
-        elements.startBtn.addEventListener('click', startNextEvent);
-        elements.toggleInventory.addEventListener('click', toggleInventory);
-        elements.clearLog.addEventListener('click', clearGameLog);
-        elements.viewCodeBtn.addEventListener('click', showCodeModal);
-        elements.closeCodeBtn.addEventListener('click', hideCodeModal);
+        "靈質": { price: 35, rarity: "common", icon: "🌫️" },
+        "怨念集合體": { price: 150, rarity: "uncommon", icon: "👿" },
+        "幽靈提燈": { price: 450, rarity: "rare", icon: "🏮" },
         
-        // 遊戲功能函數
-        function startNextEvent() {
-            if (gameState.gameOver) {
-                resetGame();
-                return;
-            }
-            
-            gameState.player.depth++;
-            updatePlayerStats();
-            
-            // 根據探索深度調整怪物出現機率
-            let normalChance, eliteChance, bossChance;
-            
-            if (gameState.player.depth > 300) {
-                // 深度 > 300: 一般10%, 精英50%, 首領40%
-                normalChance = 0.1;
-                eliteChance = 0.5;
-                bossChance = 0.4;
-            } else if (gameState.player.depth > 100) {
-                // 深度 > 100: 一般40%, 精英50%, 首領10%
-                normalChance = 0.4;
-                eliteChance = 0.5;
-                bossChance = 0.1;
-            } else {
-                // 深度 <= 100: 一般89%, 精英10%, 首領1%
-                normalChance = 0.89;
-                eliteChance = 0.1;
-                bossChance = 0.01;
-            }
-            
-            // 隨機選擇事件類型
-            const eventRoll = Math.random();
-            
-            if (eventRoll < 0.7) {
-                // 怪物戰鬥事件 (70% 機率)
-                spawnMonster(normalChance, eliteChance, bossChance);
-            } else if (eventRoll < 0.75) {
-                // 修復事件 (5% 機率)
-                healingEvent();
-            } else if (eventRoll < 0.85) {
-                // 商人事件 (10% 機率)
-                // 每次遇到商人時重新生成商品
-                generateMerchantInventory();
-                merchantEvent();
-            } else {
-                // 寶箱事件 (15% 機率)
-                treasureEvent();
+        "石塊": { price: 50, rarity: "common", icon: "🪨" },
+        "魔力核心": { price: 200, rarity: "rare", icon: "🔮" },
+        "大地之心": { price: 600, rarity: "epic", icon: "💎" },
+        
+        "巨棒": { price: 60, rarity: "common", icon: "🪵" },
+        "食人妖之血": { price: 250, rarity: "rare", icon: "🩸" },
+        "食人妖圖騰": { price: 700, rarity: "epic", icon: "🗿" },
+        
+        "龍鱗": { price: 100, rarity: "uncommon", icon: "🛡️" },
+        "龍之淚": { price: 400, rarity: "rare", icon: "💧" },
+        "龍心": { price: 800, rarity: "epic", icon: "❤️" },
+        
+        "黑暗物質": { price: 200, rarity: "rare", icon: "⚫" },
+        "魔王印記": { price: 500, rarity: "epic", icon: "🔯" },
+        "魔神之眼": { price: 1000, rarity: "legendary", icon: "👁️" }
+    },
+    itemPool: [
+        { name: "生鏽匕首", type: "weapon", val: 3, rarity: "common", price: 15, icon: "🗡️" },
+        { name: "木棒", type: "weapon", val: 4, rarity: "common", price: 20, icon: "🪵" },
+        { name: "布衣", type: "armor", val: 10, rarity: "common", price: 15, icon: "👕" },
+        { name: "圓盾", type: "shield", val: 1, rarity: "common", price: 25, icon: "🛡️" },
+        { name: "治療藥水", type: "consumable", val: 30, rarity: "common", price: 25, icon: "🧪", desc: "恢復30點生命" },
+        { name: "騎士長槍", type: "weapon", val: 12, rarity: "uncommon", price: 80, icon: "🔱" },
+        { name: "鎖子甲", type: "armor", val: 40, rarity: "uncommon", price: 80, icon: "🛡️" },
+        { name: "鐵盾", type: "shield", val: 3, rarity: "uncommon", price: 90, icon: "🛡️" },
+        { name: "強力藥水", type: "consumable", val: 80, rarity: "uncommon", price: 60, icon: "🍷", desc: "恢復80點生命" },
+        { name: "秘銀劍", type: "weapon", val: 30, rarity: "rare", price: 250, icon: "⚔️" },
+        { name: "板甲", type: "armor", val: 80, rarity: "rare", price: 250, icon: "🛡️" },
+        { name: "騎士盾", type: "shield", val: 5, rarity: "rare", price: 300, icon: "🛡️" },
+        { name: "精靈藥劑", type: "consumable", val: 200, rarity: "rare", price: 150, icon: "🧉", desc: "恢復200點生命" },
+        { name: "屠龍劍", type: "weapon", val: 60, rarity: "epic", price: 800, icon: "🐉" },
+        { name: "龍鱗鎧甲", type: "armor", val: 150, rarity: "epic", price: 800, icon: "🥋" },
+        { name: "塔盾", type: "shield", val: 7, rarity: "epic", price: 900, icon: "🧱" },
+        { name: "聖劍 Excalibur", type: "weapon", val: 150, rarity: "legendary", price: 3000, icon: "🌟" },
+        { name: "神之光輝", type: "armor", val: 250, rarity: "legendary", price: 2000, icon: "🌞" },
+        { name: "埃癸斯之盾", type: "shield", val: 10, rarity: "legendary", price: 2000, icon: "🔱" }
+    ],
+    phoenixFeather: {
+        id: "phoenix_feather",
+        name: "不死鳥的羽毛",
+        type: "revive",
+        rarity: "legendary",
+        icon: "🪶",
+        price: 0,
+        desc: "死亡時以50%生命復活，無法出售"
+    }
+};
+
+const Player = {
+    hp: 100,
+    maxHp: 100,
+    baseAtk: 5,
+    gold: 0,
+    depth: 0,
+    equipment: { weapon: null, armor: null, shield: null },
+    backpack: [],
+    buff: null 
+};
+
+const GameState = {
+    phase: "idle",
+    currentEnemy: null,
+    merchantStock: [],
+    log: []
+};
+
+const Game = {
+    init() {
+        this.updateUI();
+    },
+
+    triggerAnim(id, animClass) {
+        const el = document.getElementById(id);
+        if(el) {
+            el.classList.remove(animClass);
+            void el.offsetWidth;
+            el.classList.add(animClass);
+        }
+    },
+
+    showFloatingText(text, color) {
+        const display = document.getElementById('event-display');
+        const div = document.createElement('div');
+        div.className = 'floating-text';
+        div.innerHTML = text;
+        div.style.color = color;
+        display.appendChild(div);
+        setTimeout(() => div.remove(), 1000);
+    },
+
+    getAtk() {
+        let atk = Player.baseAtk;
+        if (Player.equipment.weapon) atk += Player.equipment.weapon.val;
+        return atk;
+    },
+
+    recalcStats() {
+        const oldMax = Player.maxHp;
+        const hpPercent = Player.hp / oldMax;
+        let bonusHp = Player.equipment.armor ? Player.equipment.armor.val : 0;
+        let newMax = 100 + bonusHp;
+        Player.maxHp = newMax;
+        Player.hp = Math.floor(newMax * hpPercent);
+        if (Player.hp === 0 && hpPercent > 0) Player.hp = 1;
+        this.updateUI();
+    },
+
+    nextEvent() {
+        if (Player.hp <= 0) {
+            this.restart();
+            return;
+        }
+
+        Player.depth++;
+        this.log(`>>> 進入第 ${Player.depth} 層探索...`);
+        
+        if (Player.buff && Player.buff.id === 'angel_song') {
+            if (Player.hp < Player.maxHp) {
+                Player.hp = Math.min(Player.maxHp, Player.hp + 5);
+                this.showFloatingText("+5 HP", "#69f0ae");
             }
         }
+
+        const rand = Math.random();
         
-        function spawnMonster(normalChance, eliteChance, bossChance) {
-            // 根據權重選擇怪物
-            const totalWeight = monsters.reduce((sum, monster) => sum + monster.weight, 0);
-            let randomWeight = Math.random() * totalWeight;
-            let selectedMonster = null;
-            
-            for (const monster of monsters) {
-                randomWeight -= monster.weight;
-                if (randomWeight <= 0) {
-                    selectedMonster = {...monster};
-                    break;
-                }
-            }
-            
-            if (!selectedMonster) {
-                selectedMonster = {...monsters[0]};
-            }
-            
-            // 決定是否為菁英或首領
-            const roll = Math.random();
-            let monsterType = "normal";
-            
-            if (roll < bossChance) {
-                // 首領 - 修改為血量*3，攻擊力*3
-                selectedMonster.hp = Math.floor(selectedMonster.hp * 3);
-                selectedMonster.attack = Math.floor(selectedMonster.attack * 3);
-                selectedMonster.name = "首領" + selectedMonster.name;
-                monsterType = "boss";
-            } else if (roll < eliteChance + bossChance) {
-                // 菁英
-                selectedMonster.hp = Math.floor(selectedMonster.hp * 2);
-                selectedMonster.attack = Math.floor(selectedMonster.attack * 1.5);
-                selectedMonster.name = "菁英" + selectedMonster.name;
-                monsterType = "elite";
-            }
-            
-            gameState.currentMonster = {
-                ...selectedMonster,
-                currentHp: selectedMonster.hp,
-                type: monsterType
-            };
-            
-            gameState.inBattle = true;
-            
-            renderBattleScreen();
-            addToLog(`遭遇了 ${selectedMonster.name}！`);
+        if (rand < 0.05) {
+            this.triggerHeal();
+        } else if (rand < 0.10) {
+            this.triggerStatue();
+        } else if (rand < 0.30) {
+            this.triggerMerchant();
+        } else if (rand < 0.40) {
+            this.triggerChest();
+        } else {
+            this.triggerCombat();
         }
         
-        function renderBattleScreen() {
-            const monster = gameState.currentMonster;
-            
-            // 根據怪物類型添加發光效果的CSS類別
-            let monsterClass = "";
-            if (monster.type === "elite") {
-                monsterClass = "monster-elite";
-            } else if (monster.type === "boss") {
-                monsterClass = "monster-boss";
-            }
-            
-            elements.eventArea.innerHTML = `
-                <div class="text-center mb-6 fade-in">
-                    <h2 class="text-2xl font-bold mb-4">戰鬥！</h2>
-                    <div class="monster-image mb-4 ${monsterClass}">
-                        ${monster.svg}
-                    </div>
-                    <p class="text-xl font-bold text-amber-400">${monster.name}</p>
-                    <div class="mt-2">
-                        <div class="flex justify-center items-center mb-1">
-                            <span class="mr-2">HP:</span>
-                            <span>${monster.currentHp}/${monster.hp}</span>
-                        </div>
-                        <div class="progress-bar w-1/2 mx-auto mb-3">
-                            <div class="progress-fill" style="width: ${(monster.currentHp / monster.hp) * 100}%;"></div>
-                        </div>
-                        <p>攻擊力: ${monster.attack}</p>
-                    </div>
+        this.updateUI();
+    },
+
+    triggerHeal() {
+        const oldHp = Player.hp;
+        Player.hp = Player.maxHp; 
+        const healed = Player.hp - oldHp;
+        
+        GameState.phase = "event_end";
+        this.triggerAnim('event-icon', 'anim-spawn');
+        this.renderEvent("💖 休息時刻", "你找到一處安全的地方休息。", `生命值 <span class='heal-text'>完全恢復</span> (恢復了 ${healed} 點)。`, "🛌");
+        if(healed > 0) this.showFloatingText(`+${healed} HP`, "#69f0ae");
+        this.setButtons("繼續", "nextEvent", "無", null, true);
+    },
+
+    triggerStatue() {
+        GameState.phase = "event_end";
+        this.triggerAnim('event-icon', 'anim-spawn');
+        this.renderEvent("🗿 祈禱聖像", "你發現了一座古老的聖像...", "是否要進行祈禱？", "🙏");
+        this.setButtons("祈禱", "pray", "離開", "nextEvent", false);
+    },
+
+    pray() {
+        const isAngel = Math.random() < 0.5;
+        const type = isAngel ? 'angel' : 'demon';
+        const icon = isAngel ? "👼" : "😈";
+        const options = Object.values(CONFIG.buffs).filter(b => b.type === type);
+        const selected = options[Math.floor(Math.random() * options.length)];
+        
+        Player.buff = selected;
+        
+        let title = isAngel ? "天使聖像" : "惡魔聖像";
+        let style = isAngel ? "angel-text" : "demon-text";
+        
+        this.triggerAnim('event-icon', 'anim-spawn');
+        let desc = `你獲得了 <span class='${style}'>${selected.name}</span> 的效果。<br><small>${selected.desc}</small>`;
+        this.renderEvent(title, "祈禱得到了回應...", desc, icon);
+        this.setButtons("繼續", "nextEvent", "無", null, true);
+        this.updateUI();
+    },
+
+    triggerMerchant() {
+        GameState.phase = "merchant";
+        this.generateMerchantStock();
+        this.triggerAnim('event-icon', 'anim-spawn');
+        this.renderEvent("💰 神秘商人", "「我這裡有些好東西，看看吧？」", "點擊商品可查看詳情與購買", "👳");
+        this.setButtons("離開", "nextEvent", "無", null, true);
+        this.renderMerchantShop();
+    },
+
+    generateMerchantStock() {
+        GameState.merchantStock = [];
+        for(let i=0; i<4; i++) {
+            GameState.merchantStock.push(this.generateRandomItem());
+        }
+    },
+
+    getItemDesc(item) {
+        if (item.desc) return item.desc;
+        if (item.type === 'weapon') return `攻擊力 +${item.val}`;
+        if (item.type === 'armor') return `生命上限 +${item.val}`;
+        if (item.type === 'shield') return `抵擋 ${item.val} 次攻擊`;
+        if (item.type === 'loot') return `戰利品 (可高價出售)`;
+        return "未知物品";
+    },
+
+    renderMerchantShop() {
+        const area = document.getElementById('merchant-area');
+        area.innerHTML = "";
+        area.classList.remove('hidden');
+        
+        let buyHtml = "<h4>購買商品</h4><div class='merchant-grid'>";
+        GameState.merchantStock.forEach((item, idx) => {
+            if (!item) return;
+            const desc = this.getItemDesc(item);
+            const rarityColor = CONFIG.rarityDisplay[item.rarity].color;
+            buyHtml += `<div class="merchant-item ${rarityColor}" onclick="Game.buyItem(${idx})">
+                <div class="m-top">
+                    <span>${item.icon || '📦'} ${item.name}</span>
+                    <span class="gold-text">${item.price} G</span>
                 </div>
-                
-                <div class="flex justify-center gap-4">
-                    <button id="fight-btn" class="btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">
-                        戰鬥
-                    </button>
-                    <button id="flee-btn" class="btn bg-slate-600 hover:bg-slate-700 text-white font-bold py-2 px-6 rounded-lg">
-                        逃跑
-                    </button>
-                </div>
-            `;
-            
-            document.getElementById('fight-btn').addEventListener('click', fightMonster);
-            document.getElementById('flee-btn').addEventListener('click', tryToFlee);
+                <div class="m-desc">${desc}</div>
+            </div>`;
+        });
+        buyHtml += "</div>";
+        buyHtml += "<h4>出售</h4><p style='font-size:0.8em; color:#888'>點擊下方背包物品即可出售。</p>";
+        area.innerHTML = buyHtml;
+    },
+
+    buyItem(idx) {
+        const item = GameState.merchantStock[idx];
+        if (!item) return;
+        if (Player.gold >= item.price) {
+            Player.gold -= item.price;
+            this.addToBackpack(item);
+            GameState.merchantStock[idx] = null;
+            this.showFloatingText("- " + item.price + " G", "yellow");
+            this.log(`購買了 ${item.name}`);
+            this.updateUI();
+            this.renderMerchantShop();
+        } else {
+            alert("金幣不足！");
         }
-        
-        function fightMonster() {
-            if (!gameState.inBattle || !gameState.currentMonster) return;
-            
-            const monster = gameState.currentMonster;
-            const player = gameState.player;
-            
-            // 玩家攻擊
-            let playerDamage = player.attack;
-            let criticalHit = Math.random() < 0.05; // 5% 致命一擊機率
-            
-            if (criticalHit) {
-                playerDamage *= 2;
-                addToLog(`你對 ${monster.name} 造成了 <span class="critical">${playerDamage}</span> 點致命傷害！`);
-            } else {
-                addToLog(`你對 ${monster.name} 造成了 ${playerDamage} 點傷害。`);
-            }
-            
-            monster.currentHp -= playerDamage;
-            
-            // 檢查怪物是否死亡
-            if (monster.currentHp <= 0) {
-                monsterDefeated();
-                return;
-            }
-            
-            // 怪物攻擊
-            let monsterDamage = monster.attack;
-            let monsterCrit = Math.random() < 0.1; // 10% 致命一擊機率
-            
-            if (monsterCrit) {
-                monsterDamage *= 2;
-                addToLog(`${monster.name} 對你造成了 <span class="critical">${monsterDamage}</span> 點致命傷害！`);
-            } else {
-                addToLog(`${monster.name} 對你造成了 ${monsterDamage} 點傷害。`);
-            }
-            
-            player.hp -= monsterDamage;
-            
-            // 檢查玩家是否死亡
-            if (player.hp <= 0) {
-                playerDied();
-                return;
-            }
-            
-            // 更新戰鬥畫面
-            updatePlayerStats();
-            renderBattleScreen();
+    },
+
+    sellItem(index) {
+        if (GameState.phase !== "merchant") return; 
+        const item = Player.backpack[index];
+        if (!item) return;
+        if (item.type === 'revive') {
+            alert("這件物品太珍貴了，無法出售！");
+            return;
         }
+        let price = item.price;
+        if (item.type === 'weapon' || item.type === 'armor' || item.type === 'shield' || item.type === 'consumable') {
+            price = Math.floor(price * 0.8);
+        }
+        if(confirm(`確定要以 ${price} G 出售 ${item.name} 嗎？`)) {
+            Player.backpack.splice(index, 1);
+            Player.gold += price;
+            this.showFloatingText("+ " + price + " G", "yellow");
+            this.log(`出售 ${item.name} 獲得 ${price} G`);
+            this.updateUI();
+        }
+    },
+
+    triggerChest() {
+        GameState.phase = "event_end";
+        this.triggerAnim('event-icon', 'anim-spawn');
+
+        if (Math.random() < 0.01) {
+            const feather = {...CONFIG.phoenixFeather};
+            this.addToBackpack(feather);
+            this.renderEvent("📦 發現寶箱", "你打開了寶箱...", "奇蹟發生了！你獲得了 <span class='rarity-legendary'>不死鳥的羽毛</span>！", "🪶");
+            this.setButtons("繼續", "nextEvent", "無", null, true);
+            return;
+        }
+
+        const roll = Math.random();
+        let title = "📦 發現寶箱";
+        let desc = "";
+        let icon = "📦";
+
+        if (roll < 0.30) {
+            const amount = Math.floor(Math.random() * 50) + 10 + (Player.depth * 2);
+            Player.gold += amount;
+            desc = `獲得了 <span class='gold-text'>${amount} G</span>`;
+            this.showFloatingText(`+${amount} G`, "#ffd700");
+        } else if (roll < 0.60) {
+            const item = this.generateSpecificItem(['consumable']);
+            this.addToBackpack(item);
+            desc = `獲得了 <span class='${CONFIG.rarityDisplay[item.rarity].color}'>${item.name}</span>`;
+        } else if (roll < 0.80) {
+            const item = this.generateSpecificItem(['weapon', 'armor', 'shield']);
+            this.addToBackpack(item);
+            desc = `獲得了 <span class='${CONFIG.rarityDisplay[item.rarity].color}'>${item.name}</span>`;
+        } else if (roll < 0.90) {
+            desc = "裡面空空如也...";
+        } else {
+            const dmg = Math.floor(Player.maxHp * 0.15);
+            Player.hp = Math.max(0, Player.hp - dmg);
+            desc = `是陷阱！受到了 <span class='damage-text'>${dmg}</span> 點傷害。`;
+            this.triggerAnim('game-container', 'anim-screen-shake');
+            this.showFloatingText(`-${dmg} HP`, "red");
+            if(Player.hp === 0) { this.playerDie(); return; }
+        }
+
+        this.renderEvent(title, "你打開了寶箱...", desc, icon);
+        this.setButtons("繼續", "nextEvent", "無", null, true);
+    },
+
+    getWeightedMonster() {
+        const monsters = CONFIG.monsters;
+        let totalWeight = 0;
+        for (let m of monsters) totalWeight += m.weight;
+        let randomVal = Math.random() * totalWeight;
+        for (let m of monsters) {
+            if (randomVal < m.weight) return m;
+            randomVal -= m.weight;
+        }
+        return monsters[0];
+    },
+
+    triggerCombat() {
+        GameState.phase = "combat";
+        const baseMonster = this.getWeightedMonster();
+        let tier = "normal";
+        let rand = Math.random();
+
+        if (Player.depth > 300) {
+            if (rand < 0.5) tier = "elite"; else tier = "boss";
+        } else if (Player.depth > 100) {
+            if (rand < 0.1) tier = "boss"; else if (rand < 0.6) tier = "elite"; else tier = "normal";
+        } else {
+            if (rand < 0.01) tier = "boss"; else if (rand < 0.11) tier = "elite"; else tier = "normal";
+        }
+
+        let hpMul = 1, atkMul = 1;
+        let namePrefix = "";
+        if (tier === "elite") { hpMul = 2; atkMul = 1.5; namePrefix = "菁英 "; }
+        else if (tier === "boss") { hpMul = 3; atkMul = 2; namePrefix = "首領 "; }
+
+        GameState.currentEnemy = {
+            ...baseMonster,
+            name: namePrefix + baseMonster.name,
+            maxHp: Math.floor(baseMonster.hp * hpMul),
+            hp: Math.floor(baseMonster.hp * hpMul),
+            atk: Math.floor(baseMonster.atk * atkMul),
+            tier: tier
+        };
+
+        let iconClass = "monster-icon";
+        if(tier === "elite") iconClass += " monster-elite";
+        if(tier === "boss") iconClass += " monster-boss";
+
+        document.getElementById('event-icon').className = iconClass;
+        this.triggerAnim('event-icon', 'anim-spawn');
         
-        function tryToFlee() {
-            if (!gameState.inBattle) return;
-            
-            if (Math.random() < 0.5) {
-                // 逃跑成功
-                addToLog(`你成功地從 ${gameState.currentMonster.name} 身邊逃脫了！`);
-                gameState.inBattle = false;
-                gameState.currentMonster = null;
-                
-                elements.eventArea.innerHTML = `
-                    <div class="text-center py-10 fade-in">
-                        <h2 class="text-2xl font-bold mb-4">逃跑成功</h2>
-                        <p class="mb-6 text-slate-300">你成功地逃離了戰鬥</p>
-                        <button id="continue-btn" class="btn bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg">
-                            繼續冒險
-                        </button>
-                    </div>
-                `;
-                
-                document.getElementById('continue-btn').addEventListener('click', startNextEvent);
-            } else {
-                // 逃跑失敗
-                const damage = gameState.currentMonster.attack;
-                gameState.player.hp -= damage;
-                
-                addToLog(`逃跑失敗！${gameState.currentMonster.name} 對你造成了 ${damage} 點傷害。`);
-                
-                // 檢查玩家是否死亡
-                if (gameState.player.hp <= 0) {
-                    playerDied();
+        this.renderEvent(`⚔️ 遭遇 ${GameState.currentEnemy.name}`, 
+            `HP: ${GameState.currentEnemy.hp} | 攻擊: ${GameState.currentEnemy.atk}`, 
+            "準備戰鬥！", GameState.currentEnemy.icon);
+        
+        this.setButtons("戰鬥", "combatRound", "逃跑", "flee", false);
+    },
+
+    combatRound() {
+        if (GameState.phase !== "combat") return;
+        const enemy = GameState.currentEnemy;
+        let logHtml = "";
+
+        // 1. 玩家攻擊
+        let pDmg = this.getAtk();
+        let pCritRate = 0.05;
+        
+        if (Player.buff) {
+            if (Player.buff.id === 'angel_courage') pCritRate = 0.2;
+            if (Player.buff.id === 'demon_enhance') pCritRate = 0.5;
+            if (Player.buff.id === 'demon_wealth') {
+                Player.gold += 5;
+                this.showFloatingText("+5 G", "gold");
+                logHtml += `<span class='demon-text'>[惡魔財富]</span> 獲得 5 G<br>`;
+            }
+            if (Player.buff.id === 'demon_destruction') {
+                if (Math.random() < 0.1) {
+                    enemy.hp = 0;
+                    let pain = Math.floor(Player.hp * 0.9);
+                    Player.hp -= pain;
+                    this.showFloatingText(`-${pain} HP`, "darkred");
+                    logHtml += `<span class='demon-text'>[惡魔破壞]</span> 觸發秒殺！自身扣除 ${pain} HP。<br>`;
+                    this.combatWin(); 
+                    this.updateUI();
                     return;
                 }
-                
-                updatePlayerStats();
-                renderBattleScreen();
             }
         }
-        
-        function monsterDefeated() {
-            const monster = gameState.currentMonster;
-            gameState.inBattle = false;
-            
-            addToLog(`你擊敗了 ${monster.name}！`);
-            
-            // 獲得戰利品
-            const loot = [];
-            
-            // 基本戰利品
-            monster.loot.forEach(item => {
-                if (Math.random() < item.chance) {
-                    loot.push({...item});
-                }
-            });
-            
-            // 菁英或首領戰利品
-            if (monster.type === "elite" || monster.type === "boss") {
-                monster.eliteLoot.forEach(item => {
-                    if (Math.random() < item.chance) {
-                        loot.push({...item});
-                    }
-                });
-            }
-            
-            // 首領特殊戰利品
-            if (monster.type === "boss") {
-                monster.bossLoot.forEach(item => {
-                    if (Math.random() < item.chance) {
-                        loot.push({...item});
-                    }
-                });
-            }
-            
-            // 隨機金幣獎勵 (進一步減少金幣掉落量)
-            const goldReward = Math.floor(Math.random() * (monster.hp / 4)) + 2;
-            gameState.player.gold += goldReward;
-            
-            // 顯示戰利品畫面
-            elements.eventArea.innerHTML = `
-                <div class="text-center py-6 fade-in">
-                    <h2 class="text-2xl font-bold mb-2">戰鬥勝利！</h2>
-                    <p class="mb-4 text-slate-300">你擊敗了 ${monster.name}</p>
-                    
-                    <div class="mb-4">
-                        <p class="text-amber-400">獲得 ${goldReward} 金幣</p>
-                    </div>
-                    
-                    ${loot.length > 0 ? `
-                        <div class="mb-6">
-                            <h3 class="font-bold mb-2">獲得戰利品：</h3>
-                            <div class="flex flex-wrap justify-center gap-2">
-                                ${loot.map(item => `
-                                    <div class="item rarity-${item.rarity} p-2 rounded-lg text-center">
-                                        <p class="font-bold">${item.name}</p>
-                                        <p class="text-sm">${item.value} 金幣</p>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    ` : `
-                        <p class="mb-6 text-slate-400">沒有獲得任何戰利品</p>
-                    `}
-                    
-                    <button id="continue-btn" class="btn bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg">
-                        繼續冒險
-                    </button>
-                </div>
-            `;
-            
-            // 將戰利品加入背包
-            loot.forEach(item => {
-                gameState.player.inventory.push(item);
-                addToLog(`獲得了 ${item.name}！`);
-            });
-            
-            updatePlayerStats();
-            document.getElementById('continue-btn').addEventListener('click', startNextEvent);
-        }
-        
-        function healingEvent() {
-            const healAmount = 20;
-            const oldHp = gameState.player.hp;
-            
-            gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + healAmount);
-            const actualHeal = gameState.player.hp - oldHp;
-            
-            elements.eventArea.innerHTML = `
-                <div class="text-center py-10 fade-in">
-                    <h2 class="text-2xl font-bold mb-4">發現治療泉水</h2>
-                    <p class="mb-2 text-slate-300">你發現了一處神奇的泉水，喝了一口感覺精神煥發！</p>
-                    <p class="text-green-400 mb-6">恢復了 ${actualHeal} 點生命值</p>
-                    <button id="continue-btn" class="btn bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg">
-                        繼續冒險
-                    </button>
-                </div>
-            `;
-            
-            addToLog(`發現治療泉水，恢復了 ${actualHeal} 點生命值！`);
-            updatePlayerStats();
-            
-            document.getElementById('continue-btn').addEventListener('click', startNextEvent);
-        }
-        
-        // 生成商人商品
-        function generateMerchantInventory() {
-            // 只有在商人商品為空或者是新的商人時才生成新商品
-            if (gameState.merchantInventory === null) {
-                const merchantItems = [];
-                
-                // 隨機選擇 4 個商品
-                const allItems = [
-                    ...equipment.weapons,
-                    ...equipment.armors,
-                    ...consumables
-                ];
-                
-                // 根據稀有度排序
-                const rarityOrder = { "white": 0, "green": 1, "blue": 2, "purple": 3, "gold": 4 };
-                
-                // 隨機選擇商品，但稀有度越高越少見
-                for (let i = 0; i < 4; i++) {
-                    const rarityRoll = Math.random();
-                    let targetRarity;
-                    
-                    if (rarityRoll < 0.4) targetRarity = "white";
-                    else if (rarityRoll < 0.7) targetRarity = "green";
-                    else if (rarityRoll < 0.9) targetRarity = "blue";
-                    else if (rarityRoll < 0.98) targetRarity = "purple";
-                    else targetRarity = "gold";
-                    
-                    // 過濾符合稀有度的物品
-                    const eligibleItems = allItems.filter(item => 
-                        item.rarity === targetRarity || !item.rarity
-                    );
-                    
-                    if (eligibleItems.length > 0) {
-                        const randomItem = eligibleItems[Math.floor(Math.random() * eligibleItems.length)];
-                        merchantItems.push({...randomItem});
-                    } else {
-                        // 如果沒有符合稀有度的物品，就選擇一般物品
-                        const randomItem = allItems.filter(item => item.rarity === "white" || !item.rarity);
-                        if (randomItem.length > 0) {
-                            merchantItems.push({...randomItem[Math.floor(Math.random() * randomItem.length)]});
-                        }
-                    }
-                }
-                
-                gameState.merchantInventory = merchantItems;
-            }
-        }
-        
-        function merchantEvent() {
-            const merchantItems = gameState.merchantInventory;
-            
-            elements.eventArea.innerHTML = `
-                <div class="py-6 fade-in">
-                    <h2 class="text-2xl font-bold mb-4 text-center">遇到商人</h2>
-                    <p class="mb-6 text-slate-300 text-center">一位神秘的商人向你展示了他的商品</p>
-                    
-                    <div class="mb-6">
-                        <h3 class="font-bold mb-2 text-center">商品列表：</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            ${merchantItems.map((item, index) => `
-                                <div class="item ${item.rarity ? 'rarity-' + item.rarity : ''} p-3 rounded-lg">
-                                    <div class="flex justify-between items-center">
-                                        <div>
-                                            <p class="font-bold">${item.name}</p>
-                                            ${item.attack ? `<p class="text-sm">攻擊力 +${item.attack}</p>` : ''}
-                                            ${item.hp ? `<p class="text-sm">生命值 +${item.hp}</p>` : ''}
-                                            ${item.effect ? `<p class="text-sm">${item.effect}</p>` : ''}
-                                        </div>
-                                        <div class="text-right">
-                                            <p class="text-amber-400">${item.value} 金幣</p>
-                                            <button class="buy-btn mt-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-sm" 
-                                                data-index="${index}" ${gameState.player.gold < item.value ? 'disabled' : ''}>
-                                                ${gameState.player.gold < item.value ? '金幣不足' : '購買'}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                    
-                    <div class="mb-6">
-                        <h3 class="font-bold mb-2 text-center">出售物品：</h3>
-                        <button id="sell-btn" class="block mx-auto bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg">
-                            出售物品
-                        </button>
-                    </div>
-                    
-                    <div class="text-center">
-                        <button id="leave-btn" class="btn bg-slate-600 hover:bg-slate-700 text-white font-bold py-2 px-6 rounded-lg">
-                            離開商人
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            // 添加購買事件
-            document.querySelectorAll('.buy-btn').forEach(btn => {
-                if (!btn.disabled) {
-                    btn.addEventListener('click', () => {
-                        const index = parseInt(btn.getAttribute('data-index'));
-                        buyItem(index);
-                    });
-                }
-            });
-            
-            // 添加出售事件
-            document.getElementById('sell-btn').addEventListener('click', () => {
-                showSellMenu();
-            });
-            
-            // 添加離開事件
-            document.getElementById('leave-btn').addEventListener('click', () => {
-                // 離開商人時清空商人商品，下次遇到商人時重新生成
-                gameState.merchantInventory = null;
-                startNextEvent();
-            });
-            
-            addToLog(`你遇到了一位商人。`);
-        }
-        
-        function buyItem(index) {
-            const item = gameState.merchantInventory[index];
-            
-            if (gameState.player.gold < item.value) {
-                addToLog(`你沒有足夠的金幣購買 ${item.name}。`);
-                return;
-            }
-            
-            gameState.player.gold -= item.value;
-            
-            if (item.attack) {
-                // 武器
-                gameState.player.inventory.push({...item, type: "weapon"});
-                addToLog(`你購買了 ${item.name}。`);
-            } else if (item.hp && !item.effect) {
-                // 防具
-                gameState.player.inventory.push({...item, type: "armor"});
-                addToLog(`你購買了 ${item.name}。`);
-            } else {
-                // 消耗品
-                gameState.player.inventory.push({...item, type: "consumable"});
-                addToLog(`你購買了 ${item.name}。`);
-            }
-            
-            // 從商人庫存中移除已購買的物品
-            gameState.merchantInventory.splice(index, 1);
-            
-            updatePlayerStats();
-            merchantEvent(); // 重新渲染商人畫面，但保持相同的商品
-        }
-        
-        function showSellMenu() {
-            // 檢查背包是否為空
-            if (gameState.player.inventory.length === 0) {
-                addToLog("你的背包是空的，沒有東西可以賣。");
-                return;
-            }
-            
-            elements.eventArea.innerHTML = `
-                <div class="py-6 fade-in">
-                    <h2 class="text-2xl font-bold mb-4 text-center">出售物品</h2>
-                    <p class="mb-6 text-slate-300 text-center">選擇要出售的物品</p>
-                    
-                    <div class="mb-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            ${gameState.player.inventory.map((item, index) => `
-                                <div class="item ${item.rarity ? 'rarity-' + item.rarity : ''} p-3 rounded-lg">
-                                    <div class="flex justify-between items-center">
-                                        <div>
-                                            <p class="font-bold">${item.name}</p>
-                                            ${item.attack ? `<p class="text-sm">攻擊力 +${item.attack}</p>` : ''}
-                                            ${item.hp && !item.effect ? `<p class="text-sm">生命值 +${item.hp}</p>` : ''}
-                                            ${item.effect ? `<p class="text-sm">${item.effect}</p>` : ''}
-                                        </div>
-                                        <div class="text-right">
-                                            <p class="text-amber-400">${Math.floor(item.value / 2)} 金幣</p>
-                                            <button class="sell-btn mt-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-sm" 
-                                                data-index="${index}">
-                                                出售
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                    
-                    <div class="text-center">
-                        <button id="back-btn" class="btn bg-slate-600 hover:bg-slate-700 text-white font-bold py-2 px-6 rounded-lg">
-                            返回
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            // 添加出售事件
-            document.querySelectorAll('.sell-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const index = parseInt(btn.getAttribute('data-index'));
-                    sellItem(index);
-                });
-            });
-            
-            // 添加返回事件
-            document.getElementById('back-btn').addEventListener('click', () => {
-                // 返回商人畫面，但不重新生成商品
-                merchantEvent();
-            });
-        }
-        
-        function sellItem(index) {
-            const item = gameState.player.inventory[index];
-            const sellPrice = Math.floor(item.value / 2);
-            
-            gameState.player.gold += sellPrice;
-            gameState.player.inventory.splice(index, 1);
-            
-            addToLog(`你出售了 ${item.name}，獲得 ${sellPrice} 金幣。`);
-            updatePlayerStats();
-            
-            // 檢查背包是否為空，如果為空則返回商人畫面
-            if (gameState.player.inventory.length === 0) {
-                addToLog("背包已空，返回商人畫面。");
-                merchantEvent();
-            } else {
-                // 否則重新渲染出售畫面
-                showSellMenu();
-            }
-        }
-        
-        function treasureEvent() {
-            const treasureTypes = [
-                { type: "gold", chance: 0.4 },
-                { type: "equipment", chance: 0.3 },
-                { type: "consumable", chance: 0.2 },
-                { type: "empty", chance: 0.05 },
-                { type: "trap", chance: 0.05 }
-            ];
-            
-            let totalChance = 0;
-            for (const type of treasureTypes) {
-                totalChance += type.chance;
-            }
-            
-            const roll = Math.random() * totalChance;
-            let accumulatedChance = 0;
-            let selectedType = treasureTypes[0].type;
-            
-            for (const type of treasureTypes) {
-                accumulatedChance += type.chance;
-                if (roll <= accumulatedChance) {
-                    selectedType = type.type;
-                    break;
-                }
-            }
-            
-            elements.eventArea.innerHTML = `
-                <div class="text-center py-10 fade-in">
-                    <h2 class="text-2xl font-bold mb-4">發現寶箱</h2>
-                    <p class="mb-6 text-slate-300">你發現了一個神秘的寶箱</p>
-                    <button id="open-btn" class="btn bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg">
-                        打開寶箱
-                    </button>
-                </div>
-            `;
-            
-            document.getElementById('open-btn').addEventListener('click', () => {
-                openTreasure(selectedType);
-            });
-            
-            addToLog(`你發現了一個寶箱。`);
-        }
-        
-        function openTreasure(type) {
-            let content = '';
-            
-            switch (type) {
-                case "gold":
-                    const goldAmount = Math.floor(Math.random() * 50) + 10;
-                    gameState.player.gold += goldAmount;
-                    
-                    content = `
-                        <h2 class="text-2xl font-bold mb-4">金幣寶箱</h2>
-                        <p class="mb-2 text-slate-300">寶箱裡裝滿了閃閃發光的金幣！</p>
-                        <p class="text-amber-400 mb-6">獲得 ${goldAmount} 金幣</p>
-                    `;
-                    
-                    addToLog(`你從寶箱中獲得了 ${goldAmount} 金幣。`);
-                    break;
-                    
-                case "equipment":
-                    // 隨機選擇武器或防具
-                    const isWeapon = Math.random() < 0.5;
-                    const rarityRoll = Math.random();
-                    let rarity;
-                    
-                    if (rarityRoll < 0.5) rarity = "white";
-                    else if (rarityRoll < 0.8) rarity = "green";
-                    else if (rarityRoll < 0.95) rarity = "blue";
-                    else if (rarityRoll < 0.99) rarity = "purple";
-                    else rarity = "gold";
-                    
-                    const equipmentList = isWeapon ? equipment.weapons : equipment.armors;
-                    const eligibleEquipment = equipmentList.filter(item => item.rarity === rarity);
-                    
-                    if (eligibleEquipment.length > 0) {
-                        const randomEquipment = {...eligibleEquipment[Math.floor(Math.random() * eligibleEquipment.length)]};
-                        randomEquipment.type = isWeapon ? "weapon" : "armor";
-                        
-                        gameState.player.inventory.push(randomEquipment);
-                        
-                        content = `
-                            <h2 class="text-2xl font-bold mb-4">裝備寶箱</h2>
-                            <p class="mb-2 text-slate-300">寶箱裡有一件閃閃發光的裝備！</p>
-                            <div class="item rarity-${randomEquipment.rarity} p-3 rounded-lg inline-block mb-6">
-                                <p class="font-bold">${randomEquipment.name}</p>
-                                ${isWeapon ? `<p>攻擊力 +${randomEquipment.attack}</p>` : `<p>生命值 +${randomEquipment.hp}</p>`}
-                            </div>
-                        `;
-                        
-                        addToLog(`你從寶箱中獲得了 ${randomEquipment.name}。`);
-                    } else {
-                        // 如果沒有符合稀有度的裝備，給予金幣
-                        const goldAmount = Math.floor(Math.random() * 30) + 10;
-                        gameState.player.gold += goldAmount;
-                        
-                        content = `
-                            <h2 class="text-2xl font-bold mb-4">金幣寶箱</h2>
-                            <p class="mb-2 text-slate-300">寶箱裡裝滿了閃閃發光的金幣！</p>
-                            <p class="text-amber-400 mb-6">獲得 ${goldAmount} 金幣</p>
-                        `;
-                        
-                        addToLog(`你從寶箱中獲得了 ${goldAmount} 金幣。`);
-                    }
-                    break;
-                    
-                case "consumable":
-                    const randomConsumable = {...consumables[Math.floor(Math.random() * consumables.length)]};
-                    randomConsumable.type = "consumable";
-                    
-                    gameState.player.inventory.push(randomConsumable);
-                    
-                    content = `
-                        <h2 class="text-2xl font-bold mb-4">藥水寶箱</h2>
-                        <p class="mb-2 text-slate-300">寶箱裡有一瓶閃閃發光的藥水！</p>
-                        <div class="p-3 rounded-lg inline-block mb-6 bg-green-900 border border-green-500">
-                            <p class="font-bold">${randomConsumable.name}</p>
-                            <p>${randomConsumable.effect}</p>
-                        </div>
-                    `;
-                    
-                    addToLog(`你從寶箱中獲得了 ${randomConsumable.name}。`);
-                    break;
-                    
-                case "empty":
-                    content = `
-                        <h2 class="text-2xl font-bold mb-4">空寶箱</h2>
-                        <p class="mb-6 text-slate-300">寶箱是空的...看來有人比你先到這裡了。</p>
-                    `;
-                    
-                    addToLog(`你打開了寶箱，但裡面什麼都沒有。`);
-                    break;
-                    
-                case "trap":
-                    const trapDamage = Math.floor(Math.random() * 15) + 5;
-                    gameState.player.hp -= trapDamage;
-                    
-                    content = `
-                        <h2 class="text-2xl font-bold mb-4">陷阱寶箱</h2>
-                        <p class="mb-2 text-slate-300">當你打開寶箱時，一個機關觸發了！</p>
-                        <p class="text-red-500 mb-6">你受到了 ${trapDamage} 點傷害</p>
-                    `;
-                    
-                    addToLog(`你打開寶箱時觸發了陷阱，受到 ${trapDamage} 點傷害。`);
-                    
-                    // 檢查玩家是否死亡
-                    if (gameState.player.hp <= 0) {
-                        playerDied();
-                        return;
-                    }
-                    break;
-            }
-            
-            elements.eventArea.innerHTML = `
-                <div class="text-center py-10 fade-in">
-                    ${content}
-                    <button id="continue-btn" class="btn bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg">
-                        繼續冒險
-                    </button>
-                </div>
-            `;
-            
-            updatePlayerStats();
-            document.getElementById('continue-btn').addEventListener('click', startNextEvent);
-        }
-        
-        function playerDied() {
-            gameState.gameOver = true;
-            
-            elements.eventArea.innerHTML = `
-                <div class="text-center py-10 fade-in">
-                    <h2 class="text-3xl font-bold mb-4 text-red-500">你死了！</h2>
-                    <p class="mb-2 text-slate-300">你的冒險到此結束...</p>
-                    <p class="mb-6">探索深度: ${gameState.player.depth}</p>
-                    <button id="restart-btn" class="btn bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg">
-                        重新開始冒險
-                    </button>
-                </div>
-            `;
-            
-            addToLog(`你死了！探索深度: ${gameState.player.depth}`);
-            document.getElementById('restart-btn').addEventListener('click', resetGame);
-        }
-        
-        function resetGame() {
-            gameState.player = {
-                maxHp: 100,
-                hp: 100,
-                attack: 5,
-                gold: 0,
-                depth: 0,
-                equipment: {
-                    weapon: null,
-                    armor: null
-                },
-                inventory: []
-            };
-            
-            gameState.currentEvent = null;
-            gameState.currentMonster = null;
-            gameState.inBattle = false;
-            gameState.gameOver = false;
-            gameState.merchantInventory = null;
-            
-            updatePlayerStats();
-            
-            elements.eventArea.innerHTML = `
-                <div class="text-center py-10">
-                    <h2 class="text-2xl font-bold mb-4">準備開始冒險</h2>
-                    <p class="mb-6 text-slate-300">點擊下方按鈕開始你的旅程</p>
-                    <button id="start-btn" class="btn bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg">
-                        開始冒險
-                    </button>
-                </div>
-            `;
-            
-            addToLog(`開始新的冒險！`);
-            document.getElementById('start-btn').addEventListener('click', startNextEvent);
-        }
-        
-        function updatePlayerStats() {
-            const player = gameState.player;
-            
-            elements.hpText.textContent = `${player.hp}/${player.maxHp}`;
-            elements.hpBar.style.width = `${(player.hp / player.maxHp) * 100}%`;
-            elements.attack.textContent = player.attack;
-            elements.gold.textContent = player.gold;
-            elements.depth.textContent = player.depth;
-            
-            elements.weapon.textContent = player.equipment.weapon ? player.equipment.weapon.name : "無";
-            elements.armor.textContent = player.equipment.armor ? player.equipment.armor.name : "無";
-            
-            renderInventory();
-        }
-        
-        function renderInventory() {
-            if (gameState.player.inventory.length === 0) {
-                elements.inventoryItems.innerHTML = `
-                    <div class="text-center text-slate-400 col-span-full py-4">
-                        背包是空的
-                    </div>
-                `;
-                return;
-            }
-            
-            elements.inventoryItems.innerHTML = gameState.player.inventory.map((item, index) => `
-                <div class="item ${item.rarity ? 'rarity-' + item.rarity : ''} p-2 rounded-lg">
-                    <p class="font-bold">${item.name}</p>
-                    ${item.attack ? `<p class="text-sm">攻擊力 +${item.attack}</p>` : ''}
-                    ${item.hp && !item.effect ? `<p class="text-sm">生命值 +${item.hp}</p>` : ''}
-                    ${item.effect ? `<p class="text-sm">${item.effect}</p>` : ''}
-                    <div class="flex justify-between mt-2">
-                        <span class="text-amber-400 text-sm">${item.value} 金幣</span>
-                        ${item.type === "weapon" ? `
-                            <button class="equip-btn bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs" data-index="${index}" data-type="weapon">
-                                裝備
-                            </button>
-                        ` : item.type === "armor" ? `
-                            <button class="equip-btn bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs" data-index="${index}" data-type="armor">
-                                裝備
-                            </button>
-                        ` : item.type === "consumable" ? `
-                            <button class="use-btn bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs" data-index="${index}">
-                                使用
-                            </button>
-                        ` : ''}
-                    </div>
-                </div>
-            `).join('');
-            
-            // 添加裝備事件
-            document.querySelectorAll('.equip-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const index = parseInt(btn.getAttribute('data-index'));
-                    const type = btn.getAttribute('data-type');
-                    equipItem(index, type);
-                });
-            });
-            
-            // 添加使用事件
-            document.querySelectorAll('.use-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const index = parseInt(btn.getAttribute('data-index'));
-                    useItem(index);
-                });
-            });
-        }
-        
-        function equipItem(index, type) {
-            const item = gameState.player.inventory[index];
-            
-            if (type === "weapon") {
-                // 如果已經有裝備武器，先卸下
-                if (gameState.player.equipment.weapon) {
-                    gameState.player.attack -= gameState.player.equipment.weapon.attack;
-                    gameState.player.inventory.push(gameState.player.equipment.weapon);
-                }
-                
-                // 裝備新武器
-                gameState.player.equipment.weapon = item;
-                gameState.player.attack += item.attack;
-                gameState.player.inventory.splice(index, 1);
-                
-                addToLog(`你裝備了 ${item.name}。`);
-            } else if (type === "armor") {
-                // 如果已經有裝備防具，先卸下
-                if (gameState.player.equipment.armor) {
-                    gameState.player.maxHp -= gameState.player.equipment.armor.hp;
-                    // 修正：當卸下防具時，確保當前HP不會超過新的最大HP
-                    gameState.player.hp = Math.min(gameState.player.hp, gameState.player.maxHp);
-                    gameState.player.inventory.push(gameState.player.equipment.armor);
-                }
-                
-                // 裝備新防具
-                gameState.player.equipment.armor = item;
-                gameState.player.maxHp += item.hp;
-                // 不再增加當前HP，只增加最大HP
-                gameState.player.inventory.splice(index, 1);
-                
-                addToLog(`你裝備了 ${item.name}。`);
-            }
-            
-            updatePlayerStats();
-        }
-        
-        function useItem(index) {
-            const item = gameState.player.inventory[index];
-            
-            if (item.hp) {
-                // 使用治療藥水
-                const oldHp = gameState.player.hp;
-                gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + item.hp);
-                const healAmount = gameState.player.hp - oldHp;
-                
-                gameState.player.inventory.splice(index, 1);
-                
-                addToLog(`你使用了 ${item.name}，恢復了 ${healAmount} 點生命值。`);
-                updatePlayerStats();
-            }
-        }
-        
-        function toggleInventory() {
-            const inventory = document.getElementById('inventory');
-            inventory.classList.toggle('hidden');
-        }
-        
-        function addToLog(message) {
-            const logEntry = document.createElement('div');
-            logEntry.className = 'log-entry mb-1';
-            logEntry.innerHTML = message;
-            elements.gameLog.appendChild(logEntry);
-            elements.gameLog.scrollTop = elements.gameLog.scrollHeight;
-        }
-        
-        function clearGameLog() {
-            elements.gameLog.innerHTML = '<div class="log-entry">日誌已清空。</div>';
-        }
-        
-        // 查看程式碼功能
-        function showCodeModal() {
-            // 獲取當前頁面的完整程式碼
-            const fullCode = document.documentElement.outerHTML;
-            
-            // 顯示在模態框中
-            elements.codeBody.textContent = fullCode;
-            elements.codeModal.classList.add('active');
-        }
-        
-        function hideCodeModal() {
-            elements.codeModal.classList.remove('active');
-        }
-        
-        // 初始化遊戲
-        updatePlayerStats();
-    </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'941083eaa4baf1f8',t:'MTc0NzQ1NzY1MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><iframe height="1" width="1" style="position: absolute; top: 0px; left: 0px; border: none; visibility: hidden;"></iframe>
 
-</body></html>
+        let pCrit = Math.random() < pCritRate;
+        if (pCrit) pDmg *= 2;
+        
+        enemy.hp -= pDmg;
+        
+        this.triggerAnim('event-icon', 'anim-damage');
+        this.showFloatingText(pDmg, pCrit ? "red" : "white");
+        
+        logHtml += `你對 ${enemy.name} 造成 ${pCrit ? "<span class='crit-text'>爆擊 " : ""}${pDmg}${pCrit ? "</span>" : ""} 點傷害。<br>`;
+
+        if (enemy.hp <= 0) {
+            this.combatWin();
+            return;
+        }
+
+        // 2. 怪物攻擊
+        let mDmg = enemy.atk;
+        let mCritRate = 0.1;
+        if (Player.buff && Player.buff.id === 'demon_enhance') mCritRate = 0.5;
+        if (Player.buff && Player.buff.id === 'angel_protection') mDmg = Math.floor(mDmg * 0.7);
+
+        let mCrit = Math.random() < mCritRate;
+        if (mCrit) mDmg *= 2;
+
+        let applyDamage = true;
+        let s = Player.equipment.shield;
+
+        this.triggerAnim('event-icon', 'anim-lunge');
+
+        if (s && s.val > 0) {
+            if (mCrit && s.name !== "埃癸斯之盾") {
+                logHtml += `<span class='pierce-text'>⚡ 致命一擊貫穿了盾牌！</span><br>`;
+            } else {
+                applyDamage = false;
+                s.val--;
+                this.showFloatingText("格擋!", "#2196f3");
+                logHtml += `<span class='block-text'>🛡️ 盾牌抵擋了攻擊！</span> (剩餘耐久: ${s.val})<br>`;
+                if (s.val <= 0) {
+                    logHtml += `<span class='damage-text'>💔 你的 ${s.name} 碎裂了！</span><br>`;
+                    Player.equipment.shield = null;
+                    this.recalcStats(); 
+                }
+            }
+        }
+
+        if (applyDamage) {
+            Player.hp -= mDmg;
+            this.triggerAnim('game-container', 'anim-screen-shake');
+            this.showFloatingText(`-${mDmg}`, "red");
+            logHtml += `${enemy.name} 攻擊！造成 ${mCrit ? "<span class='crit-text'>致命 " : ""}${mDmg}${mCrit ? "</span>" : ""} 點傷害。`;
+        }
+        
+        this.renderEvent(`⚔️ 戰鬥中 - ${enemy.name}`, 
+            `敵方 HP: ${Math.max(0, enemy.hp)}`, 
+            logHtml, enemy.icon);
+
+        if (Player.hp <= 0) {
+            this.playerDie();
+        } else {
+            this.updateUI();
+        }
+    },
+
+    combatWin() {
+        const enemy = GameState.currentEnemy;
+        GameState.phase = "event_end";
+        let drops = [];
+        let dropText = "";
+
+        let gold = Math.floor(Math.random() * 20) + (Player.depth);
+        if (enemy.tier === "elite") gold *= 2;
+        if (enemy.tier === "boss") gold *= 5;
+        Player.gold += gold;
+        this.showFloatingText(`+${gold} G`, "#ffd700");
+        dropText += `金幣 +${gold} <br>`;
+
+        if (Math.random() < 0.7) {
+            // 使用新的戰利品資料庫生成掉落
+            if (CONFIG.lootData[enemy.drop]) {
+                let loot = { ...CONFIG.lootData[enemy.drop], name: enemy.drop, type: "loot" };
+                drops.push(loot);
+            }
+        }
+
+        if (enemy.tier === "elite" || enemy.tier === "boss") {
+            if (Math.random() < 0.3 && CONFIG.lootData[enemy.eliteDrop]) {
+                let loot = { ...CONFIG.lootData[enemy.eliteDrop], name: enemy.eliteDrop, type: "loot" };
+                drops.push(loot);
+            }
+        }
+        if (enemy.tier === "boss") {
+            if (Math.random() < 0.1 && CONFIG.lootData[enemy.bossDrop]) {
+                let loot = { ...CONFIG.lootData[enemy.bossDrop], name: enemy.bossDrop, type: "loot" };
+                drops.push(loot);
+            }
+        }
+
+        // 裝備掉落率: 10%
+        if (Math.random() < 0.1) {
+            drops.push(this.generateRandomItem(enemy.tier));
+        }
+
+        drops.forEach(item => {
+            this.addToBackpack(item);
+            const colorClass = CONFIG.rarityDisplay[item.rarity].color;
+            dropText += `獲得 <span class='${colorClass}'>${item.name}</span><br>`;
+        });
+
+        this.renderEvent("🏆 戰鬥勝利", "你擊敗了敵人！", dropText || "沒有掉落任何物品。", "🎉");
+        document.getElementById('event-icon').className = "monster-icon"; 
+        this.setButtons("繼續", "nextEvent", "無", null, true);
+        this.updateUI();
+    },
+
+    flee() {
+        let fleeRate = 0.5;
+        if (Player.buff) {
+            if (Player.buff.id === 'angel_wings') fleeRate = 0.6;
+            if (Player.buff.id === 'demon_wager') {
+                fleeRate = 0.8;
+                if (Math.random() < 0.01) {
+                    Player.hp = 0;
+                    this.log("[惡魔賭約] 逃跑時代價觸發，死亡。");
+                    this.playerDie();
+                    return;
+                }
+            }
+        }
+
+        if (Math.random() < fleeRate) {
+            GameState.phase = "event_end";
+            this.renderEvent("💨 逃跑成功", "你成功甩掉了怪物。", "", "🏃");
+            document.getElementById('event-icon').className = "monster-icon";
+            this.setButtons("繼續", "nextEvent", "無", null, true);
+        } else {
+            const enemy = GameState.currentEnemy;
+            let mDmg = enemy.atk;
+            let msg = "";
+            let s = Player.equipment.shield;
+            
+            this.triggerAnim('event-icon', 'anim-lunge');
+
+            if (s && s.val > 0) {
+                s.val--;
+                this.showFloatingText("格擋!", "#2196f3");
+                msg = `逃跑失敗！但<span class='block-text'>盾牌抵擋了追擊</span>！`;
+                if (s.val <= 0) {
+                    msg += `<br><span class='damage-text'>💔 你的 ${s.name} 碎裂了！</span>`;
+                    Player.equipment.shield = null;
+                    this.recalcStats();
+                }
+            } else {
+                Player.hp -= mDmg;
+                this.triggerAnim('game-container', 'anim-screen-shake');
+                this.showFloatingText(`-${mDmg}`, "red");
+                msg = `逃跑失敗！被 ${enemy.name} 攻擊造成 ${mDmg} 傷害。`;
+                
+                if (Player.buff && Player.buff.id === 'demon_wealth') {
+                    if (Player.gold >= 5) {
+                        Player.gold -= 5;
+                        this.showFloatingText("-5 G", "red");
+                        msg += `<br><span class='demon-text'>[惡魔財富]</span> 損失 5 G`;
+                    }
+                }
+            }
+            
+            if (Player.hp <= 0) {
+                this.playerDie();
+            } else {
+                this.renderEvent(`⚔️ ${enemy.name}`, `敵方 HP: ${enemy.hp}`, msg, enemy.icon);
+                this.updateUI();
+            }
+        }
+    },
+
+    playerDie() {
+        const featherIdx = Player.backpack.findIndex(i => i.id === 'phoenix_feather');
+        if (featherIdx !== -1) {
+            Player.backpack.splice(featherIdx, 1);
+            Player.hp = Math.floor(Player.maxHp * 0.5);
+            this.renderEvent("🔥 浴火重生", "不死鳥的羽毛發出耀眼光芒...", "你復活了！恢復 50% 生命值。", "🦅");
+            GameState.phase = "event_end";
+            document.getElementById('event-icon').className = "monster-icon";
+            this.setButtons("繼續", "nextEvent", "無", null, true);
+            this.updateUI();
+            return;
+        }
+
+        GameState.phase = "dead";
+        Player.hp = 0;
+        this.updateUI();
+        this.renderEvent("☠️ 你死了", `冒險結束。最終深度: ${Player.depth}`, "按下重新開始", "🪦");
+        this.setButtons("重新開始冒險", "restart", "無", null, true);
+    },
+
+    restart() {
+        Player.hp = 100;
+        Player.maxHp = 100;
+        Player.gold = 0;
+        Player.depth = 0;
+        Player.equipment = { weapon: null, armor: null, shield: null };
+        Player.backpack = [];
+        Player.buff = null;
+        GameState.merchantStock = [];
+        this.log("=== 新的冒險開始 ===");
+        this.nextEvent();
+    },
+
+    generateRandomItem(tierModifier = "normal") {
+        const r = Math.random();
+        let rarityKey = "common";
+        let table = CONFIG.rarityProb;
+        let acc = 0;
+        for (let key in table) {
+            acc += table[key];
+            if (r <= acc) { rarityKey = key; break; }
+        }
+
+        if (tierModifier === "boss" && (rarityKey === "common" || rarityKey === "uncommon")) rarityKey = "rare";
+        
+        const pool = CONFIG.itemPool.filter(i => i.rarity === rarityKey);
+        if (pool.length === 0) return this.generateRandomItem("normal");
+
+        const template = pool[Math.floor(Math.random() * pool.length)];
+        return { ...template };
+    },
+
+    generateSpecificItem(allowedTypes) {
+        const r = Math.random();
+        let rarityKey = "common";
+        let table = CONFIG.rarityProb;
+        let acc = 0;
+        for (let key in table) {
+            acc += table[key];
+            if (r <= acc) { rarityKey = key; break; }
+        }
+        let pool = CONFIG.itemPool.filter(i => i.rarity === rarityKey && allowedTypes.includes(i.type));
+        if (pool.length === 0) pool = CONFIG.itemPool.filter(i => allowedTypes.includes(i.type));
+        const template = pool[Math.floor(Math.random() * pool.length)];
+        return { ...template };
+    },
+
+    addToBackpack(item) {
+        Player.backpack.push(item);
+        this.updateUI();
+    },
+
+    handleItemClick(index) {
+        if (GameState.phase === "merchant") {
+            this.sellItem(index);
+            return;
+        }
+        const item = Player.backpack[index];
+        if (item.type === 'weapon' || item.type === 'armor' || item.type === 'shield') {
+            if(confirm(`要裝備 ${item.name} (${this.getItemDesc(item)}) 嗎？`)) this.equip(index);
+        } else if (item.type === 'consumable') {
+            if(confirm(`要使用 ${item.name} (${item.desc}) 嗎？`)) this.useItem(index);
+        } else {
+             alert(`${item.name}: ${item.desc || "可以用來換取金幣"}`);
+        }
+    },
+
+    equip(backpackIndex) {
+        const item = Player.backpack[backpackIndex];
+        const type = item.type;
+
+        if (Player.equipment[type]) Player.backpack.push(Player.equipment[type]);
+        Player.equipment[type] = item;
+        Player.backpack.splice(backpackIndex, 1);
+        
+        this.recalcStats();
+        this.updateUI();
+        this.log(`裝備了 ${item.name}`);
+    },
+
+    unequip(type) {
+        if (!Player.equipment[type]) return;
+        Player.backpack.push(Player.equipment[type]);
+        Player.equipment[type] = null;
+        this.recalcStats();
+        this.updateUI();
+        this.log(`卸下了 ${type === 'weapon' ? '武器' : type === 'armor' ? '防具' : '盾牌'}`);
+    },
+
+    useItem(index) {
+        const item = Player.backpack[index];
+        if (item.name.includes("藥水") || item.name.includes("藥劑")) {
+            let heal = item.val;
+            Player.hp = Math.min(Player.maxHp, Player.hp + heal);
+            Player.backpack.splice(index, 1);
+            this.showFloatingText(`+${heal} HP`, "#69f0ae");
+            this.updateUI();
+        }
+    },
+
+    log(msg) { console.log(msg); },
+
+    renderEvent(title, subtitle, content, icon) {
+        document.getElementById('event-title').innerText = title;
+        document.getElementById('event-desc').innerHTML = `<p>${subtitle}</p><p>${content}</p>`;
+        if(icon) document.getElementById('event-icon').innerText = icon;
+        if(GameState.phase !== 'merchant') document.getElementById('merchant-area').classList.add('hidden');
+    },
+
+    setButtons(mainText, mainAction, subText, subAction, disableSub) {
+        const b1 = document.getElementById('btn-main');
+        const b2 = document.getElementById('btn-sub');
+        b1.innerText = mainText;
+        b1.onclick = () => Game[mainAction]();
+        b2.innerText = subText;
+        if (subAction) b2.onclick = () => Game[subAction]();
+        b2.disabled = disableSub;
+    },
+
+    updateUI() {
+        document.getElementById('hp-val').innerText = Player.hp;
+        document.getElementById('max-hp-val').innerText = Player.maxHp;
+        document.getElementById('atk-val').innerText = this.getAtk();
+        document.getElementById('gold-val').innerText = Player.gold;
+        document.getElementById('depth-val').innerText = Player.depth;
+        
+        const buffEl = document.getElementById('buff-display');
+        if (Player.buff) {
+            const style = Player.buff.type === 'angel' ? 'angel-text' : 'demon-text';
+            buffEl.innerHTML = `狀態: <span class="${style}">${Player.buff.name}</span>`;
+        } else {
+            buffEl.innerHTML = `狀態: 無`;
+        }
+
+        const w = Player.equipment.weapon;
+        const a = Player.equipment.armor;
+        const s = Player.equipment.shield;
+        
+        const wEl = document.getElementById('slot-weapon');
+        wEl.innerHTML = w ? `<span class="${CONFIG.rarityDisplay[w.rarity].color}">${w.icon} ${w.name} (+${w.val})</span>` : "無武器";
+        wEl.className = `equip-slot ${w ? CONFIG.rarityDisplay[w.rarity].color : ''}`;
+
+        const aEl = document.getElementById('slot-armor');
+        aEl.innerHTML = a ? `<span class="${CONFIG.rarityDisplay[a.rarity].color}">${a.icon} ${a.name} (+${a.val})</span>` : "無防具";
+        aEl.className = `equip-slot ${a ? CONFIG.rarityDisplay[a.rarity].color : ''}`;
+        
+        const sEl = document.getElementById('slot-shield');
+        sEl.innerHTML = s ? `<span class="${CONFIG.rarityDisplay[s.rarity].color}">${s.icon} ${s.name} (${s.val})</span>` : "無盾牌";
+        sEl.className = `equip-slot ${s ? CONFIG.rarityDisplay[s.rarity].color : ''}`;
+
+        const list = document.getElementById('backpack-list');
+        list.innerHTML = "";
+        Player.backpack.forEach((item, idx) => {
+            const div = document.createElement('div');
+            div.className = `item ${CONFIG.rarityDisplay[item.rarity].color}`;
+            if (item.rarity === 'epic') div.classList.add('rare-epic');
+            if (item.rarity === 'legendary') div.classList.add('rare-legendary');
+            div.innerHTML = `${item.icon || '📦'} ${item.name}`;
+            div.onclick = () => this.handleItemClick(idx);
+            list.appendChild(div);
+        });
+    }
+};
+
+Game.init();
+</script>
+</body>
+</html>
