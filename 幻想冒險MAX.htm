@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>幻想冒險</title>
+    <title>幻想冒險 - 操作完美修復版</title>
     <style>
         :root {
             --bg-color: #1a1a1a;
@@ -574,13 +574,29 @@ const Game = {
         return atk;
     },
 
-    // Fixed: Recalc MaxHP but do NOT modify current HP based on percentage
+    /**
+     * @FIXED
+     * 重新計算 MaxHP 並根據比例調整 CurrentHP
+     */
     recalcStats() {
+        // 1. 儲存當前血量比例
+        const currentRatio = Player.maxHp > 0 ? Player.hp / Player.maxHp : 1; 
+
+        // 2. 計算新的 MaxHP
         let bonusHp = Player.equipment.armor ? Player.equipment.armor.val : 0;
-        Player.maxHp = 100 + bonusHp;
+        const newMaxHp = 100 + bonusHp; 
         
-        // Only clamp if HP > new Max
-        if (Player.hp > Player.maxHp) Player.hp = Player.maxHp;
+        // 3. 應用新的 MaxHP
+        Player.maxHp = newMaxHp;
+
+        // 4. 根據舊比例計算新的 CurrentHP
+        let newHp = Math.round(currentRatio * Player.maxHp);
+        
+        // 5. 確保 CurrentHP 不超過 MaxHP
+        Player.hp = Math.min(newHp, Player.maxHp);
+        
+        // 6. 確保 CurrentHP 不為負
+        if (Player.hp < 0) Player.hp = 0;
         
         this.updateStatsUI();
     },
@@ -757,7 +773,7 @@ const Game = {
             if (r < 0.1) rarity = 'legendary';
             else if (r < 0.3) rarity = 'epic';
             
-            let pool = CONFIG.itemPool.filter(i => i.rarity === rarity && ['weapon','armor','shield'].includes(i.type));
+            let pool = CONFIG.itemPool.filter(i => i.rarity === rarity && ['weapon', 'armor', 'shield'].includes(i.type));
             if (pool.length === 0) pool = CONFIG.itemPool.filter(i => i.rarity === 'rare');
             
             const item = pool[Math.floor(Math.random() * pool.length)];
@@ -1431,42 +1447,40 @@ const Game = {
         }
     },
 
+    /**
+     * @FIXED
+     * 移除手動修改 MaxHP/HP 的邏輯，完全依賴 recalcStats()。
+     */
     equip(index, category) {
         const item = Player.inventory[category][index];
         const type = item.type;
 
-        // 1. Add stats if armor
-        if (type === 'armor') {
-            Player.maxHp += item.val;
-            Player.hp += item.val;
-        }
+        if (!['weapon', 'armor', 'shield'].includes(type)) return;
 
-        // 2. Swap logic
-        // Push old item back (skip render to avoid flicker)
+        // 1. Swap logic
         if (Player.equipment[type]) this.addItemToInventory(Player.equipment[type], false);
         
         Player.equipment[type] = item;
         Player.inventory[category].splice(index, 1);
         
-        // 3. Render
-        this.recalcStats(); // Updates Stats (HP/Gold...)
-        this.updateUI();    // Updates Slots and Lists
+        // 2. Render and Recalculate Stats (handles MaxHP/HP ratio)
+        this.recalcStats();
+        this.updateUI();    
         this.log(`裝備了 ${item.name}`);
     },
 
+    /**
+     * @FIXED
+     * 移除手動修改 MaxHP/HP 的邏輯，完全依賴 recalcStats()。
+     */
     unequip(type) {
         if (!Player.equipment[type]) return;
         const item = Player.equipment[type];
         
-        // Remove stats if armor
-        if (type === 'armor') {
-            Player.maxHp -= item.val;
-            if (Player.hp > Player.maxHp) Player.hp = Player.maxHp;
-        }
-
-        this.addItemToInventory(item, false); // No render yet
+        this.addItemToInventory(item, false); 
         Player.equipment[type] = null;
         
+        // Recalculate Stats (handles MaxHP/HP ratio)
         this.recalcStats();
         this.updateUI();
         this.log(`卸下了 ${type === 'weapon' ? '武器' : type === 'armor' ? '防具' : '盾牌'}`);
