@@ -1385,7 +1385,7 @@ const Game = {
         location.reload();
     },
 
-    generateRandomItem(tierModifier = "normal") {
+generateRandomItem(tierModifier = "normal") {
         const r = Math.random();
         let rarityKey = "common";
         let table = CONFIG.rarityProb;
@@ -1401,7 +1401,9 @@ const Game = {
         if (pool.length === 0) return this.generateRandomItem("normal");
 
         const template = pool[Math.floor(Math.random() * pool.length)];
-        return { ...template };
+        
+        // 【BUG 修正點 1】使用 Object.assign 或深拷貝確保返回一個全新的、非引用的物件。
+        return Object.assign({}, template);
     },
 
     generateSpecificItem(allowedTypes) {
@@ -1416,7 +1418,9 @@ const Game = {
         let pool = CONFIG.itemPool.filter(i => i.rarity === rarityKey && allowedTypes.includes(i.type));
         if (pool.length === 0) pool = CONFIG.itemPool.filter(i => allowedTypes.includes(i.type));
         const template = pool[Math.floor(Math.random() * pool.length)];
-        return { ...template };
+        
+        // 【BUG 修正點 2】確保返回一個全新的、非引用的物件。
+        return Object.assign({}, template);
     },
 
     addItemToInventory(item, render = true) {
