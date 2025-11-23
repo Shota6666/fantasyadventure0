@@ -88,7 +88,7 @@
             margin-top: 5px;
             font-size: 0.85em;
             color: #aaa;
-            cursor: help; /* 提示可點擊 */
+            cursor: help;
             transition: 0.2s;
         }
         #buff-display:hover { background: #333; }
@@ -533,18 +533,20 @@ const Game = {
         
         if (classType === 'knight') {
             const lance = { name: "騎士長槍", type: "weapon", val: 12, rarity: "uncommon", price: 80, icon: "🔱" };
-            this.addItemToInventory(lance);
-            this.equip(0, 'equipment'); 
+            this.addItemToInventory(lance, false); // Don't render yet
+            this.equip(0, 'equipment'); // Will render
         } else if (classType === 'cultist') {
             const demonBuffs = Object.values(CONFIG.buffs).filter(b => b.type === 'demon');
             Player.buff = demonBuffs[Math.floor(Math.random() * demonBuffs.length)];
+            this.updateUI();
+        } else {
+            this.updateUI();
         }
 
         const badgeMap = { 'knight': '🛡️ 騎士', 'merchant': '💰 商販', 'thief': '🗡️ 盜賊', 'cultist': '😈 惡魔信徒' };
         document.getElementById('class-badge').innerText = badgeMap[classType];
 
         this.renderEvent("準備就緒", "你的冒險即將開始...", "祝你好運！", "✨");
-        this.updateUI();
     },
 
     triggerAnim(id, animClass) {
@@ -572,22 +574,15 @@ const Game = {
         return atk;
     },
 
-    updateStatsUI() {
-        document.getElementById('hp-val').innerText = Player.hp;
-        document.getElementById('max-hp-val').innerText = Player.maxHp;
-        document.getElementById('atk-val').innerText = this.getAtk();
-        document.getElementById('gold-val').innerText = Player.gold;
-        document.getElementById('depth-val').innerText = Player.depth;
+    // Fixed: Recalc MaxHP but do NOT modify current HP based on percentage
+    recalcStats() {
+        let bonusHp = Player.equipment.armor ? Player.equipment.armor.val : 0;
+        Player.maxHp = 100 + bonusHp;
         
-        const buffEl = document.getElementById('buff-display');
-        if (Player.buff) {
-            const style = Player.buff.type === 'angel' ? 'angel-text' : 'demon-text';
-            buffEl.innerHTML = `狀態: <span class="${style}">${Player.buff.name}</span> <span style="font-size:0.8em; cursor:pointer;">(點擊查看)</span>`;
-            buffEl.onclick = () => alert(`${Player.buff.name}\n\n${Player.buff.desc}`);
-        } else {
-            buffEl.innerHTML = `狀態: 無`;
-            buffEl.onclick = null;
-        }
+        // Only clamp if HP > new Max
+        if (Player.hp > Player.maxHp) Player.hp = Player.maxHp;
+        
+        this.updateStatsUI();
     },
 
     nextEvent() {
@@ -1226,6 +1221,7 @@ const Game = {
         let drops = [];
         let dropText = "";
 
+        // NEW GOLD LOGIC: Based purely on monster type
         let gold = enemy.baseGold;
         if (enemy.tier === "elite") gold *= 2;
         if (enemy.tier === "boss") gold *= 5;
@@ -1407,7 +1403,7 @@ const Game = {
         return { ...template };
     },
 
-    addItemToInventory(item) {
+    addItemToInventory(item, render = true) {
         Player.history.items.add(item.name);
 
         if (['weapon', 'armor', 'shield'].includes(item.type)) {
@@ -1417,7 +1413,7 @@ const Game = {
         } else {
             Player.inventory.material.push(item);
         }
-        this.updateUI();
+        if (render) this.updateUI();
     },
 
     handleItemClick(index, category) {
@@ -1439,17 +1435,22 @@ const Game = {
         const item = Player.inventory[category][index];
         const type = item.type;
 
+        // 1. Add stats if armor
         if (type === 'armor') {
             Player.maxHp += item.val;
             Player.hp += item.val;
         }
 
-        if (Player.equipment[type]) this.addItemToInventory(Player.equipment[type]);
+        // 2. Swap logic
+        // Push old item back (skip render to avoid flicker)
+        if (Player.equipment[type]) this.addItemToInventory(Player.equipment[type], false);
+        
         Player.equipment[type] = item;
         Player.inventory[category].splice(index, 1);
         
-        this.recalcStats();
-        this.updateUI();
+        // 3. Render
+        this.recalcStats(); // Updates Stats (HP/Gold...)
+        this.updateUI();    // Updates Slots and Lists
         this.log(`裝備了 ${item.name}`);
     },
 
@@ -1457,14 +1458,16 @@ const Game = {
         if (!Player.equipment[type]) return;
         const item = Player.equipment[type];
         
+        // Remove stats if armor
         if (type === 'armor') {
             Player.maxHp -= item.val;
             if (Player.hp > Player.maxHp) Player.hp = Player.maxHp;
         }
 
-        this.addItemToInventory(item);
+        this.addItemToInventory(item, false); // No render yet
         Player.equipment[type] = null;
-        this.updateStatsUI();
+        
+        this.recalcStats();
         this.updateUI();
         this.log(`卸下了 ${type === 'weapon' ? '武器' : type === 'armor' ? '防具' : '盾牌'}`);
     },
