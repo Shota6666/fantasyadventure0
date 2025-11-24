@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>幻想冒險 - 操作完美修復版</title>
+    <title>幻想冒險</title>
     <style>
         :root {
             --bg-color: #1a1a1a;
@@ -190,7 +190,7 @@
         .m-desc { font-size: 0.8em; color: #aaa; margin-top: 4px; }
 
         /* Modals */
-        #class-modal, #achieve-modal {
+        #class-modal, #achieve-modal, #compendium-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); z-index: 200;
             display: none; flex-direction: column; align-items: center; justify-content: center;
@@ -206,14 +206,28 @@
         .class-title { font-size: 1.2em; font-weight: bold; color: var(--accent-color); margin-bottom: 10px; }
         .class-desc { font-size: 0.9em; color: #ccc; }
 
-        /* Achievements */
-        .achieve-list { max-height: 70vh; overflow-y: auto; width: 90%; max-width: 600px; background: #222; padding: 20px; border-radius: 8px; border: 1px solid #444; }
+        /* Achievements & Compendium */
+        .achieve-list, .compendium-container { max-height: 70vh; overflow-y: auto; width: 90%; max-width: 600px; background: #222; padding: 20px; border-radius: 8px; border: 1px solid #444; }
         .achieve-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #333; opacity: 0.5; }
         .achieve-item.unlocked { opacity: 1; background: #2a2a2a; }
         .achieve-info { display: flex; flex-direction: column; }
         .achieve-name { font-weight: bold; font-size: 1.1em; }
         .achieve-cond { font-size: 0.8em; color: #aaa; }
         .achieve-badge { padding: 2px 6px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
+
+        .compendium-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; padding-top: 10px; }
+        .c-item { 
+            background: #333; border: 1px solid #444; border-radius: 4px; padding: 10px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            text-align: center; cursor: help; min-height: 80px; position: relative;
+        }
+        .c-item.unlocked { background: #2d2d2d; }
+        .c-item.unknown { background: #222; border-color: #333; opacity: 0.7; filter: grayscale(100%); }
+        .c-item.secret-hidden { background: #000; border-color: #000; cursor: default; }
+        
+        .c-icon { font-size: 2em; margin-bottom: 5px; }
+        .c-name { font-size: 0.75em; line-height: 1.2; word-break: break-all; }
+        .c-item.unknown .c-name { color: #666; }
 
         .hidden { display: none !important; }
     </style>
@@ -251,11 +265,23 @@
     <div class="achieve-list" id="achieve-list-content"></div>
 </div>
 
+<div id="compendium-modal">
+    <div style="width:90%; max-width:600px; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h2 style="color:white; margin:0;">📖 物品圖鑑</h2>
+        <button onclick="document.getElementById('compendium-modal').style.display='none'" style="background:#555;">關閉</button>
+    </div>
+    <div id="compendium-stats" style="color:#aaa; margin-bottom:10px;"></div>
+    <div class="compendium-container">
+        <div class="compendium-grid" id="compendium-content"></div>
+    </div>
+</div>
+
 <div id="game-container">
     <header>
         <div style="display:flex; align-items:center; gap:10px;">
             <div style="font-weight: bold; font-size: 1.2em;">⚔️ 幻想冒險</div>
             <button onclick="Game.showAchievements()" style="padding:4px 8px; font-size:0.8em;">🏆 成就</button>
+            <button onclick="Game.showCompendium()" style="padding:4px 8px; font-size:0.8em; background:#673ab7;">📖 圖鑑</button>
         </div>
         <div id="class-badge" class="class-badge"></div>
     </header>
@@ -302,19 +328,23 @@
             </div>
         </div>
     </div>
+
+    <div style="margin-top: 20px; border-top: 1px solid #444; padding-top: 15px;">
+        <button onclick="Game.manualRestart()" style="width: 100%; background: #d32f2f; opacity: 0.8;">🔄 重新開始遊戲</button>
+    </div>
 </div>
 
 <script>
 const CONFIG = {
     rarityProb: { common: 0.5, uncommon: 0.3, rare: 0.15, epic: 0.04, legendary: 0.01 },
     rarityDisplay: {
-        common: { color: "rarity-common", label: "一般" },
-        uncommon: { color: "rarity-uncommon", label: "優質" },
-        rare: { color: "rarity-rare", label: "稀有" },
-        epic: { color: "rarity-epic", label: "史詩" },
-        legendary: { color: "rarity-legendary", label: "傳說" },
-        mythic: { color: "rarity-mythic", label: "神話" },
-        ultra: { color: "rarity-ultra", label: "極傳說" }
+        common: { color: "rarity-common", label: "一般", val: 1 },
+        uncommon: { color: "rarity-uncommon", label: "優質", val: 2 },
+        rare: { color: "rarity-rare", label: "稀有", val: 3 },
+        epic: { color: "rarity-epic", label: "史詩", val: 4 },
+        legendary: { color: "rarity-legendary", label: "傳說", val: 5 },
+        mythic: { color: "rarity-mythic", label: "神話", val: 6 },
+        ultra: { color: "rarity-ultra", label: "極傳說", val: 7 }
     },
     buffs: {
         angel_song: { id: 'angel_song', name: '👼 天使的歌頌', type: 'angel', desc: '每次事件恢復 5 HP' },
@@ -442,12 +472,193 @@ const GameState = {
     phase: "select_class",
     currentEnemy: null,
     merchantStock: [],
-    log: []
+    log: [],
+    isLoading: false
 };
 
 const Game = {
     init() {
-        this.updateUI();
+        // 自動檢查存檔
+        if (localStorage.getItem('fantasy_adventure_save')) {
+            this.loadGame();
+        } else {
+            this.updateUI();
+            // 預設顯示職業選擇
+        }
+    },
+
+    // --- Save & Load System ---
+    saveGame() {
+        if (Player.hp <= 0) {
+            // 死亡時清除存檔
+            localStorage.removeItem('fantasy_adventure_save');
+            return;
+        }
+        if (!Player.class) return; // 還沒選職業不存檔
+
+        try {
+            // 準備存檔資料
+            const saveData = {
+                player: {
+                    ...Player,
+                    // 將 Set 轉換為 Array 以便轉成 JSON
+                    achievements: Array.from(Player.achievements),
+                    history: {
+                        items: Array.from(Player.history.items)
+                    }
+                },
+                gameState: GameState,
+                timestamp: new Date().toLocaleString()
+            };
+            localStorage.setItem('fantasy_adventure_save', JSON.stringify(saveData));
+            // 自動存檔不顯示提示，以免打擾遊戲體驗
+        } catch (e) {
+            console.error("Auto-save failed", e);
+        }
+    },
+
+    loadGame() {
+        const json = localStorage.getItem('fantasy_adventure_save');
+        if (!json) return; // 無存檔則不做任何事
+
+        GameState.isLoading = true; // 標記正在讀取，避免觸發 updateUI 中的存檔
+
+        try {
+            const data = JSON.parse(json);
+
+            // 1. 還原 Player 資料
+            Object.assign(Player, data.player);
+            // 將 Array 轉回 Set
+            Player.achievements = new Set(data.player.achievements);
+            Player.history.items = new Set(data.player.history.items);
+
+            // 2. 還原 GameState
+            Object.assign(GameState, data.gameState);
+
+            // 3. 還原 UI 與狀態
+            this.updateUI();
+            
+            // 隱藏職業選擇
+            document.getElementById('class-modal').style.display = 'none';
+
+            // 更新職業徽章
+            const badgeMap = { 'knight': '🛡️ 騎士', 'merchant': '💰 商販', 'thief': '🗡️ 盜賊', 'cultist': '😈 惡魔信徒' };
+            document.getElementById('class-badge').innerText = badgeMap[Player.class] || "";
+
+            // 4. 根據當前階段(Phase)還原畫面
+            if (GameState.phase === 'combat' && GameState.currentEnemy) {
+                // 如果是在戰鬥中讀檔，恢復戰鬥畫面
+                const enemy = GameState.currentEnemy;
+                this.renderEvent(`⚔️ 遭遇 ${enemy.name} (恢復)`, 
+                    `HP: ${enemy.hp} | 攻擊: ${enemy.atk}`, 
+                    "戰鬥繼續！", enemy.icon);
+                
+                let iconClass = "monster-icon";
+                if(enemy.tier === "elite") iconClass += " monster-elite glow-blue";
+                if(enemy.tier === "boss") iconClass += " monster-boss glow-red";
+                if(enemy.isTrueForm) iconClass = "monster-icon monster-true-form glow-purple";
+                document.getElementById('event-icon').className = iconClass;
+                
+                this.setButtons("戰鬥", "combatRound", "逃跑", "flee", false);
+            } 
+            else if (GameState.phase === 'merchant') {
+                // 如果是在商店
+                this.triggerAnim('event-icon', 'anim-spawn');
+                this.renderEvent("💰 神秘商人", "歡迎回來，要繼續交易嗎？", "點擊商品可查看詳情與購買", "👳");
+                this.setButtons("離開", "nextEvent", "無", null, true);
+                this.renderMerchantShop();
+            }
+            else {
+                // 其他情況 (事件結束或剛開始)，統一導向「繼續冒險」狀態
+                GameState.phase = "event_end";
+                this.renderEvent("📂 讀取成功", `歡迎回到第 ${Player.depth} 層`, "請點擊按鈕繼續冒險。", "💾");
+                document.getElementById('event-icon').className = "monster-icon";
+                document.getElementById('merchant-area').classList.add('hidden');
+                this.setButtons("繼續", "nextEvent", "無", null, true);
+            }
+
+            this.showFloatingText("自動載入進度", "#2196f3");
+
+        } catch (e) {
+            console.error(e);
+            alert("存檔損毀，開始新遊戲。");
+            localStorage.removeItem('fantasy_adventure_save');
+        } finally {
+            GameState.isLoading = false;
+        }
+    },
+
+    manualRestart() {
+        if (confirm("⚠ 確定要重新開始遊戲嗎？\n\n按下確定後，現有的進度將會被刪除且無法復原！")) {
+            localStorage.removeItem('fantasy_adventure_save');
+            location.reload();
+        }
+    },
+
+    // --- Compendium (New) ---
+    getAllItems() {
+        // Merge all item sources
+        const items = [];
+        // 1. Item Pool (Equipment, Potions)
+        items.push(...CONFIG.itemPool);
+        // 2. Loot Data (Materials, Boss Drops) - needs mapping
+        for (let [name, data] of Object.entries(CONFIG.lootData)) {
+            items.push({ ...data, name: name, type: 'material' }); // Ensure name is set
+        }
+        // 3. Phoenix Feather
+        items.push(CONFIG.phoenixFeather);
+
+        // Sort by Rarity then Name
+        return items.sort((a, b) => {
+            const rA = CONFIG.rarityDisplay[a.rarity].val;
+            const rB = CONFIG.rarityDisplay[b.rarity].val;
+            if (rA !== rB) return rA - rB;
+            return a.name.localeCompare(b.name);
+        });
+    },
+
+    showCompendium() {
+        const modal = document.getElementById('compendium-modal');
+        const list = document.getElementById('compendium-content');
+        const stats = document.getElementById('compendium-stats');
+        list.innerHTML = "";
+        modal.style.display = 'flex';
+
+        const allItems = this.getAllItems();
+        const unlockedCount = allItems.filter(i => Player.history.items.has(i.name)).length;
+        
+        stats.innerText = `收集進度: ${unlockedCount} / ${allItems.length}`;
+
+        allItems.forEach(item => {
+            const unlocked = Player.history.items.has(item.name);
+            const div = document.createElement('div');
+            
+            // Special Handling for True Heart (Secret)
+            if (!unlocked && item.name === "真實之心") {
+                div.className = 'c-item secret-hidden';
+                div.title = "?????";
+                // Empty content for secret
+            } 
+            // Unlocked Items
+            else if (unlocked) {
+                div.className = `c-item unlocked ${CONFIG.rarityDisplay[item.rarity].color}`;
+                div.title = this.getItemDesc(item) + `\n(價值: ${item.price}G)`;
+                div.innerHTML = `
+                    <div class="c-icon">${item.icon || '📦'}</div>
+                    <div class="c-name">${item.name}</div>
+                `;
+            } 
+            // Locked Regular Items
+            else {
+                div.className = 'c-item unknown';
+                div.title = "尚未獲得";
+                div.innerHTML = `
+                    <div class="c-icon">❓</div>
+                    <div class="c-name">???</div>
+                `;
+            }
+            list.appendChild(div);
+        });
     },
 
     // --- Achievements ---
@@ -575,7 +786,6 @@ const Game = {
     },
 
     /**
-     * @FIXED
      * 重新計算 MaxHP 並根據比例調整 CurrentHP
      */
     recalcStats() {
@@ -1376,6 +1586,8 @@ const Game = {
         GameState.phase = "dead";
         Player.hp = 0;
         this.updateUI();
+        // 死亡時清除存檔
+        localStorage.removeItem('fantasy_adventure_save');
         let cause = reason ? reason : "未知原因";
         this.renderEvent("☠️ 你死了", `死因：${cause}<br>冒險結束。最終深度: ${Player.depth}`, "重新整理網頁以重新開始", "🪦");
         this.setButtons("重新冒險", "restart", "無", null, true);
@@ -1385,7 +1597,7 @@ const Game = {
         location.reload();
     },
 
-generateRandomItem(tierModifier = "normal") {
+    generateRandomItem(tierModifier = "normal") {
         const r = Math.random();
         let rarityKey = "common";
         let table = CONFIG.rarityProb;
@@ -1402,7 +1614,7 @@ generateRandomItem(tierModifier = "normal") {
 
         const template = pool[Math.floor(Math.random() * pool.length)];
         
-        // 【BUG 修正點 1】使用 Object.assign 或深拷貝確保返回一個全新的、非引用的物件。
+        // 使用 Object.assign 或深拷貝確保返回一個全新的、非引用的物件。
         return Object.assign({}, template);
     },
 
@@ -1419,7 +1631,7 @@ generateRandomItem(tierModifier = "normal") {
         if (pool.length === 0) pool = CONFIG.itemPool.filter(i => allowedTypes.includes(i.type));
         const template = pool[Math.floor(Math.random() * pool.length)];
         
-        // 【BUG 修正點 2】確保返回一個全新的、非引用的物件。
+        // 確保返回一個全新的、非引用的物件。
         return Object.assign({}, template);
     },
 
@@ -1451,10 +1663,6 @@ generateRandomItem(tierModifier = "normal") {
         }
     },
 
-    /**
-     * @FIXED
-     * 移除手動修改 MaxHP/HP 的邏輯，完全依賴 recalcStats()。
-     */
     equip(index, category) {
         const item = Player.inventory[category][index];
         const type = item.type;
@@ -1473,10 +1681,6 @@ generateRandomItem(tierModifier = "normal") {
         this.log(`裝備了 ${item.name}`);
     },
 
-    /**
-     * @FIXED
-     * 移除手動修改 MaxHP/HP 的邏輯，完全依賴 recalcStats()。
-     */
     unequip(type) {
         if (!Player.equipment[type]) return;
         const item = Player.equipment[type];
@@ -1542,6 +1746,11 @@ generateRandomItem(tierModifier = "normal") {
         this.renderInvList('inv-equip', Player.inventory.equipment, 'equipment');
         this.renderInvList('inv-consum', Player.inventory.consumable, 'consumable');
         this.renderInvList('inv-mat', Player.inventory.material, 'material');
+
+        // 自動存檔觸發點：只要 UI 更新且非讀取中且活著，就自動存檔
+        if (!GameState.isLoading && Player.hp > 0 && Player.class) {
+            this.saveGame();
+        }
     },
 
     updateStatsUI() {
