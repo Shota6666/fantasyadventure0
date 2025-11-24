@@ -183,7 +183,14 @@
         
         @keyframes shine { 0% { border-color: var(--legendary); } 50% { border-color: #fff; } 100% { border-color: var(--legendary); } }
 
-        .merchant-grid { display: grid; grid-template-columns: 1fr; gap: 8px; width: 100%; }
+        /* MERCHANT GRID FIX: 2x2 */
+        .merchant-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 8px; 
+            width: 100%; 
+        }
+        
         .merchant-item { display: flex; flex-direction: column; background: #333; padding: 10px; border-radius: 4px; cursor: pointer; border: 1px solid #444; }
         .merchant-item:hover { background: #444; }
         .m-top { display: flex; justify-content: space-between; font-weight: bold; }
@@ -595,7 +602,7 @@ const Game = {
         }
     },
 
-    // --- Compendium (New) ---
+    // --- Compendium ---
     getAllItems() {
         // Merge all item sources
         const items = [];
@@ -925,7 +932,7 @@ const Game = {
             let item;
             if (Math.random() < 0.01) {
                 const legends = CONFIG.itemPool.filter(i => i.rarity === 'legendary' || i.rarity === 'epic');
-                item = legends[Math.floor(Math.random() * legends.length)];
+                item = { ...legends[Math.floor(Math.random() * legends.length)] };
             } else {
                 item = this.generateSpecificItem(['weapon', 'armor', 'shield', 'consumable']);
             }
@@ -946,7 +953,7 @@ const Game = {
         if (Math.random() < 0.05) {
             const artifacts = CONFIG.itemPool.filter(i => i.rarity === 'legendary' && ['聖劍 Excalibur', '神之光輝', '埃癸斯之盾'].includes(i.name));
             if (artifacts.length > 0) {
-                const item = artifacts[Math.floor(Math.random() * artifacts.length)];
+                const item = { ...artifacts[Math.floor(Math.random() * artifacts.length)] };
                 this.addItemToInventory(item);
                 this.renderEvent("✨ 傳說現世", "寶箱裡竟然是傳說神器！", `獲得 <span class='rarity-legendary'>${item.name}</span>`, "👑");
             } else {
@@ -986,7 +993,7 @@ const Game = {
             let pool = CONFIG.itemPool.filter(i => i.rarity === rarity && ['weapon', 'armor', 'shield'].includes(i.type));
             if (pool.length === 0) pool = CONFIG.itemPool.filter(i => i.rarity === 'rare');
             
-            const item = pool[Math.floor(Math.random() * pool.length)];
+            const item = { ...pool[Math.floor(Math.random() * pool.length)] };
             this.addItemToInventory(item);
             
             this.renderEvent("🎲 勝利！", resultHtml, `惡魔不甘心地給了你 <span class='${CONFIG.rarityDisplay[item.rarity].color}'>${item.name}</span>`, "🎉");
@@ -1404,17 +1411,23 @@ const Game = {
 
         if (s && s.val > 0) {
             s.val--; 
-            if (mCrit && s.name !== "埃癸斯之盾") {
+            // FIX: Check for pierce
+            let isPierced = (mCrit && s.name !== "埃癸斯之盾");
+            
+            if (isPierced) {
                 logHtml += `<span class='pierce-text'>⚡ 致命一擊貫穿了盾牌！</span><br>`;
+                // Apply damage continues
             } else {
                 applyDamage = false;
                 this.showFloatingText("格擋!", "#2196f3");
                 logHtml += `<span class='block-text'>🛡️ 盾牌抵擋了攻擊！</span> (剩餘耐久: ${s.val})<br>`;
-                if (s.val <= 0) {
-                    logHtml += `<span class='damage-text'>💔 你的 ${s.name} 碎裂了！</span><br>`;
-                    Player.equipment.shield = null;
-                    this.recalcStats(); 
-                }
+            }
+
+            // FIX: Always check breakage if val <= 0
+            if (s.val <= 0) {
+                logHtml += `<span class='damage-text'>💔 你的 ${s.name} 碎裂了！</span><br>`;
+                Player.equipment.shield = null;
+                this.recalcStats(); 
             }
         }
 
@@ -1649,6 +1662,9 @@ const Game = {
     },
 
     handleItemClick(index, category) {
+        // [修正] 死亡狀態禁止操作背包，防止死後喝水復活
+        if (Player.hp <= 0 || GameState.phase === 'dead') return;
+
         if (GameState.phase === "merchant") {
             this.sellItem(index, category);
             return;
