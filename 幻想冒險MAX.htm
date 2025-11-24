@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>幻想冒險 / Fantasy Adventure</title>
+    <title>幻想冒險</title>
     <style>
         :root {
             --bg-color: #1a1a1a;
@@ -59,10 +59,6 @@
             justify-content: space-between;
             align-items: center;
             position: relative;
-        }
-
-        .lang-select {
-            background: #444; color: white; border: 1px solid #666; padding: 4px; border-radius: 4px; font-size: 0.8em;
         }
 
         .class-badge {
@@ -246,31 +242,31 @@
 <body>
 
 <div id="class-modal">
-    <h2 style="color:white; margin-bottom: 30px;" data-key="title_choose_class">選擇你的職業</h2>
+    <h2 style="color:white; margin-bottom: 30px;">選擇你的職業</h2>
     <div class="class-options">
         <div class="class-card" onclick="Game.selectClass('knight')">
-            <div class="class-title" data-key="class_knight">🛡️ 騎士</div>
-            <div class="class-desc" data-key="desc_knight">開局裝備<br>「騎士長槍」</div>
+            <div class="class-title">🛡️ 騎士</div>
+            <div class="class-desc">開局裝備<br>「騎士長槍」</div>
         </div>
         <div class="class-card" onclick="Game.selectClass('merchant')">
-            <div class="class-title" data-key="class_merchant">💰 商販</div>
-            <div class="class-desc" data-key="desc_merchant">出售物品價格<br>提升為 1.2 倍</div>
+            <div class="class-title">💰 商販</div>
+            <div class="class-desc">出售物品價格<br>提升為 1.2 倍</div>
         </div>
         <div class="class-card" onclick="Game.selectClass('thief')">
-            <div class="class-title" data-key="class_thief">🗡️ 盜賊</div>
-            <div class="class-desc" data-key="desc_thief">開啟寶箱時<br>不會遇到陷阱或空箱</div>
+            <div class="class-title">🗡️ 盜賊</div>
+            <div class="class-desc">開啟寶箱時<br>不會遇到陷阱或空箱</div>
         </div>
         <div class="class-card" onclick="Game.selectClass('cultist')">
-            <div class="class-title" data-key="class_cultist">😈 惡魔信徒</div>
-            <div class="class-desc" data-key="desc_cultist">開局自帶<br>一個惡魔詛咒</div>
+            <div class="class-title">😈 惡魔信徒</div>
+            <div class="class-desc">開局自帶<br>一個惡魔詛咒</div>
         </div>
     </div>
 </div>
 
 <div id="achieve-modal">
     <div style="width:90%; max-width:600px; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <h2 style="color:white; margin:0;" data-key="btn_achievements">🏆 成就列表</h2>
-        <button onclick="document.getElementById('achieve-modal').style.display='none'" style="background:#555;" data-key="btn_close">關閉</button>
+        <h2 style="color:white; margin:0;">🏆 成就列表</h2>
+        <button onclick="document.getElementById('achieve-modal').style.display='none'" style="background:#555;">關閉</button>
     </div>
     <div id="achieve-stats" style="color:#aaa; margin-bottom:10px;"></div>
     <div class="achieve-list" id="achieve-list-content"></div>
@@ -278,8 +274,8 @@
 
 <div id="compendium-modal">
     <div style="width:90%; max-width:600px; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <h2 style="color:white; margin:0;" data-key="btn_compendium">📖 物品圖鑑</h2>
-        <button onclick="document.getElementById('compendium-modal').style.display='none'" style="background:#555;" data-key="btn_close">關閉</button>
+        <h2 style="color:white; margin:0;">📖 物品圖鑑</h2>
+        <button onclick="document.getElementById('compendium-modal').style.display='none'" style="background:#555;">關閉</button>
     </div>
     <div id="compendium-stats" style="color:#aaa; margin-bottom:10px;"></div>
     <div class="compendium-container">
@@ -290,230 +286,73 @@
 <div id="game-container">
     <header>
         <div style="display:flex; align-items:center; gap:10px;">
-            <div style="font-weight: bold; font-size: 1.2em;">⚔️ <span data-key="game_title">幻想冒險</span></div>
-            <button onclick="Game.showAchievements()" style="padding:4px 8px; font-size:0.8em;" data-key="btn_achievements">🏆 成就</button>
-            <button onclick="Game.showCompendium()" style="padding:4px 8px; font-size:0.8em; background:#673ab7;" data-key="btn_compendium">📖 圖鑑</button>
+            <div style="font-weight: bold; font-size: 1.2em;">⚔️ 幻想冒險</div>
+            <button onclick="Game.showAchievements()" style="padding:4px 8px; font-size:0.8em;">🏆 成就</button>
+            <button onclick="Game.showCompendium()" style="padding:4px 8px; font-size:0.8em; background:#673ab7;">📖 圖鑑</button>
         </div>
-        <div style="display:flex; align-items:center; gap:5px;">
-            <div id="class-badge" class="class-badge"></div>
-            <select id="lang-select" class="lang-select" onchange="Game.setLang(this.value)">
-                <option value="zh">🇹🇼 中文</option>
-                <option value="en">🇺🇸 EN</option>
-                <option value="ja">🇯🇵 JP</option>
-            </select>
-        </div>
+        <div id="class-badge" class="class-badge"></div>
     </header>
 
     <div class="stats-grid">
-        <div class="stat-item"><span data-key="stat_hp">生命</span>: <span id="hp-val">100</span> / <span id="max-hp-val">100</span></div>
-        <div class="stat-item"><span data-key="stat_atk">攻擊</span>: <span id="atk-val">5</span></div>
-        <div class="stat-item"><span data-key="stat_gold">金幣</span>: <span id="gold-val">100</span></div>
-        <div class="stat-item"><span data-key="stat_depth">深度</span>: <span id="depth-val">0</span> <span data-key="stat_floor">層</span></div>
-        <div id="buff-display" title="">狀態: 無</div>
+        <div class="stat-item">生命: <span id="hp-val">100</span> / <span id="max-hp-val">100</span></div>
+        <div class="stat-item">攻擊: <span id="atk-val">5</span></div>
+        <div class="stat-item">金幣: <span id="gold-val">100</span></div>
+        <div class="stat-item">深度: <span id="depth-val">0</span> 層</div>
+        <div id="buff-display" title="點擊查看詳細效果">狀態: 無</div>
     </div>
 
     <div id="event-display">
         <div id="event-icon" class="monster-icon">🎲</div>
-        <h3 id="event-title">...</h3>
-        <div id="event-desc">...</div>
+        <h3 id="event-title">準備冒險</h3>
+        <div id="event-desc">請先選擇職業...</div>
         <div id="merchant-area" class="hidden"></div>
     </div>
 
     <div id="controls">
-        <button id="btn-main" class="btn-primary" onclick="Game.nextEvent()">...</button>
+        <button id="btn-main" class="btn-primary" onclick="Game.nextEvent()">開始冒險</button>
         <button id="btn-sub" onclick="Game.handleSubAction()" disabled>...</button>
     </div>
 
     <div id="inventory-section">
         <div class="equipment-slots">
-            <div class="equip-slot" id="slot-weapon" onclick="Game.unequip('weapon')">...</div>
-            <div class="equip-slot" id="slot-armor" onclick="Game.unequip('armor')">...</div>
-            <div class="equip-slot" id="slot-shield" onclick="Game.unequip('shield')">...</div>
+            <div class="equip-slot" id="slot-weapon" onclick="Game.unequip('weapon')">無武器</div>
+            <div class="equip-slot" id="slot-armor" onclick="Game.unequip('armor')">無防具</div>
+            <div class="equip-slot" id="slot-shield" onclick="Game.unequip('shield')">無盾牌</div>
         </div>
         
         <div class="inv-container">
             <div class="inv-col">
-                <h4 data-key="cat_equip">📦 裝備</h4>
+                <h4>📦 裝備</h4>
                 <div class="item-list" id="inv-equip"></div>
             </div>
             <div class="inv-col">
-                <h4 data-key="cat_consum">🧪 消耗品</h4>
+                <h4>🧪 消耗品</h4>
                 <div class="item-list" id="inv-consum"></div>
             </div>
             <div class="inv-col">
-                <h4 data-key="cat_mat">🧩 素材</h4>
+                <h4>🧩 素材</h4>
                 <div class="item-list" id="inv-mat"></div>
             </div>
         </div>
     </div>
 
     <div style="margin-top: 20px; border-top: 1px solid #444; padding-top: 15px;">
-        <button onclick="Game.manualRestart()" style="width: 100%; background: #d32f2f; opacity: 0.8;" data-key="btn_restart">🔄 重新開始遊戲</button>
+        <button onclick="Game.manualRestart()" style="width: 100%; background: #d32f2f; opacity: 0.8;">🔄 重新開始遊戲</button>
     </div>
 </div>
 
 <script>
-// --- I18N SYSTEM ---
-const TL = {
-    zh: {
-        game_title: "幻想冒險", title_choose_class: "選擇你的職業",
-        class_knight: "🛡️ 騎士", desc_knight: "開局裝備<br>「騎士長槍」",
-        class_merchant: "💰 商販", desc_merchant: "出售物品價格<br>提升為 1.2 倍",
-        class_thief: "🗡️ 盜賊", desc_thief: "開啟寶箱時<br>不會遇到陷阱或空箱",
-        class_cultist: "😈 惡魔信徒", desc_cultist: "開局自帶<br>一個惡魔詛咒",
-        stat_hp: "生命", stat_atk: "攻擊", stat_gold: "金幣", stat_depth: "深度", stat_floor: "層",
-        buff_label: "狀態", buff_none: "無", buff_click: "點擊查看詳細效果",
-        cat_equip: "📦 裝備", cat_consum: "🧪 消耗品", cat_mat: "🧩 素材",
-        btn_achievements: "🏆 成就", btn_compendium: "📖 圖鑑", btn_close: "關閉", btn_restart: "🔄 重新開始遊戲",
-        btn_start: "開始冒險", btn_continue: "繼續", btn_leave: "離開", btn_flee: "逃跑", btn_fight: "戰鬥",
-        btn_buy: "購買", btn_sell_all: "一鍵出售素材", btn_open: "打開", btn_pray: "祈禱", btn_help: "幫助", btn_ignore: "無視",
-        btn_trade: "交易", btn_accept: "接受挑戰", btn_refuse: "拒絕",
-        // Events
-        evt_prepare: "準備冒險", evt_prepare_desc: "請先選擇職業...", evt_ready: "準備就緒", evt_ready_desc: "你的冒險即將開始...",
-        evt_load: "讀取成功", evt_load_desc: "歡迎回到第 {0} 層", evt_die: "你死了", evt_die_desc: "冒險結束。最終深度: {0}",
-        evt_win: "戰鬥勝利", evt_win_desc: "你擊敗了敵人！", evt_flee_ok: "逃跑成功", evt_flee_ok_desc: "你成功甩掉了怪物。",
-        evt_chest: "發現寶箱", evt_chest_open: "你打開了寶箱...", evt_chest_trap: "是陷阱！", evt_chest_empty: "裡面空空如也...",
-        evt_heal: "休息時刻", evt_heal_desc: "你找到一處安全的地方休息。", evt_full_heal: "生命值 <span class='heal-text'>完全恢復</span>",
-        evt_statue: "祈禱聖像", evt_statue_desc: "你發現了一座古老的聖像...",
-        evt_merchant: "神秘商人", evt_merchant_desc: "「素材可是很值錢的，要賣一些嗎？」",
-        evt_harpy: "遭遇哈比", evt_harpy_desc: "一隻哈比突然從空中襲來！",
-        msg_equip: "裝備了 {0}", msg_unequip: "卸下了 {0}", msg_sell: "出售 {0} 獲得 {1} G", msg_buy: "購買了 {0}",
-        msg_gain_gold: "獲得了 <span class='gold-text'>{0} G</span>", msg_pain: "受到了 <span class='damage-text'>{0}</span> 點傷害",
-        // Rarity
-        rarity_common: "一般", rarity_uncommon: "優質", rarity_rare: "稀有", rarity_epic: "史詩",
-        rarity_legendary: "傳說", rarity_mythic: "神話", rarity_ultra: "極傳說",
-        // Slots
-        slot_weapon: "無武器", slot_armor: "無防具", slot_shield: "無盾牌",
-        // Items & Monsters (Mapping keys to translations)
-        "史萊姆": "史萊姆", "哥布林": "哥布林", "狂狼": "狂狼", "骷髏兵": "骷髏兵", "半獸人": "半獸人",
-        "幽靈": "幽靈", "石巨人": "石巨人", "食人妖": "食人妖", "雙足飛龍": "雙足飛龍", "魔王": "魔王", "魔王真身": "魔王真身",
-        "治療藥水": "治療藥水", "強力藥水": "強力藥水", "精靈藥劑": "精靈藥劑",
-        "生鏽匕首": "生鏽匕首", "木棒": "木棒", "騎士長槍": "騎士長槍", "秘銀劍": "秘銀劍", "屠龍劍": "屠龍劍", "聖劍 Excalibur": "聖劍 Excalibur",
-        "布衣": "布衣", "鎖子甲": "鎖子甲", "板甲": "板甲", "龍鱗鎧甲": "龍鱗鎧甲", "神之光輝": "神之光輝",
-        "騎士盾": "騎士盾", "塔盾": "塔盾", "埃癸斯之盾": "埃癸斯之盾",
-        "不死鳥的羽毛": "不死鳥的羽毛", "真實之心": "真實之心",
-        // Loot
-        "史萊姆黏液": "史萊姆黏液", "史萊姆精華": "史萊姆精華", "史萊姆王冠": "史萊姆王冠",
-        "破布": "破布", "哥布林耳環": "哥布林耳環", "哥布林金牙": "哥布林金牙",
-        "狼皮": "狼皮", "狼牙": "狼牙", "狼王披風": "狼王披風",
-        "骨頭": "骨頭", "靈魂碎片": "靈魂碎片", "死靈頭骨": "死靈頭骨",
-        "斷劍": "斷劍", "半獸人護符": "半獸人護符", "戰爭號角": "戰爭號角",
-        "靈質": "靈質", "怨念集合體": "怨念集合體", "幽靈提燈": "幽靈提燈",
-        "石塊": "石塊", "魔力核心": "魔力核心", "大地之心": "大地之心",
-        "巨棒": "巨棒", "食人妖之血": "食人妖之血", "食人妖圖騰": "食人妖圖騰",
-        "龍鱗": "龍鱗", "龍之淚": "龍之淚", "龍心": "龍心",
-        "黑暗物質": "黑暗物質", "魔王印記": "魔王印記", "魔神之眼": "魔神之眼"
-    },
-    en: {
-        game_title: "Fantasy Adventure", title_choose_class: "Choose Class",
-        class_knight: "🛡️ Knight", desc_knight: "Starts with<br>'Knight Lance'",
-        class_merchant: "💰 Merchant", desc_merchant: "Sell items for<br>1.2x Price",
-        class_thief: "🗡️ Thief", desc_thief: "No traps/empty chests<br>when opening chests",
-        class_cultist: "😈 Cultist", desc_cultist: "Starts with<br>a random Curse",
-        stat_hp: "HP", stat_atk: "ATK", stat_gold: "Gold", stat_depth: "Depth", stat_floor: "F",
-        buff_label: "Buff", buff_none: "None", buff_click: "Click for details",
-        cat_equip: "📦 Equipment", cat_consum: "🧪 Potions", cat_mat: "🧩 Materials",
-        btn_achievements: "🏆 Trophies", btn_compendium: "📖 Book", btn_close: "Close", btn_restart: "🔄 Restart Game",
-        btn_start: "Start Adventure", btn_continue: "Continue", btn_leave: "Leave", btn_flee: "Flee", btn_fight: "Fight",
-        btn_buy: "Buy", btn_sell_all: "Sell All Mats", btn_open: "Open", btn_pray: "Pray", btn_help: "Help", btn_ignore: "Ignore",
-        btn_trade: "Trade", btn_accept: "Accept", btn_refuse: "Refuse",
-        // Events
-        evt_prepare: "Prepare", evt_prepare_desc: "Choose your class first...", evt_ready: "Ready", evt_ready_desc: "Adventure begins...",
-        evt_load: "Loaded", evt_load_desc: "Welcome back to Floor {0}", evt_die: "You Died", evt_die_desc: "Game Over. Depth: {0}",
-        evt_win: "Victory", evt_win_desc: "Enemy defeated!", evt_flee_ok: "Escaped", evt_flee_ok_desc: "You ran away safely.",
-        evt_chest: "Chest Found", evt_chest_open: "Opening chest...", evt_chest_trap: "It's a trap!", evt_chest_empty: "It's empty...",
-        evt_heal: "Rest Site", evt_heal_desc: "Safe place to rest.", evt_full_heal: "HP <span class='heal-text'>Fully Restored</span>",
-        evt_statue: "Ancient Statue", evt_statue_desc: "An ancient statue appears...",
-        evt_merchant: "Merchant", evt_merchant_desc: "'Materials are valuable, selling any?'",
-        evt_harpy: "Harpy Attack", evt_harpy_desc: "A Harpy swoops down!",
-        msg_equip: "Equipped {0}", msg_unequip: "Unequipped {0}", msg_sell: "Sold {0} for {1} G", msg_buy: "Bought {0}",
-        msg_gain_gold: "Gained <span class='gold-text'>{0} G</span>", msg_pain: "Took <span class='damage-text'>{0}</span> damage",
-        // Rarity
-        rarity_common: "Common", rarity_uncommon: "Uncommon", rarity_rare: "Rare", rarity_epic: "Epic",
-        rarity_legendary: "Legendary", rarity_mythic: "Mythic", rarity_ultra: "Ultra",
-        // Slots
-        slot_weapon: "No Weapon", slot_armor: "No Armor", slot_shield: "No Shield",
-        // Items & Monsters
-        "史萊姆": "Slime", "哥布林": "Goblin", "狂狼": "Dire Wolf", "骷髏兵": "Skeleton", "半獸人": "Orc",
-        "幽靈": "Ghost", "石巨人": "Golem", "食人妖": "Troll", "雙足飛龍": "Wyvern", "魔王": "Demon King", "魔王真身": "True Demon King",
-        "治療藥水": "Health Potion", "強力藥水": "Strong Potion", "精靈藥劑": "Elixir",
-        "生鏽匕首": "Rusty Dagger", "木棒": "Club", "騎士長槍": "Knight Lance", "秘銀劍": "Mithril Sword", "屠龍劍": "Dragon Slayer", "聖劍 Excalibur": "Excalibur",
-        "布衣": "Cloth", "鎖子甲": "Chainmail", "板甲": "Plate Armor", "龍鱗鎧甲": "Dragon Armor", "神之光輝": "Divine Armor",
-        "騎士盾": "Knight Shield", "塔盾": "Tower Shield", "埃癸斯之盾": "Aegis Shield",
-        "不死鳥的羽毛": "Phoenix Feather", "真實之心": "True Heart",
-        // Loot
-        "史萊姆黏液": "Slime Gel", "史萊姆精華": "Slime Essence", "史萊姆王冠": "Slime Crown",
-        "破布": "Rag", "哥布林耳環": "Goblin Ring", "哥布林金牙": "Golden Tooth",
-        "狼皮": "Wolf Pelt", "狼牙": "Wolf Fang", "狼王披風": "Wolf Cape",
-        "骨頭": "Bone", "靈魂碎片": "Soul Shard", "死靈頭骨": "Necro Skull",
-        "斷劍": "Broken Sword", "半獸人護符": "Orc Amulet", "戰爭號角": "War Horn",
-        "靈質": "Ectoplasm", "怨念集合體": "Grudge Mass", "幽靈提燈": "Ghost Lantern",
-        "石塊": "Stone", "魔力核心": "Mana Core", "大地之心": "Earth Heart",
-        "巨棒": "Big Club", "食人妖之血": "Troll Blood", "食人妖圖騰": "Troll Totem",
-        "龍鱗": "Dragon Scale", "龍之淚": "Dragon Tear", "龍心": "Dragon Heart",
-        "黑暗物質": "Dark Matter", "魔王印記": "Demon Mark", "魔神之眼": "Demon Eye"
-    },
-    ja: {
-        game_title: "幻想冒険", title_choose_class: "職業を選択",
-        class_knight: "🛡️ 騎士", desc_knight: "初期装備<br>「騎士の槍」",
-        class_merchant: "💰 商人", desc_merchant: "アイテム売却価格<br>1.2倍",
-        class_thief: "🗡️ 盗賊", desc_thief: "宝箱の罠や<br>空箱を回避",
-        class_cultist: "😈 狂信者", desc_cultist: "ランダムな呪いを<br>所持して開始",
-        stat_hp: "HP", stat_atk: "攻撃", stat_gold: "G", stat_depth: "深度", stat_floor: "層",
-        buff_label: "状態", buff_none: "なし", buff_click: "クリックで詳細",
-        cat_equip: "📦 装備", cat_consum: "🧪 道具", cat_mat: "🧩 素材",
-        btn_achievements: "🏆 実績", btn_compendium: "📖 図鑑", btn_close: "閉じる", btn_restart: "🔄 最初から",
-        btn_start: "冒険開始", btn_continue: "次へ", btn_leave: "立ち去る", btn_flee: "逃げる", btn_fight: "戦う",
-        btn_buy: "購入", btn_sell_all: "素材全売却", btn_open: "開ける", btn_pray: "祈る", btn_help: "助ける", btn_ignore: "無視",
-        btn_trade: "取引", btn_accept: "受ける", btn_refuse: "断る",
-        // Events
-        evt_prepare: "冒険準備", evt_prepare_desc: "職業を選んでください...", evt_ready: "準備完了", evt_ready_desc: "冒険が始まります...",
-        evt_load: "ロード完了", evt_load_desc: "地下 {0} 層へようこそ", evt_die: "死亡", evt_die_desc: "ゲームオーバー。到達深度: {0}",
-        evt_win: "勝利", evt_win_desc: "敵を倒した！", evt_flee_ok: "逃走成功", evt_flee_ok_desc: "無事に逃げ切った。",
-        evt_chest: "宝箱発見", evt_chest_open: "宝箱を開けた...", evt_chest_trap: "罠だ！", evt_chest_empty: "空っぽだった...",
-        evt_heal: "休憩所", evt_heal_desc: "安全な場所を見つけた。", evt_full_heal: "HPが <span class='heal-text'>全回復</span> した",
-        evt_statue: "古の石像", evt_statue_desc: "古びた石像を見つけた...",
-        evt_merchant: "謎の商人", evt_merchant_desc: "「素材は高く買うよ、売らないか？」",
-        evt_harpy: "ハーピー襲来", evt_harpy_desc: "ハーピーが空から襲ってきた！",
-        msg_equip: "{0} を装備した", msg_unequip: "{0} を外した", msg_sell: "{0} を {1} G で売却", msg_buy: "{0} を購入",
-        msg_gain_gold: "<span class='gold-text'>{0} G</span> を手に入れた", msg_pain: "<span class='damage-text'>{0}</span> のダメージを受けた",
-        // Rarity
-        rarity_common: "一般", rarity_uncommon: "高級", rarity_rare: "希少", rarity_epic: "史詩",
-        rarity_legendary: "伝説", rarity_mythic: "神話", rarity_ultra: "極伝説",
-        // Slots
-        slot_weapon: "武器なし", slot_armor: "防具なし", slot_shield: "盾なし",
-        // Items & Monsters
-        "史萊姆": "スライム", "哥布林": "ゴブリン", "狂狼": "ダイアウルフ", "骷髏兵": "スケルトン", "半獸人": "オーク",
-        "幽靈": "ゴースト", "石巨人": "ゴーレム", "食人妖": "トロール", "雙足飛龍": "ワイバーン", "魔王": "魔王", "魔王真身": "真の魔王",
-        "治療藥水": "回復薬", "強力藥水": "強力回復薬", "精靈藥劑": "エリクサー",
-        "生鏽匕首": "錆びた短剣", "木棒": "棍棒", "騎士長槍": "騎士の槍", "秘銀劍": "ミスリル剣", "屠龍劍": "ドラゴンスレイヤー", "聖劍 Excalibur": "聖剣エクスカリバー",
-        "布衣": "布の服", "鎖子甲": "チェーンメイル", "板甲": "プレートアーマー", "龍鱗鎧甲": "竜鱗の鎧", "神之光輝": "神の輝き",
-        "騎士盾": "騎士の盾", "塔盾": "タワーシールド", "埃癸斯之盾": "イージスの盾",
-        "不死鳥的羽毛": "不死鳥の羽根", "真實之心": "真実の心",
-        // Loot
-        "史萊姆黏液": "スライムの粘液", "史萊姆精華": "スライムの精華", "史萊姆王冠": "スライムの王冠",
-        "破布": "ボロ布", "哥布林耳環": "ゴブリンの指輪", "哥布林金牙": "ゴブリンの金歯",
-        "狼皮": "狼の皮", "狼牙": "狼の牙", "狼王披風": "狼王のマント",
-        "骨頭": "骨", "靈魂碎片": "魂の欠片", "死靈頭骨": "死霊の頭骨",
-        "斷劍": "折れた剣", "半獸人護符": "オークのアミュレット", "戰爭號角": "戦争の角笛",
-        "靈質": "エクトプラズム", "怨念集合體": "怨念の集合体", "幽靈提燈": "幽霊のランタン",
-        "石塊": "石ころ", "魔力核心": "マナの核", "大地之心": "大地の心",
-        "巨棒": "巨大な棍棒", "食人妖之血": "トロールの血", "食人妖圖騰": "トロールのトーテム",
-        "龍鱗": "竜の鱗", "龍之淚": "竜の涙", "龍心": "竜の心臓",
-        "黑暗物質": "ダークマター", "魔王印記": "魔王の印", "魔神之眼": "魔神の瞳"
-    }
-};
-
+(function() {
 const CONFIG = {
     rarityProb: { common: 0.5, uncommon: 0.3, rare: 0.15, epic: 0.04, legendary: 0.01 },
     rarityDisplay: {
-        common: { color: "rarity-common", key: "rarity_common", val: 1 },
-        uncommon: { color: "rarity-uncommon", key: "rarity_uncommon", val: 2 },
-        rare: { color: "rarity-rare", key: "rarity_rare", val: 3 },
-        epic: { color: "rarity-epic", key: "rarity_epic", val: 4 },
-        legendary: { color: "rarity-legendary", key: "rarity_legendary", val: 5 },
-        mythic: { color: "rarity-mythic", key: "rarity_mythic", val: 6 },
-        ultra: { color: "rarity-ultra", key: "rarity_ultra", val: 7 }
+        common: { color: "rarity-common", label: "一般", val: 1 },
+        uncommon: { color: "rarity-uncommon", label: "優質", val: 2 },
+        rare: { color: "rarity-rare", label: "稀有", val: 3 },
+        epic: { color: "rarity-epic", label: "史詩", val: 4 },
+        legendary: { color: "rarity-legendary", label: "傳說", val: 5 },
+        mythic: { color: "rarity-mythic", label: "神話", val: 6 },
+        ultra: { color: "rarity-ultra", label: "極傳說", val: 7 }
     },
     buffs: {
         angel_song: { id: 'angel_song', name: '👼 天使的歌頌', type: 'angel', desc: '每次事件恢復 5 HP' },
@@ -626,7 +465,7 @@ const Player = {
     equipment: { weapon: null, armor: null, shield: null },
     inventory: { 
         equipment: [], 
-        consumable: [ 
+        consumable: [ // 初始自帶一瓶治療藥水
             { name: "治療藥水", type: "consumable", val: 30, rarity: "common", price: 25, icon: "🧪", desc: "恢復30點生命" }
         ], 
         material: [] 
@@ -642,69 +481,35 @@ const GameState = {
     currentEnemy: null,
     merchantStock: [],
     log: [],
-    isLoading: false,
-    lang: "zh"
+    isLoading: false
 };
 
 const Game = {
     init() {
+        // 自動檢查存檔
         if (localStorage.getItem('fantasy_adventure_save')) {
             this.loadGame();
         } else {
             this.updateUI();
-        }
-        this.setLang(GameState.lang);
-    },
-
-    setLang(lang) {
-        GameState.lang = lang;
-        document.getElementById('lang-select').value = lang;
-        
-        // Update Static Elements
-        document.querySelectorAll('[data-key]').forEach(el => {
-            const key = el.getAttribute('data-key');
-            if(TL[lang][key]) el.innerHTML = TL[lang][key];
-        });
-
-        // Update Dynamic Elements
-        this.updateUI();
-        
-        // Refresh Event Text if not in combat
-        if (GameState.phase === "select_class") return;
-        
-        // If merchant, re-render shop text
-        if (GameState.phase === "merchant") {
-            this.renderEvent(this.t('evt_merchant'), this.t('evt_merchant_desc'), "", "👳");
-            this.renderMerchantShop();
-            this.setButtons(this.t('btn_leave'), "nextEvent", "無", null, true);
+            // 預設顯示職業選擇
         }
     },
 
-    t(key, ...args) {
-        const dict = TL[GameState.lang] || TL.zh;
-        let str = dict[key] || key; // Fallback to key if not found
-        
-        // Handle parameters {0}, {1}...
-        if (args.length > 0) {
-            args.forEach((arg, index) => {
-                str = str.replace(`{${index}}`, arg);
-            });
-        }
-        return str;
-    },
-
-    // --- Save & Load System ---
+    // --- Save & Load System (Encrypted) ---
     saveGame() {
         if (Player.hp <= 0) {
+            // 死亡時清除存檔
             localStorage.removeItem('fantasy_adventure_save');
             return;
         }
-        if (!Player.class) return;
+        if (!Player.class) return; // 還沒選職業不存檔
 
         try {
+            // 準備存檔資料
             const saveData = {
                 player: {
                     ...Player,
+                    // 將 Set 轉換為 Array 以便轉成 JSON
                     achievements: Array.from(Player.achievements),
                     history: {
                         items: Array.from(Player.history.items)
@@ -713,38 +518,59 @@ const Game = {
                 gameState: GameState,
                 timestamp: new Date().toLocaleString()
             };
-            localStorage.setItem('fantasy_adventure_save', JSON.stringify(saveData));
+            // Encrypt save data
+            const encrypted = btoa(encodeURIComponent(JSON.stringify(saveData)));
+            localStorage.setItem('fantasy_adventure_save', encrypted);
         } catch (e) {
             console.error("Auto-save failed", e);
         }
     },
 
     loadGame() {
-        const json = localStorage.getItem('fantasy_adventure_save');
-        if (!json) return;
+        const raw = localStorage.getItem('fantasy_adventure_save');
+        if (!raw) return; // 無存檔則不做任何事
 
-        GameState.isLoading = true;
+        GameState.isLoading = true; // 標記正在讀取，避免觸發 updateUI 中的存檔
 
         try {
+            let json;
+            try {
+                // Try to decrypt
+                json = decodeURIComponent(atob(raw));
+            } catch (e) {
+                // Fallback for legacy plaintext saves
+                console.log("Legacy save detected or decryption failed, trying plain parse");
+                json = raw;
+            }
+
             const data = JSON.parse(json);
+
+            // 1. 還原 Player 資料
             Object.assign(Player, data.player);
+            // 將 Array 轉回 Set
             Player.achievements = new Set(data.player.achievements);
             Player.history.items = new Set(data.player.history.items);
+
+            // 2. 還原 GameState
             Object.assign(GameState, data.gameState);
 
+            // 3. 還原 UI 與狀態
             this.updateUI();
             
+            // 隱藏職業選擇
             document.getElementById('class-modal').style.display = 'none';
 
-            // Restore badge
-            const badgeMap = { 'knight': 'class_knight', 'merchant': 'class_merchant', 'thief': 'class_thief', 'cultist': 'class_cultist' };
-            document.getElementById('class-badge').innerHTML = this.t(badgeMap[Player.class]) || "";
+            // 更新職業徽章
+            const badgeMap = { 'knight': '🛡️ 騎士', 'merchant': '💰 商販', 'thief': '🗡️ 盜賊', 'cultist': '😈 惡魔信徒' };
+            document.getElementById('class-badge').innerText = badgeMap[Player.class] || "";
 
+            // 4. 根據當前階段(Phase)還原畫面
             if (GameState.phase === 'combat' && GameState.currentEnemy) {
+                // 如果是在戰鬥中讀檔，恢復戰鬥畫面
                 const enemy = GameState.currentEnemy;
-                this.renderEvent(`⚔️ ${this.t(enemy.name.replace(/^(菁英 |深淵 |首領 )+/g, ""))}`, 
-                    `${this.t('stat_hp')}: ${enemy.hp} | ${this.t('stat_atk')}: ${enemy.atk}`, 
-                    this.t('evt_ready_desc'), enemy.icon);
+                this.renderEvent(`⚔️ 遭遇 ${enemy.name} (恢復)`, 
+                    `HP: ${enemy.hp} | 攻擊: ${enemy.atk}`, 
+                    "戰鬥繼續！", enemy.icon);
                 
                 let iconClass = "monster-icon";
                 if(enemy.tier === "elite") iconClass += " monster-elite glow-blue";
@@ -752,24 +578,29 @@ const Game = {
                 if(enemy.isTrueForm) iconClass = "monster-icon monster-true-form glow-purple";
                 document.getElementById('event-icon').className = iconClass;
                 
-                this.setButtons(this.t('btn_fight'), "combatRound", this.t('btn_flee'), "flee", false);
+                this.setButtons("戰鬥", "combatRound", "逃跑", "flee", false);
             } 
             else if (GameState.phase === 'merchant') {
+                // 如果是在商店
                 this.triggerAnim('event-icon', 'anim-spawn');
-                this.renderEvent(this.t('evt_merchant'), this.t('evt_merchant_desc'), "", "👳");
-                this.setButtons(this.t('btn_leave'), "nextEvent", "無", null, true);
+                this.renderEvent("💰 神秘商人", "歡迎回來，要繼續交易嗎？", "點擊商品可查看詳情與購買", "👳");
+                this.setButtons("離開", "nextEvent", "無", null, true);
                 this.renderMerchantShop();
             }
             else {
+                // 其他情況 (事件結束或剛開始)，統一導向「繼續冒險」狀態
                 GameState.phase = "event_end";
-                this.renderEvent(this.t('evt_load'), this.t('evt_load_desc', Player.depth), "", "💾");
+                this.renderEvent("📂 讀取成功", `歡迎回到第 ${Player.depth} 層`, "請點擊按鈕繼續冒險。", "💾");
                 document.getElementById('event-icon').className = "monster-icon";
                 document.getElementById('merchant-area').classList.add('hidden');
-                this.setButtons(this.t('btn_continue'), "nextEvent", "無", null, true);
+                this.setButtons("繼續", "nextEvent", "無", null, true);
             }
+
+            this.showFloatingText("自動載入進度", "#2196f3");
 
         } catch (e) {
             console.error(e);
+            alert("存檔損毀，開始新遊戲。");
             localStorage.removeItem('fantasy_adventure_save');
         } finally {
             GameState.isLoading = false;
@@ -777,7 +608,7 @@ const Game = {
     },
 
     manualRestart() {
-        if (confirm("Reset Game?")) {
+        if (confirm("⚠ 確定要重新開始遊戲嗎？\n\n按下確定後，現有的進度將會被刪除且無法復原！")) {
             localStorage.removeItem('fantasy_adventure_save');
             location.reload();
         }
@@ -785,12 +616,18 @@ const Game = {
 
     // --- Compendium ---
     getAllItems() {
+        // Merge all item sources
         const items = [];
+        // 1. Item Pool (Equipment, Potions)
         items.push(...CONFIG.itemPool);
+        // 2. Loot Data (Materials, Boss Drops) - needs mapping
         for (let [name, data] of Object.entries(CONFIG.lootData)) {
-            items.push({ ...data, name: name, type: 'material' });
+            items.push({ ...data, name: name, type: 'material' }); // Ensure name is set
         }
+        // 3. Phoenix Feather
         items.push(CONFIG.phoenixFeather);
+
+        // Sort by Rarity then Name
         return items.sort((a, b) => {
             const rA = CONFIG.rarityDisplay[a.rarity].val;
             const rB = CONFIG.rarityDisplay[b.rarity].val;
@@ -809,27 +646,31 @@ const Game = {
         const allItems = this.getAllItems();
         const unlockedCount = allItems.filter(i => Player.history.items.has(i.name)).length;
         
-        stats.innerText = `Progress: ${unlockedCount} / ${allItems.length}`;
+        stats.innerText = `收集進度: ${unlockedCount} / ${allItems.length}`;
 
         allItems.forEach(item => {
             const unlocked = Player.history.items.has(item.name);
             const div = document.createElement('div');
             
+            // Special Handling for True Heart (Secret)
             if (!unlocked && item.name === "真實之心") {
                 div.className = 'c-item secret-hidden';
                 div.title = "?????";
+                // Empty content for secret
             } 
+            // Unlocked Items
             else if (unlocked) {
                 div.className = `c-item unlocked ${CONFIG.rarityDisplay[item.rarity].color}`;
-                div.title = this.t(item.name) + `\n(${item.price}G)`;
+                div.title = this.getItemDesc(item) + `\n(價值: ${item.price}G)`;
                 div.innerHTML = `
                     <div class="c-icon">${item.icon || '📦'}</div>
-                    <div class="c-name">${this.t(item.name)}</div>
+                    <div class="c-name">${item.name}</div>
                 `;
             } 
+            // Locked Regular Items
             else {
                 div.className = 'c-item unknown';
-                div.title = "???";
+                div.title = "尚未獲得";
                 div.innerHTML = `
                     <div class="c-icon">❓</div>
                     <div class="c-name">???</div>
@@ -846,7 +687,7 @@ const Game = {
             if (!Player.achievements.has(ach.id)) {
                 if (ach.check(Player)) {
                     Player.achievements.add(ach.id);
-                    this.showFloatingText(`🏆 ${ach.name}`, CONFIG.rarityDisplay[ach.rarity].color === 'rarity-ultra' ? '#00ffcc' : 'gold');
+                    this.showFloatingText(`🏆 達成: ${ach.name}`, CONFIG.rarityDisplay[ach.rarity].color === 'rarity-ultra' ? '#00ffcc' : 'gold');
                     newUnlock = true;
                 }
             }
@@ -892,7 +733,7 @@ const Game = {
         let visibleTotal = CONFIG.achievements.filter(a => !a.hidden || Player.achievements.has(a.id)).length;
         let unlockedCount = Player.achievements.size;
         
-        stats.innerText = `Progress: ${unlockedCount} / ${visibleTotal}`;
+        stats.innerText = `進度: ${unlockedCount} / ${visibleTotal}`;
 
         CONFIG.achievements.forEach(ach => {
             if (ach.hidden && !Player.achievements.has(ach.id)) return;
@@ -902,7 +743,7 @@ const Game = {
             div.className = `achieve-item ${unlocked ? 'unlocked' : ''}`;
             
             let colorClass = CONFIG.rarityDisplay[ach.rarity].color;
-            let rarityName = this.t(CONFIG.rarityDisplay[ach.rarity].key);
+            let rarityName = CONFIG.rarityDisplay[ach.rarity].label;
 
             div.innerHTML = `
                 <div class="achieve-info">
@@ -922,8 +763,8 @@ const Game = {
         
         if (classType === 'knight') {
             const lance = { name: "騎士長槍", type: "weapon", val: 12, rarity: "uncommon", price: 80, icon: "🔱" };
-            this.addItemToInventory(lance, false); 
-            this.equip(0, 'equipment'); 
+            this.addItemToInventory(lance, false); // Don't render yet
+            this.equip(0, 'equipment'); // Will render
         } else if (classType === 'cultist') {
             const demonBuffs = Object.values(CONFIG.buffs).filter(b => b.type === 'demon');
             Player.buff = demonBuffs[Math.floor(Math.random() * demonBuffs.length)];
@@ -932,10 +773,10 @@ const Game = {
             this.updateUI();
         }
 
-        const badgeMap = { 'knight': 'class_knight', 'merchant': 'class_merchant', 'thief': 'class_thief', 'cultist': 'class_cultist' };
-        document.getElementById('class-badge').innerHTML = this.t(badgeMap[classType]);
+        const badgeMap = { 'knight': '🛡️ 騎士', 'merchant': '💰 商販', 'thief': '🗡️ 盜賊', 'cultist': '😈 惡魔信徒' };
+        document.getElementById('class-badge').innerText = badgeMap[classType];
 
-        this.renderEvent(this.t('evt_ready'), this.t('evt_ready_desc'), "", "✨");
+        this.renderEvent("準備就緒", "你的冒險即將開始...", "祝你好運！", "✨");
     },
 
     triggerAnim(id, animClass) {
@@ -963,14 +804,29 @@ const Game = {
         return atk;
     },
 
+    /**
+     * 重新計算 MaxHP 並根據比例調整 CurrentHP
+     */
     recalcStats() {
+        // 1. 儲存當前血量比例
         const currentRatio = Player.maxHp > 0 ? Player.hp / Player.maxHp : 1; 
+
+        // 2. 計算新的 MaxHP
         let bonusHp = Player.equipment.armor ? Player.equipment.armor.val : 0;
         const newMaxHp = 100 + bonusHp; 
+        
+        // 3. 應用新的 MaxHP
         Player.maxHp = newMaxHp;
+
+        // 4. 根據舊比例計算新的 CurrentHP
         let newHp = Math.round(currentRatio * Player.maxHp);
+        
+        // 5. 確保 CurrentHP 不超過 MaxHP
         Player.hp = Math.min(newHp, Player.maxHp);
+        
+        // 6. 確保 CurrentHP 不為負
         if (Player.hp < 0) Player.hp = 0;
+        
         this.updateStatsUI();
     },
 
@@ -982,6 +838,7 @@ const Game = {
 
         Player.depth++;
         this.checkAchievements();
+        this.log(`>>> 進入第 ${Player.depth} 層探索...`);
         
         if (Player.buff && Player.buff.id === 'angel_song') {
             if (Player.hp < Player.maxHp) {
@@ -990,6 +847,7 @@ const Game = {
             }
         }
 
+        // Event Logic
         if (Player.depth >= 1000 && (Player.depth - 1000) % 500 === 0) {
             this.triggerCombat(true, true); 
             this.updateUI();
@@ -1002,6 +860,10 @@ const Game = {
             return;
         }
         
+        if (Player.depth === 501) {
+            alert("警告：你已進入深層領域！所有怪物實力大幅增強！");
+        }
+
         if (Player.depth > 200 && Math.random() < 0.01) {
             this.triggerHarpy();
             this.updateUI();
@@ -1010,6 +872,14 @@ const Game = {
 
         const rand = Math.random();
         
+        // Probabilities
+        // Heal: 0.05 (5%)
+        // Statue: 0.05 (5%)
+        // Class Event: 0.03 (3%)
+        // Merchant: 0.17 (17%)
+        // Chest: 0.10 (10%)
+        // Combat: 0.60 (60%)
+
         if (rand < 0.05) {
             this.triggerHeal();
         } else if (rand < 0.10) {
@@ -1037,39 +907,39 @@ const Game = {
 
     handleKnightEvent() {
         this.triggerAnim('event-icon', 'anim-spawn');
-        this.renderEvent(this.t('evt_prepare'), "Found survivors...", this.t('btn_help') + "?", "🛡️");
-        this.setButtons(this.t('btn_help') + " (60%)", "resolveKnightHelp", this.t('btn_ignore'), "nextEvent", false);
+        this.renderEvent("⚔️ 騎士的職責", "發現一群被怪物包圍的探險者...", "是否出手相助？", "🛡️");
+        this.setButtons("幫助 (60%勝)", "resolveKnightHelp", "無視", "nextEvent", false);
     },
 
     resolveKnightHelp() {
         if (Math.random() < 0.6) {
             Player.gold += 100;
             this.showFloatingText("+100 G", "gold");
-            this.renderEvent(this.t('evt_win'), "", this.t('msg_gain_gold', 100), "🎉");
+            this.renderEvent("⚔️ 救援成功", "你成功擊退了怪物！", "獲得報酬 <span class='gold-text'>100 G</span>", "🎉");
         } else {
             let dmg = Math.floor(Player.hp * 0.5);
             Player.hp -= dmg;
             this.showFloatingText(`-${dmg} HP`, "red");
-            this.renderEvent("Failed", "", this.t('msg_pain', dmg), "🩸");
-            if (Player.hp <= 0) { this.playerDie("Rescue Mission"); return; }
+            this.renderEvent("⚔️ 救援失敗", "怪物太強了，你受了重傷...", `損失 <span class='damage-text'>${dmg} HP</span>`, "🩸");
+            if (Player.hp <= 0) { this.playerDie("死於救援行動"); return; }
         }
-        this.setButtons(this.t('btn_continue'), "nextEvent", "無", null, true);
+        this.setButtons("繼續", "nextEvent", "無", null, true);
         this.updateUI();
     },
 
     handleMerchantEvent() {
         this.triggerAnim('event-icon', 'anim-spawn');
-        this.renderEvent(this.t('evt_merchant'), "Shady deal...", this.t('btn_trade') + " (66 G)?", "🕵️");
-        this.setButtons(this.t('btn_trade'), "resolveMerchantTrade", this.t('btn_leave'), "nextEvent", false);
+        this.renderEvent("⚖️ 黑市交易", "遇到一名可疑的黑市商人。", "花費 66 G 購買神秘物品？(10% 被騙)", "🕵️");
+        this.setButtons("交易 (66 G)", "resolveMerchantTrade", "離開", "nextEvent", false);
     },
 
     resolveMerchantTrade() {
-        if (Player.gold < 66) { alert("Gold!"); return; }
+        if (Player.gold < 66) { alert("金幣不足！"); return; }
         Player.gold -= 66;
         this.showFloatingText("-66 G", "gold");
 
         if (Math.random() < 0.1) {
-            this.renderEvent("Scammed!", "", "", "💨");
+            this.renderEvent("💸 被騙了！", "商人拿了錢就跑了！", "你什麼都沒得到。", "💨");
         } else {
             let item;
             if (Math.random() < 0.01) {
@@ -1079,16 +949,16 @@ const Game = {
                 item = this.generateSpecificItem(['weapon', 'armor', 'shield', 'consumable']);
             }
             this.addItemToInventory(item);
-            this.renderEvent("Deal!", "", this.t('msg_gain_gold', item.name), "🎁");
+            this.renderEvent("⚖️ 交易成功", "你獲得了一個神秘包裹...", `獲得 <span class='${CONFIG.rarityDisplay[item.rarity].color}'>${item.name}</span>`, "🎁");
         }
-        this.setButtons(this.t('btn_continue'), "nextEvent", "無", null, true);
+        this.setButtons("繼續", "nextEvent", "無", null, true);
         this.updateUI();
     },
 
     handleThiefEvent() {
         this.triggerAnim('event-icon', 'anim-spawn');
-        this.renderEvent("Golden Chest", "Glowing chest...", this.t('btn_open') + "?", "✨");
-        this.setButtons(this.t('btn_open'), "resolveThiefChest", this.t('btn_leave'), "nextEvent", false);
+        this.renderEvent("🗝️ 金色寶箱", "遠處發現一個散發光芒的寶箱...", "嘗試打開？(5% 獲得神器)", "✨");
+        this.setButtons("打開", "resolveThiefChest", "離開", "nextEvent", false);
     },
 
     resolveThiefChest() {
@@ -1097,34 +967,34 @@ const Game = {
             if (artifacts.length > 0) {
                 const item = { ...artifacts[Math.floor(Math.random() * artifacts.length)] };
                 this.addItemToInventory(item);
-                this.renderEvent("Artifact!", "", item.name, "👑");
+                this.renderEvent("✨ 傳說現世", "寶箱裡竟然是傳說神器！", `獲得 <span class='rarity-legendary'>${item.name}</span>`, "👑");
             } else {
                 const item = this.generateRandomItem();
                 this.addItemToInventory(item);
-                this.renderEvent(this.t('evt_chest_open'), "", item.name, "📦");
+                this.renderEvent("📦 獲得物品", "", `獲得 ${item.name}`, "📦");
             }
         } else {
             let dmg = Math.floor(Player.hp * 0.5);
             Player.hp -= dmg;
             this.showFloatingText(`-${dmg} HP`, "red");
-            this.renderEvent(this.t('evt_chest_trap'), "", this.t('msg_pain', dmg), "💣");
-            if (Player.hp <= 0) { this.playerDie("Trap"); return; }
+            this.renderEvent("💥 陷阱觸發", "強力的魔法炸飛了你！", `損失 <span class='damage-text'>${dmg} HP</span>`, "💣");
+            if (Player.hp <= 0) { this.playerDie("死於金色寶箱陷阱"); return; }
         }
-        this.setButtons(this.t('btn_continue'), "nextEvent", "無", null, true);
+        this.setButtons("繼續", "nextEvent", "無", null, true);
         this.updateUI();
     },
 
     handleCultistEvent() {
         this.triggerAnim('event-icon', 'anim-spawn');
-        this.renderEvent("Demon Game", "High or Low?", this.t('btn_accept') + "?", "😈");
-        this.setButtons(this.t('btn_accept'), "resolveCultistGame", this.t('btn_refuse'), "nextEvent", false);
+        this.renderEvent("🎲 惡魔的遊戲", "惡魔邀請你玩比大小...", "贏得稀有裝備，輸了剩 1% 血量。", "😈");
+        this.setButtons("接受挑戰", "resolveCultistGame", "拒絕", "nextEvent", false);
     },
 
     resolveCultistGame() {
         const pRoll = Math.floor(Math.random() * 6) + 1;
         const dRoll = Math.floor(Math.random() * 6) + 1;
         
-        let resultHtml = `You: ${pRoll}, Demon: ${dRoll}<br>`;
+        let resultHtml = `你擲出了 ${pRoll}，惡魔擲出了 ${dRoll}。<br>`;
 
         if (pRoll > dRoll) {
             let rarity = 'rare';
@@ -1138,13 +1008,13 @@ const Game = {
             const item = { ...pool[Math.floor(Math.random() * pool.length)] };
             this.addItemToInventory(item);
             
-            this.renderEvent(this.t('evt_win'), resultHtml, item.name, "🎉");
+            this.renderEvent("🎲 勝利！", resultHtml, `惡魔不甘心地給了你 <span class='${CONFIG.rarityDisplay[item.rarity].color}'>${item.name}</span>`, "🎉");
         } else {
             Player.hp = Math.floor(Player.maxHp * 0.01) || 1;
             this.showFloatingText("HP -> 1%", "darkred");
-            this.renderEvent("Lost...", resultHtml, "HP -> 1%", "💀");
+            this.renderEvent("🎲 失敗...", resultHtml, "惡魔奪走了你的生命力...", "💀");
         }
-        this.setButtons(this.t('btn_continue'), "nextEvent", "無", null, true);
+        this.setButtons("繼續", "nextEvent", "無", null, true);
         this.updateUI();
     },
 
@@ -1153,21 +1023,33 @@ const Game = {
         this.triggerAnim('event-icon', 'anim-spawn');
         
         let outcome = Math.random();
+        let title = "🦅 遭遇哈比";
+        let desc = "";
+        let icon = "🦅";
 
         if (outcome < 0.2) {
             Player.gold += 500;
             this.showFloatingText("+500 G", "#ffd700");
-            this.renderEvent(this.t('evt_harpy'), this.t('evt_harpy_desc'), this.t('msg_gain_gold', 500), "🦅");
+            desc = "你成功擊退了哈比，撿到了它掉落的 <span class='gold-text'>500 G</span>！";
         } else {
             const type = Math.floor(Math.random() * 4);
-            let desc = "";
-            if (type === 0) { Player.inventory.equipment = []; desc = "Equipment stolen"; }
-            else if (type === 1) { Player.inventory.consumable = []; desc = "Potions stolen"; }
-            else if (type === 2) { Player.inventory.material = []; desc = "Materials stolen"; }
-            else { Player.gold = 0; desc = "Gold stolen"; }
-            this.renderEvent(this.t('evt_harpy'), this.t('evt_harpy_desc'), desc, "🦅");
+            if (type === 0) {
+                Player.inventory.equipment = [];
+                desc = "哈比搶走了你背包裡所有的 <span class='damage-text'>裝備</span>！";
+            } else if (type === 1) {
+                Player.inventory.consumable = [];
+                desc = "哈比搶走了你背包裡所有的 <span class='damage-text'>消耗品</span>！";
+            } else if (type === 2) {
+                Player.inventory.material = [];
+                desc = "哈比搶走了你背包裡所有的 <span class='damage-text'>素材</span>！";
+            } else {
+                Player.gold = 0;
+                desc = "哈比搶走了你身上所有的 <span class='damage-text'>金幣</span>！";
+            }
         }
-        this.setButtons(this.t('btn_continue'), "nextEvent", "無", null, true);
+        
+        this.renderEvent(title, "一隻哈比突然從空中襲來！", desc, icon);
+        this.setButtons("繼續", "nextEvent", "無", null, true);
     },
 
     triggerHeal() {
@@ -1177,16 +1059,16 @@ const Game = {
         
         GameState.phase = "event_end";
         this.triggerAnim('event-icon', 'anim-spawn');
-        this.renderEvent(this.t('evt_heal'), this.t('evt_heal_desc'), this.t('evt_full_heal'), "🛌");
+        this.renderEvent("💖 休息時刻", "你找到一處安全的地方休息。", `生命值 <span class='heal-text'>完全恢復</span> (恢復了 ${healed} 點)。`, "🛌");
         if(healed > 0) this.showFloatingText(`+${healed} HP`, "#69f0ae");
-        this.setButtons(this.t('btn_continue'), "nextEvent", "無", null, true);
+        this.setButtons("繼續", "nextEvent", "無", null, true);
     },
 
     triggerStatue() {
         GameState.phase = "event_end";
         this.triggerAnim('event-icon', 'anim-spawn');
-        this.renderEvent(this.t('evt_statue'), this.t('evt_statue_desc'), this.t('btn_pray') + "?", "🙏");
-        this.setButtons(this.t('btn_pray'), "pray", this.t('btn_leave'), "nextEvent", false);
+        this.renderEvent("🗿 祈禱聖像", "你發現了一座古老的聖像...", "是否要進行祈禱？", "🙏");
+        this.setButtons("祈禱", "pray", "離開", "nextEvent", false);
     },
 
     pray() {
@@ -1202,13 +1084,13 @@ const Game = {
         const selected = options[Math.floor(Math.random() * options.length)];
         Player.buff = selected;
         
-        let title = isAngel ? "Angel" : "Demon";
+        let title = isAngel ? "天使聖像" : "惡魔聖像";
         let style = isAngel ? "angel-text" : "demon-text";
         
         this.triggerAnim('event-icon', 'anim-spawn');
-        let desc = `<span class='${style}'>${selected.name}</span>`;
-        this.renderEvent(title, "...", desc, icon);
-        this.setButtons(this.t('btn_continue'), "nextEvent", "無", null, true);
+        let desc = `你獲得了 <span class='${style}'>${selected.name}</span> 的效果。<br><small>${selected.desc}</small>`;
+        this.renderEvent(title, "祈禱得到了回應...", desc, icon);
+        this.setButtons("繼續", "nextEvent", "無", null, true);
         this.updateUI();
     },
 
@@ -1216,8 +1098,8 @@ const Game = {
         GameState.phase = "merchant";
         this.generateMerchantStock();
         this.triggerAnim('event-icon', 'anim-spawn');
-        this.renderEvent(this.t('evt_merchant'), this.t('evt_merchant_desc'), "", "👳");
-        this.setButtons(this.t('btn_leave'), "nextEvent", "無", null, true);
+        this.renderEvent("💰 神秘商人", "「素材可是很值錢的，要賣一些嗎？」", "點擊商品可查看詳情與購買", "👳");
+        this.setButtons("離開", "nextEvent", "無", null, true);
         this.renderMerchantShop();
     },
 
@@ -1229,12 +1111,12 @@ const Game = {
     },
 
     getItemDesc(item) {
-        if (item.desc) return item.desc; // Consumables (can be added to translations if needed)
-        let valText = "";
-        if (item.type === 'weapon') valText = `ATK +${item.val}`;
-        if (item.type === 'armor') valText = `HP +${item.val}`;
-        if (item.type === 'shield') valText = `Block ${item.val}`;
-        return valText;
+        if (item.desc) return item.desc;
+        if (item.type === 'weapon') return `攻擊力 +${item.val}`;
+        if (item.type === 'armor') return `生命上限 +${item.val}`;
+        if (item.type === 'shield') return `抵擋 ${item.val} 次攻擊`;
+        if (item.type === 'loot') return `戰利品 (可高價出售)`;
+        return "未知物品";
     },
 
     renderMerchantShop() {
@@ -1242,14 +1124,14 @@ const Game = {
         area.innerHTML = "";
         area.classList.remove('hidden');
         
-        let buyHtml = `<h4 data-key='btn_buy'>${this.t('btn_buy')}</h4><div class='merchant-grid'>`;
+        let buyHtml = "<h4>購買商品</h4><div class='merchant-grid'>";
         GameState.merchantStock.forEach((item, idx) => {
             if (!item) return;
             const desc = this.getItemDesc(item);
             const rarityColor = CONFIG.rarityDisplay[item.rarity].color;
             buyHtml += `<div class="merchant-item ${rarityColor}" onclick="Game.buyItem(${idx})">
                 <div class="m-top">
-                    <span>${item.icon || '📦'} ${this.t(item.name)}</span>
+                    <span>${item.icon || '📦'} ${item.name}</span>
                     <span class="gold-text">${item.price} G</span>
                 </div>
                 <div class="m-desc">${desc}</div>
@@ -1258,9 +1140,10 @@ const Game = {
         buyHtml += "</div>";
         
         buyHtml += `<div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
-            <h4 data-key='btn_sell_all'>Sell</h4>
-            <button onclick="Game.sellAllMaterials()" style="padding:5px 10px; font-size:0.8em; background:#d32f2f;">${this.t('btn_sell_all')}</button>
-        </div>`;
+            <h4>出售</h4>
+            <button onclick="Game.sellAllMaterials()" style="padding:5px 10px; font-size:0.8em; background:#d32f2f;">一鍵出售素材</button>
+        </div>
+        <p style='font-size:0.8em; color:#888'>點擊下方背包物品即可出售。</p>`;
         
         area.innerHTML = buyHtml;
     },
@@ -1272,17 +1155,21 @@ const Game = {
             Player.gold -= item.price;
             this.addItemToInventory(item);
             GameState.merchantStock[idx] = null;
-            this.showFloatingText(`- ${item.price} G`, "yellow");
+            this.showFloatingText("- " + item.price + " G", "yellow");
+            this.log(`購買了 ${item.name}`);
             this.updateUI();
             this.renderMerchantShop();
         } else {
-            alert("No Gold!");
+            alert("金幣不足！");
         }
     },
 
     sellAllMaterials() {
         if (GameState.phase !== "merchant") return;
-        if (Player.inventory.material.length === 0) return;
+        if (Player.inventory.material.length === 0) {
+            alert("沒有可出售的素材。");
+            return;
+        }
         
         let total = 0;
         let keptItems = [];
@@ -1298,7 +1185,8 @@ const Game = {
         
         Player.inventory.material = keptItems;
         Player.gold += total;
-        this.showFloatingText(`+ ${total} G`, "yellow");
+        this.showFloatingText("+ " + total + " G", "yellow");
+        this.log(`出售了所有素材，獲得 ${total} G`);
         this.updateUI();
     },
 
@@ -1308,7 +1196,7 @@ const Game = {
         const item = Player.inventory[category][index];
         if (!item) return;
         if (item.type === 'revive') {
-            alert("Cannot sell!");
+            alert("這件物品太珍貴了，無法出售！");
             return;
         }
 
@@ -1321,10 +1209,11 @@ const Game = {
             price = Math.floor(price * 1.2);
         }
         
-        if(confirm(`Sell ${this.t(item.name)} for ${price} G?`)) {
+        if(confirm(`確定要以 ${price} G 出售 ${item.name} 嗎？`)) {
             Player.inventory[category].splice(index, 1);
             Player.gold += price;
-            this.showFloatingText(`+ ${price} G`, "yellow");
+            this.showFloatingText("+ " + price + " G", "yellow");
+            this.log(`出售 ${item.name} 獲得 ${price} G`);
             this.updateUI();
         }
     },
@@ -1336,39 +1225,45 @@ const Game = {
         if (Math.random() < 0.01) {
             const feather = {...CONFIG.phoenixFeather};
             this.addItemToInventory(feather);
-            this.renderEvent(this.t('evt_chest'), this.t('evt_chest_open'), `<span class='rarity-legendary'>${this.t(feather.name)}</span>`, "🪶");
-            this.setButtons(this.t('btn_continue'), "nextEvent", "無", null, true);
+            this.renderEvent("📦 發現寶箱", "你打開了寶箱...", "奇蹟發生了！你獲得了 <span class='rarity-legendary'>不死鳥的羽毛</span>！", "🪶");
+            this.setButtons("繼續", "nextEvent", "無", null, true);
             return;
         }
 
         const roll = Math.random();
+        let title = "📦 發現寶箱";
+        let desc = "";
+        let icon = "📦";
+
         let isThief = Player.class === 'thief';
         let safeRoll = isThief ? roll * 0.8 : roll; 
 
         if (safeRoll < 0.30) {
             const amount = Math.floor(Math.random() * 50) + 10 + (Player.depth * 2);
             Player.gold += amount;
+            desc = `獲得了 <span class='gold-text'>${amount} G</span>`;
             this.showFloatingText(`+${amount} G`, "#ffd700");
-            this.renderEvent(this.t('evt_chest'), this.t('evt_chest_open'), this.t('msg_gain_gold', amount), "📦");
         } else if (safeRoll < 0.60) {
             const item = this.generateSpecificItem(['consumable']);
             this.addItemToInventory(item);
-            this.renderEvent(this.t('evt_chest'), this.t('evt_chest_open'), this.t(item.name), "📦");
+            desc = `獲得了 <span class='${CONFIG.rarityDisplay[item.rarity].color}'>${item.name}</span>`;
         } else if (safeRoll < 0.80) {
             const item = this.generateSpecificItem(['weapon', 'armor', 'shield']);
             this.addItemToInventory(item);
-            this.renderEvent(this.t('evt_chest'), this.t('evt_chest_open'), this.t(item.name), "📦");
+            desc = `獲得了 <span class='${CONFIG.rarityDisplay[item.rarity].color}'>${item.name}</span>`;
         } else if (safeRoll < 0.90) {
-            this.renderEvent(this.t('evt_chest'), this.t('evt_chest_open'), this.t('evt_chest_empty'), "📦");
+            desc = "裡面空空如也...";
         } else {
             const dmg = Math.floor(Player.maxHp * 0.15);
             Player.hp = Math.max(0, Player.hp - dmg);
+            desc = `是陷阱！受到了 <span class='damage-text'>${dmg}</span> 點傷害。`;
             this.triggerAnim('game-container', 'anim-screen-shake');
             this.showFloatingText(`-${dmg} HP`, "red");
-            this.renderEvent(this.t('evt_chest'), this.t('evt_chest_trap'), this.t('msg_pain', dmg), "💣");
-            if(Player.hp === 0) { this.playerDie("Chest Trap"); return; }
+            if(Player.hp === 0) { this.playerDie("死於寶箱陷阱"); return; }
         }
-        this.setButtons(this.t('btn_continue'), "nextEvent", "無", null, true);
+
+        this.renderEvent(title, "你打開了寶箱...", desc, icon);
+        this.setButtons("繼續", "nextEvent", "無", null, true);
     },
 
     getWeightedMonster() {
@@ -1419,14 +1314,19 @@ const Game = {
         }
 
         let hpMul = 1, atkMul = 1;
+        let namePrefix = "";
         
-        if (Player.depth > 500) { hpMul *= 1.5; }
-        if (tier === "elite") { hpMul *= 2; atkMul *= 1.5; }
-        else if (tier === "boss") { hpMul *= 3; atkMul *= 2; }
+        if (Player.depth > 500) {
+            hpMul *= 1.5;
+            namePrefix += "深淵 ";
+        }
+
+        if (tier === "elite") { hpMul *= 2; atkMul *= 1.5; namePrefix += "菁英 "; }
+        else if (tier === "boss") { hpMul *= 3; atkMul *= 2; namePrefix += "首領 "; }
 
         let enemy = {
             ...baseMonster,
-            name: baseMonster.name, // Keep base name for ID
+            name: namePrefix + baseMonster.name,
             maxHp: Math.floor(baseMonster.hp * hpMul),
             hp: Math.floor(baseMonster.hp * hpMul),
             atk: Math.floor(baseMonster.atk * atkMul),
@@ -1456,15 +1356,11 @@ const Game = {
         document.getElementById('event-icon').className = iconClass;
         this.triggerAnim('event-icon', 'anim-spawn');
         
-        let prefix = "";
-        if (tier === "elite") prefix = "Elite ";
-        if (tier === "boss") prefix = "Boss ";
+        this.renderEvent(`⚔️ 遭遇 ${GameState.currentEnemy.name}`, 
+            `HP: ${GameState.currentEnemy.hp} | 攻擊: ${GameState.currentEnemy.atk}`, 
+            "準備戰鬥！", GameState.currentEnemy.icon);
         
-        this.renderEvent(`⚔️ ${prefix}${this.t(enemy.name)}`, 
-            `${this.t('stat_hp')}: ${enemy.hp} | ${this.t('stat_atk')}: ${enemy.atk}`, 
-            this.t('evt_ready_desc'), enemy.icon);
-        
-        this.setButtons(this.t('btn_fight'), "combatRound", this.t('btn_flee'), "flee", !canFlee);
+        this.setButtons("戰鬥", "combatRound", "逃跑", "flee", !canFlee);
     },
 
     combatRound() {
@@ -1481,8 +1377,7 @@ const Game = {
             if (Player.buff.id === 'demon_wealth') {
                 Player.gold += 5;
                 this.showFloatingText("+5 G", "gold");
-                // Simplified log for translation ease
-                logHtml += `[Buff] +5 G<br>`;
+                logHtml += `<span class='demon-text'>[惡魔財富]</span> 獲得 5 G<br>`;
             }
             if (Player.buff.id === 'demon_destruction') {
                 if (Math.random() < 0.1) {
@@ -1490,7 +1385,7 @@ const Game = {
                     let pain = Math.floor(Player.hp * 0.9);
                     Player.hp -= pain;
                     this.showFloatingText(`-${pain} HP`, "darkred");
-                    logHtml += `[Buff] Kill! -${pain} HP<br>`;
+                    logHtml += `<span class='demon-text'>[惡魔破壞]</span> 觸發秒殺！自身扣除 ${pain} HP。<br>`;
                     this.combatWin(); 
                     this.updateUI();
                     return;
@@ -1506,7 +1401,7 @@ const Game = {
         this.triggerAnim('event-icon', 'anim-damage');
         this.showFloatingText(pDmg, pCrit ? "red" : "white");
         
-        logHtml += `You hit ${this.t(enemy.name)} for ${pCrit ? "CRIT " : ""}${pDmg}.<br>`;
+        logHtml += `你對 ${enemy.name} 造成 ${pCrit ? "<span class='crit-text'>爆擊 " : ""}${pDmg}${pCrit ? "</span>" : ""} 點傷害。<br>`;
 
         if (enemy.hp <= 0) {
             this.combatWin();
@@ -1531,15 +1426,15 @@ const Game = {
             let isPierced = (mCrit && s.name !== "埃癸斯之盾");
             
             if (isPierced) {
-                logHtml += `<span class='pierce-text'>Pierce! Shield ignored.</span><br>`;
+                logHtml += `<span class='pierce-text'>⚡ 致命一擊貫穿了盾牌！</span><br>`;
             } else {
                 applyDamage = false;
-                this.showFloatingText("Block!", "#2196f3");
-                logHtml += `<span class='block-text'>Blocked!</span> (${s.val} left)<br>`;
+                this.showFloatingText("格擋!", "#2196f3");
+                logHtml += `<span class='block-text'>🛡️ 盾牌抵擋了攻擊！</span> (剩餘耐久: ${s.val})<br>`;
             }
 
             if (s.val <= 0) {
-                logHtml += `<span class='damage-text'>Shield Broken!</span><br>`;
+                logHtml += `<span class='damage-text'>💔 你的 ${s.name} 碎裂了！</span><br>`;
                 Player.equipment.shield = null;
                 this.recalcStats(); 
             }
@@ -1549,15 +1444,15 @@ const Game = {
             Player.hp -= mDmg;
             this.triggerAnim('game-container', 'anim-screen-shake');
             this.showFloatingText(`-${mDmg}`, "red");
-            logHtml += `Enemy hit you for ${mCrit ? "CRIT " : ""}${mDmg}.`;
+            logHtml += `${enemy.name} 攻擊！造成 ${mCrit ? "<span class='crit-text'>致命 " : ""}${mDmg}${mCrit ? "</span>" : ""} 點傷害。`;
         }
         
-        this.renderEvent(`⚔️ ${this.t(enemy.name)}`, 
-            `${this.t('stat_hp')}: ${Math.max(0, enemy.hp)}`, 
+        this.renderEvent(`⚔️ 戰鬥中 - ${enemy.name}`, 
+            `敵方 HP: ${Math.max(0, enemy.hp)}`, 
             logHtml, enemy.icon);
 
         if (Player.hp <= 0) {
-            this.playerDie(enemy.name);
+            this.playerDie(`被 ${enemy.name} 殺死`);
         } else {
             this.updateUI();
         }
@@ -1580,7 +1475,7 @@ const Game = {
         
         Player.gold += gold;
         this.showFloatingText(`+${gold} G`, "#ffd700");
-        dropText += `+ ${gold} G<br>`;
+        dropText += `金幣 +${gold} <br>`;
 
         if (enemy.isTrueForm) {
             if (CONFIG.lootData["真實之心"]) {
@@ -1588,14 +1483,23 @@ const Game = {
                 drops.push(loot);
             }
         } else {
-            if (Math.random() < 0.7 && CONFIG.lootData[enemy.drop]) {
-                drops.push({ ...CONFIG.lootData[enemy.drop], name: enemy.drop, type: "loot" });
+            if (Math.random() < 0.7) {
+                if (CONFIG.lootData[enemy.drop]) {
+                    let loot = { ...CONFIG.lootData[enemy.drop], name: enemy.drop, type: "loot" };
+                    drops.push(loot);
+                }
             }
-            if ((enemy.tier === "elite" || enemy.tier === "boss") && Math.random() < 0.3 && CONFIG.lootData[enemy.eliteDrop]) {
-                drops.push({ ...CONFIG.lootData[enemy.eliteDrop], name: enemy.eliteDrop, type: "loot" });
+            if (enemy.tier === "elite" || enemy.tier === "boss") {
+                if (Math.random() < 0.3 && CONFIG.lootData[enemy.eliteDrop]) {
+                    let loot = { ...CONFIG.lootData[enemy.eliteDrop], name: enemy.eliteDrop, type: "loot" };
+                    drops.push(loot);
+                }
             }
-            if (enemy.tier === "boss" && Math.random() < 0.1 && CONFIG.lootData[enemy.bossDrop]) {
-                drops.push({ ...CONFIG.lootData[enemy.bossDrop], name: enemy.bossDrop, type: "loot" });
+            if (enemy.tier === "boss") {
+                if (Math.random() < 0.1 && CONFIG.lootData[enemy.bossDrop]) {
+                    let loot = { ...CONFIG.lootData[enemy.bossDrop], name: enemy.bossDrop, type: "loot" };
+                    drops.push(loot);
+                }
             }
         }
 
@@ -1607,14 +1511,17 @@ const Game = {
             this.addItemToInventory(item);
             let colorClass = item.rarity ? CONFIG.rarityDisplay[item.rarity].color : "";
             if(item.rarity === 'mythic') colorClass = 'rarity-mythic';
-            dropText += `<span class='${colorClass}'>${this.t(item.name)}</span><br>`;
+            dropText += `獲得 <span class='${colorClass}'>${item.name}</span><br>`;
         });
 
-        this.renderEvent(this.t('evt_win'), this.t('evt_win_desc'), dropText || "Empty.", "🎉");
+        let winTitle = enemy.isTrueForm ? "👑 弒神者" : "🏆 戰鬥勝利";
+        let winMsg = enemy.isTrueForm ? "你擊敗了魔王真身，傳說將永遠流傳！" : "你擊敗了敵人！";
+
+        this.renderEvent(winTitle, winMsg, dropText || "沒有掉落任何物品。", "🎉");
         document.getElementById('event-icon').className = "monster-icon"; 
         
         this.checkAchievements();
-        this.setButtons(this.t('btn_continue'), "nextEvent", "無", null, true);
+        this.setButtons("繼續", "nextEvent", "無", null, true);
         this.updateUI();
     },
 
@@ -1626,7 +1533,7 @@ const Game = {
                 fleeRate = 0.8;
                 if (Math.random() < 0.01) {
                     Player.hp = 0;
-                    this.playerDie("Demon Wager");
+                    this.playerDie("死於惡魔賭約");
                     return;
                 }
             }
@@ -1634,9 +1541,9 @@ const Game = {
 
         if (Math.random() < fleeRate) {
             GameState.phase = "event_end";
-            this.renderEvent(this.t('evt_flee_ok'), this.t('evt_flee_ok_desc'), "", "🏃");
+            this.renderEvent("💨 逃跑成功", "你成功甩掉了怪物。", "", "🏃");
             document.getElementById('event-icon').className = "monster-icon";
-            this.setButtons(this.t('btn_continue'), "nextEvent", "無", null, true);
+            this.setButtons("繼續", "nextEvent", "無", null, true);
         } else {
             const enemy = GameState.currentEnemy;
             let mDmg = enemy.atk;
@@ -1647,10 +1554,10 @@ const Game = {
 
             if (s && s.val > 0) {
                 s.val--;
-                this.showFloatingText("Block!", "#2196f3");
-                msg = `Failed! Shield Blocked.`;
+                this.showFloatingText("格擋!", "#2196f3");
+                msg = `逃跑失敗！但<span class='block-text'>盾牌抵擋了追擊</span>！`;
                 if (s.val <= 0) {
-                    msg += `<br>Shield Broken!`;
+                    msg += `<br><span class='damage-text'>💔 你的 ${s.name} 碎裂了！</span>`;
                     Player.equipment.shield = null;
                     this.recalcStats();
                 }
@@ -1658,20 +1565,21 @@ const Game = {
                 Player.hp -= mDmg;
                 this.triggerAnim('game-container', 'anim-screen-shake');
                 this.showFloatingText(`-${mDmg}`, "red");
-                msg = `Failed! Took ${mDmg} dmg.`;
+                msg = `逃跑失敗！被 ${enemy.name} 攻擊造成 ${mDmg} 傷害。`;
                 
                 if (Player.buff && Player.buff.id === 'demon_wealth') {
                     if (Player.gold >= 5) {
                         Player.gold -= 5;
                         this.showFloatingText("-5 G", "red");
+                        msg += `<br><span class='demon-text'>[惡魔財富]</span> 損失 5 G`;
                     }
                 }
             }
             
             if (Player.hp <= 0) {
-                this.playerDie("Flee Failed");
+                this.playerDie(`在逃跑時被 ${enemy.name} 殺死`);
             } else {
-                this.renderEvent(`⚔️ ${this.t(enemy.name)}`, `${this.t('stat_hp')}: ${enemy.hp}`, msg, enemy.icon);
+                this.renderEvent(`⚔️ ${enemy.name}`, `敵方 HP: ${enemy.hp}`, msg, enemy.icon);
                 this.updateUI();
             }
         }
@@ -1684,12 +1592,12 @@ const Game = {
             Player.hp = Math.floor(Player.maxHp * 0.5);
             
             if (GameState.phase === 'combat' && GameState.currentEnemy) {
-                this.renderEvent(`⚔️ Revived`, `Enemy HP: ${GameState.currentEnemy.hp}`, "Phoenix Feather Used!", GameState.currentEnemy.icon);
-                this.setButtons(this.t('btn_fight'), "combatRound", this.t('btn_flee'), "flee", false);
+                this.renderEvent(`⚔️ 浴火重生`, `敵方 HP: ${GameState.currentEnemy.hp}`, "不死鳥的羽毛讓你復活了！戰鬥繼續！", GameState.currentEnemy.icon);
+                this.setButtons("戰鬥", "combatRound", "逃跑", "flee", false);
             } else {
-                this.renderEvent("Revived", "Phoenix Feather Used!", "HP 50%", "🦅");
+                this.renderEvent("🔥 浴火重生", "不死鳥的羽毛發出耀眼光芒...", "你復活了！恢復 50% 生命值。", "🦅");
                 GameState.phase = "event_end";
-                this.setButtons(this.t('btn_continue'), "nextEvent", "無", null, true);
+                this.setButtons("繼續", "nextEvent", "無", null, true);
             }
             
             this.updateUI();
@@ -1699,9 +1607,11 @@ const Game = {
         GameState.phase = "dead";
         Player.hp = 0;
         this.updateUI();
+        // 死亡時清除存檔
         localStorage.removeItem('fantasy_adventure_save');
-        this.renderEvent(this.t('evt_die'), this.t('evt_die_desc', Player.depth), reason, "🪦");
-        this.setButtons(this.t('btn_restart'), "restart", "無", null, true);
+        let cause = reason ? reason : "未知原因";
+        this.renderEvent("☠️ 你死了", `死因：${cause}<br>冒險結束。最終深度: ${Player.depth}`, "重新整理網頁以重新開始", "🪦");
+        this.setButtons("重新冒險", "restart", "無", null, true);
     },
 
     restart() {
@@ -1724,6 +1634,8 @@ const Game = {
         if (pool.length === 0) return this.generateRandomItem("normal");
 
         const template = pool[Math.floor(Math.random() * pool.length)];
+        
+        // 使用 Object.assign 或深拷貝確保返回一個全新的、非引用的物件。
         return Object.assign({}, template);
     },
 
@@ -1739,6 +1651,8 @@ const Game = {
         let pool = CONFIG.itemPool.filter(i => i.rarity === rarityKey && allowedTypes.includes(i.type));
         if (pool.length === 0) pool = CONFIG.itemPool.filter(i => allowedTypes.includes(i.type));
         const template = pool[Math.floor(Math.random() * pool.length)];
+        
+        // 確保返回一個全新的、非引用的物件。
         return Object.assign({}, template);
     },
 
@@ -1756,7 +1670,7 @@ const Game = {
     },
 
     handleItemClick(index, category) {
-        // Fix: Dead player cannot use items
+        // [修正] 死亡狀態禁止操作背包，防止死後喝水復活
         if (Player.hp <= 0 || GameState.phase === 'dead') return;
 
         if (GameState.phase === "merchant") {
@@ -1765,11 +1679,11 @@ const Game = {
         }
         const item = Player.inventory[category][index];
         if (['weapon', 'armor', 'shield'].includes(item.type)) {
-            if(confirm(`Equip ${this.t(item.name)}?`)) this.equip(index, category);
+            if(confirm(`要裝備 ${item.name} (${this.getItemDesc(item)}) 嗎？`)) this.equip(index, category);
         } else if (item.type === 'consumable') {
-            if(confirm(`Use ${this.t(item.name)}?`)) this.useItem(index, category);
+            if(confirm(`要使用 ${item.name} (${item.desc}) 嗎？`)) this.useItem(index, category);
         } else {
-             alert(`${this.t(item.name)}`);
+             alert(`${item.name}: ${item.desc || "素材/戰利品"}`);
         }
     },
 
@@ -1779,13 +1693,16 @@ const Game = {
 
         if (!['weapon', 'armor', 'shield'].includes(type)) return;
 
+        // 1. Swap logic
         if (Player.equipment[type]) this.addItemToInventory(Player.equipment[type], false);
         
         Player.equipment[type] = item;
         Player.inventory[category].splice(index, 1);
         
+        // 2. Render and Recalculate Stats (handles MaxHP/HP ratio)
         this.recalcStats();
         this.updateUI();    
+        this.log(`裝備了 ${item.name}`);
     },
 
     unequip(type) {
@@ -1795,13 +1712,14 @@ const Game = {
         this.addItemToInventory(item, false); 
         Player.equipment[type] = null;
         
+        // Recalculate Stats (handles MaxHP/HP ratio)
         this.recalcStats();
         this.updateUI();
+        this.log(`卸下了 ${type === 'weapon' ? '武器' : type === 'armor' ? '防具' : '盾牌'}`);
     },
 
     useItem(index, category) {
         const item = Player.inventory[category][index];
-        // Checks logic by Chinese name (ID)
         if (item.name.includes("藥水") || item.name.includes("藥劑")) {
             let heal = item.val;
             Player.hp = Math.min(Player.maxHp, Player.hp + heal);
@@ -1814,7 +1732,7 @@ const Game = {
     log(msg) { console.log(msg); },
 
     renderEvent(title, subtitle, content, icon) {
-        document.getElementById('event-title').innerHTML = title;
+        document.getElementById('event-title').innerText = title;
         document.getElementById('event-desc').innerHTML = `<p>${subtitle}</p><p>${content}</p>`;
         if(icon) document.getElementById('event-icon').innerText = icon;
         if(GameState.phase !== 'merchant') document.getElementById('merchant-area').classList.add('hidden');
@@ -1838,21 +1756,22 @@ const Game = {
         const s = Player.equipment.shield;
         
         const wEl = document.getElementById('slot-weapon');
-        wEl.innerHTML = w ? `<span class="${CONFIG.rarityDisplay[w.rarity].color}">${w.icon} ${this.t(w.name)} (+${w.val})</span>` : this.t('slot_weapon');
+        wEl.innerHTML = w ? `<span class="${CONFIG.rarityDisplay[w.rarity].color}">${w.icon} ${w.name} (+${w.val})</span>` : "無武器";
         wEl.className = `equip-slot ${w ? CONFIG.rarityDisplay[w.rarity].color : ''}`;
 
         const aEl = document.getElementById('slot-armor');
-        aEl.innerHTML = a ? `<span class="${CONFIG.rarityDisplay[a.rarity].color}">${a.icon} ${this.t(a.name)} (+${a.val})</span>` : this.t('slot_armor');
+        aEl.innerHTML = a ? `<span class="${CONFIG.rarityDisplay[a.rarity].color}">${a.icon} ${a.name} (+${a.val})</span>` : "無防具";
         aEl.className = `equip-slot ${a ? CONFIG.rarityDisplay[a.rarity].color : ''}`;
         
         const sEl = document.getElementById('slot-shield');
-        sEl.innerHTML = s ? `<span class="${CONFIG.rarityDisplay[s.rarity].color}">${s.icon} ${this.t(s.name)} (${s.val})</span>` : this.t('slot_shield');
+        sEl.innerHTML = s ? `<span class="${CONFIG.rarityDisplay[s.rarity].color}">${s.icon} ${s.name} (${s.val})</span>` : "無盾牌";
         sEl.className = `equip-slot ${s ? CONFIG.rarityDisplay[s.rarity].color : ''}`;
 
         this.renderInvList('inv-equip', Player.inventory.equipment, 'equipment');
         this.renderInvList('inv-consum', Player.inventory.consumable, 'consumable');
         this.renderInvList('inv-mat', Player.inventory.material, 'material');
 
+        // 自動存檔觸發點：只要 UI 更新且非讀取中且活著，就自動存檔
         if (!GameState.isLoading && Player.hp > 0 && Player.class) {
             this.saveGame();
         }
@@ -1868,10 +1787,10 @@ const Game = {
         const buffEl = document.getElementById('buff-display');
         if (Player.buff) {
             const style = Player.buff.type === 'angel' ? 'angel-text' : 'demon-text';
-            buffEl.innerHTML = `${this.t('buff_label')}: <span class="${style}">${Player.buff.name}</span> <span style="font-size:0.8em; cursor:pointer;">(${this.t('buff_click')})</span>`;
+            buffEl.innerHTML = `狀態: <span class="${style}">${Player.buff.name}</span> <span style="font-size:0.8em; cursor:pointer;">(點擊查看)</span>`;
             buffEl.onclick = () => alert(`${Player.buff.name}\n\n${Player.buff.desc}`);
         } else {
-            buffEl.innerHTML = `${this.t('buff_label')}: ${this.t('buff_none')}`;
+            buffEl.innerHTML = `狀態: 無`;
             buffEl.onclick = null;
         }
     },
@@ -1885,14 +1804,16 @@ const Game = {
             if (item.rarity === 'epic') div.classList.add('rare-epic');
             if (item.rarity === 'legendary') div.classList.add('rare-legendary');
             if (item.rarity === 'mythic') div.classList.add('rarity-mythic');
-            div.innerHTML = `${item.icon || '📦'} ${this.t(item.name)}`;
+            div.innerHTML = `${item.icon || '📦'} ${item.name}`;
             div.onclick = () => this.handleItemClick(idx, category);
             list.appendChild(div);
         });
     }
 };
 
+window.Game = Game;
 Game.init();
+})();
 </script>
 </body>
 </html>
