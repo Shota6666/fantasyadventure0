@@ -1396,7 +1396,9 @@ const Game = {
             baseMonster = this.getWeightedMonster();
             let rand = Math.random();
             if (Player.depth > 300) {
-                if (rand < 0.5) tier = "elite"; else tier = "boss";
+               if (rand < 0.1) tier = "normal";        // 0% -> 10%
+    else if (rand < 0.55) tier = "elite";   // 50% -> 45%
+    else tier = "boss";                     // 50% -> 45%
             } else if (Player.depth > 100) {
                 if (rand < 0.1) tier = "boss"; else if (rand < 0.6) tier = "elite"; else tier = "normal";
             } else {
