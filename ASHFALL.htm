@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASHFALL V11.2: COMPLETE</title>
+    <style>
+        :root {
+            --bg-color: #0d0d0d;
+            --term-green: #50c878;
+            --term-dim: #1a4025;
+            --grid-bg: #151515;
+            --item-bg: #202a20;
+            --alert-color: #ff4444;
+            --gold-color: #ffd700;
+            --info-color: #44aaff;
+            --floor-color: #d2b48c;
+            --font-main: 'Consolas', 'Courier New', monospace;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--term-green);
+            font-family: var(--font-main);
+            margin: 0; padding: 0;
+            height: 100vh; overflow: hidden;
+            text-shadow: 0 0 2px var(--term-dim);
+            user-select: none;
+        }
+
+        body::before {
+            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 999; pointer-events: none; background-size: 100% 3px, 3px 100%;
+        }
+
+        #layout {
+            display: grid;
+            grid-template-columns: 300px 1fr 380px;
+            grid-template-rows: 60px 1fr 100px;
+            height: 100%; width: 100%; max-width: 1800px; margin: 0 auto;
+            border: 1px solid var(--term-dim);
+        }
+
+        .panel { border: 1px solid var(--term-dim); padding: 15px; overflow-y: auto; background: #080a08; position: relative; }
+        
+        header {
+            grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center;
+            padding: 0 20px; border-bottom: 2px solid var(--term-green); background: #0f160f;
+        }
+        h1 { margin: 0; letter-spacing: 2px; font-size: 1.4rem; color: #fff; }
+
+        /* Buttons */
+        button {
+            background: #000; color: var(--term-green); border: 1px solid var(--term-green);
+            padding: 5px 10px; font-family: var(--font-main); cursor: pointer; text-transform: uppercase; font-size: 0.9rem;
+        }
+        button:hover:not(:disabled) { background: var(--term-green); color: #000; }
+        button:disabled { border-color: #333; color: #333; cursor: not-allowed; opacity: 0.5; }
+        button.alert { border-color: var(--alert-color); color: var(--alert-color); }
+        button.gm { border-color: #a020f0; color: #a020f0; }
+        button.info { border-color: var(--info-color); color: var(--info-color); }
+
+        /* Left Panel */
+        .stat-box { margin-bottom: 8px; }
+        .bar-frame { border: 1px solid #333; height: 10px; width: 100%; margin-top:2px; background: #000; }
+        .bar-fill { height: 100%; background: var(--term-green); transition: width 0.3s; }
+        
+        .gear-section { margin-top: 20px; border-top: 1px solid #333; padding-top: 10px; }
+        .gear-slot { 
+            border: 1px solid #333; padding: 8px; margin-bottom: 5px; cursor: pointer; 
+            font-size: 0.85rem; display: flex; justify-content: space-between; background: #111;
+        }
+        .gear-slot:hover { border-color: var(--alert-color); color: #fff; }
+        .gear-label { color: #888; }
+        .gear-val { color: #fff; font-weight: bold; }
+
+        /* Floor System */
+        #floor-container { margin-top: 20px; border: 1px dashed var(--floor-color); padding: 10px; background: rgba(210, 180, 140, 0.05); }
+        .floor-header { color: var(--floor-color); font-weight: bold; margin-bottom: 5px; display:flex; justify-content:space-between; font-size: 0.9rem;}
+        .floor-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+        .floor-item { 
+            border: 1px solid var(--floor-color); padding: 3px 6px; font-size: 0.75rem; 
+            cursor: pointer; color: #aaa; background: #1a1515;
+        }
+        .floor-item:hover { border-color: #fff; color: #fff; }
+
+        /* Inventory */
+        #inventory-container { display: flex; flex-direction: column; align-items: center; }
+        .inv-header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        
+        .inv-grid-wrapper {
+            position: relative; width: 270px; margin-bottom: 10px;
+            background: #000; border: 2px solid #333; transition: all 0.3s;
+            flex-shrink: 0; overflow: hidden;
+        }
+        .inv-grid-wrapper.collapsed { height: 0 !important; border: none; margin: 0; }
+
+        .inv-grid { display: grid; grid-template-columns: repeat(5, 50px); gap: 2px; padding: 2px; }
+        .grid-slot { width: 50px; height: 50px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); }
+
+        .grid-item {
+            position: absolute; background-color: var(--item-bg); border: 1px solid var(--term-green);
+            color: #fff; font-size: 0.7rem; display: flex; justify-content: center; align-items: center; text-align: center;
+            cursor: pointer; z-index: 10; box-shadow: 0 0 5px #000; overflow: hidden; padding: 2px; line-height: 1.1;
+            transition: top 0.1s, left 0.1s;
+        }
+        .grid-item:hover { filter: brightness(1.3); z-index: 100; border-color: #fff; }
+        .grid-item.selected { border: 2px solid #fff; box-shadow: 0 0 10px #fff; z-index: 101; }
+        
+        .type-weapon { border-color: #ff5555; background: #2a1111; }
+        .type-med { border-color: #55ff55; background: #112a11; }
+        .type-food { border-color: orange; background: #2a2010; }
+        .type-junk { border-color: #888; background: #222; }
+        .type-quest { border-color: #ffff00; background: #2a2a10; animation: pulse 2s infinite; }
+        .type-ammo { border-color: #5555ff; background: #1a1a2a; }
+        .type-pack { border-color: #00ffff; background: #002a2a; }
+
+        #inv-controls { display: flex; gap: 5px; width: 100%; justify-content: center; margin-top: 5px; flex-wrap: wrap; }
+        .mini-btn { padding: 5px 10px; font-size: 0.75rem; background: #111; color: #aaa; border: 1px solid #444; cursor: pointer; }
+        .mini-btn:hover:not(:disabled) { border-color: #fff; color: #fff; background: #333; }
+
+        /* Side Section */
+        .side-section { margin-top: 15px; border-top: 1px solid #333; padding-top: 10px; width: 100%; flex-grow: 1; overflow-y: auto; }
+        .section-title { font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold; }
+        .stash-item { display: inline-block; border: 1px solid #444; padding: 4px 8px; margin: 2px; cursor: pointer; font-size: 0.8rem; background: #111; }
+        .stash-item:hover { border-color: var(--term-green); color: #fff; }
+
+        /* Log */
+        #log-panel { font-size: 0.95rem; line-height: 1.5; padding-bottom: 20px; }
+        .log-entry { margin-bottom: 6px; padding-left: 8px; border-left: 2px solid var(--term-dim); }
+        .log-entry.combat { border-color: var(--alert-color); color: #ff8888; }
+        .log-entry.gain { border-color: #ffff00; color: #eeffcc; }
+        .log-entry.sys { color: #666; font-style: italic; border: none; }
+        .log-entry.event { border-color: #44aaff; color: #aaddff; }
+
+        footer { 
+            grid-column: 1 / -1; border-top: 1px solid var(--term-green); 
+            display: flex; justify-content: center; align-items: center; gap: 10px; 
+            background: #000; padding: 10px; z-index: 100;
+        }
+        footer button { padding: 10px 20px; font-size: 1rem; }
+
+        #overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 200; justify-content: center; align-items: center;
+        }
+        .modal { 
+            border: 2px solid var(--term-green); background: #000; padding: 20px; 
+            width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+        }
+        .conflict-view { display: flex; flex-direction: column; align-items: center; gap: 10px; border: 1px dashed red; padding: 20px; }
+        .info-grid { display: grid; grid-template-columns: 100px 1fr; gap: 10px; font-size: 0.9rem; text-align: left; }
+        .info-label { color: #888; }
+        .info-val { color: #fff; font-weight: bold; }
+        
+        .gm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 5px; }
+        .gm-item { border: 1px solid #333; padding: 5px; cursor: pointer; text-align: center; font-size: 0.8rem; }
+        .gm-item:hover { border-color: var(--rare-color); color: #fff; }
+
+        .bestiary-entry { border: 1px solid #333; padding: 5px; margin: 2px; display:inline-block; cursor:pointer; }
+        .bestiary-entry:hover { border-color: var(--alert-color); color: var(--alert-color); }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; border-color: #fff; } 100% { opacity: 1; } }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        .blink-red { color: var(--alert-color); animation: blink 1s infinite; }
+        
+        @media (max-width: 900px) {
+            #layout { grid-template-columns: 1fr; grid-template-rows: auto auto 550px 1fr auto; display: flex; flex-direction: column; }
+            .inv-grid-wrapper { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+<div id="layout">
+    <header>
+        <h1>Z-DAY v11.2 <span style="font-size:0.8rem; color:var(--info-color);">// COMPLETE</span></h1>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <span id="game-status">狀態: 探索中</span>
+            <span>DAY: <span id="ui-day">0</span></span>
+            <span style="color:var(--gold-color)">$: <span id="ui-money">0</span></span>
+            <button class="info" onclick="game.openBestiary()">[圖鑑]</button>
+            <button class="gm" onclick="game.openGM()">[GM]</button>
+            <button class="alert" onclick="game.hardReset()">[刪檔重置]</button>
+        </div>
+    </header>
+
+    <div class="panel">
+        <div class="stat-box">
+            <div>生命 (HP) <span id="val-hp">100</span></div>
+            <div class="bar-frame"><div id="bar-hp" class="bar-fill" style="background:var(--alert-color)"></div></div>
+        </div>
+        <div class="stat-box">
+            <div>體力 (STA) <span id="val-sta">100</span></div>
+            <div class="bar-frame"><div id="bar-sta" class="bar-fill"></div></div>
+        </div>
+        <div class="stat-box">
+            <div>飽食 (HUN) <span id="val-hun">100</span></div>
+            <div class="bar-frame"><div id="bar-hun" class="bar-fill" style="background:orange"></div></div>
+        </div>
+        <div class="stat-box">
+            <div>理智 (SAN) <span id="val-san">100</span></div>
+            <div class="bar-frame"><div id="bar-san" class="bar-fill" style="background:#9b59b6"></div></div>
+        </div>
+        
+        <div class="gear-section">
+            <div style="font-size:0.9rem; font-weight:bold; margin-bottom:10px; color:#fff;">裝備 (點擊卸下)</div>
+            <div class="gear-slot" onclick="game.unequip('weapon')">
+                <span class="gear-label">武器</span><span id="ui-gear-weapon" class="gear-val">拳頭</span>
+            </div>
+            <div class="gear-slot" onclick="game.unequip('armor')">
+                <span class="gear-label">護甲</span><span id="ui-gear-armor" class="gear-val">便服</span>
+            </div>
+            <div class="gear-slot" onclick="game.unequip('pack')">
+                <span class="gear-label">背包</span><span id="ui-gear-pack" class="gear-val">隨身腰包 (20格)</span>
+            </div>
+        </div>
+
+        <div id="mission-box" style="margin-top:15px; border:1px dashed #ffff00; padding:5px; display:none; color:#ffff00;">
+            <div>任務: <span id="quest-name">...</span></div>
+            <div class="bar-frame"><div id="bar-intel" class="bar-fill" style="width:0%; background:#ffff00"></div></div>
+        </div>
+
+        <div id="floor-container">
+            <div class="floor-header">
+                <span>地面 (移動時清空)</span>
+                <span id="floor-count">0/100</span>
+            </div>
+            <div id="floor-grid" class="floor-grid"></div>
+        </div>
+    </div>
+
+    <div class="panel" id="log-panel">
+        <div class="log-entry sys">系統升級 V11.2... 地板系統與怪物能力實裝。</div>
+        <div class="log-entry">背包滿時，物品會掉落在左側的【地面】。</div>
+        <div class="log-entry">請注意：切換地點或休息時，地面物品會消失。</div>
+    </div>
+
+    <div class="panel" id="inventory-container">
+        <div class="inv-header">
+            <span>物品欄 <span id="ui-inv-cap" style="font-size:0.8rem; color:#888;">0/20</span></span>
+            <button class="mini-btn" onclick="game.inv.toggleCollapse()" id="btn-collapse">[-]</button>
+        </div>
+        
+        <div class="inv-grid-wrapper" id="grid-wrapper">
+            <div id="main-grid" class="inv-grid"></div>
+        </div>
+
+        <div id="inv-controls">
+            <button class="mini-btn" onclick="game.inv.inspectSelected()" style="border-color:var(--info-color); color:var(--info-color);">說明書</button>
+            <button class="mini-btn" onclick="game.inv.rotateSelected()">旋轉(R)</button>
+            <button class="mini-btn alert" id="btn-drop" onclick="game.inv.dropToFloor()">丟棄(地面)</button>
+            <button class="mini-btn" id="btn-use" onclick="game.inv.useSelected()" style="color:#fff; border-color:#fff;">裝備/使用</button>
+            <button class="mini-btn" id="btn-stash" onclick="game.inv.stashSelected()" style="color:gold; border-color:gold;">存倉</button>
+            <button class="mini-btn" id="btn-sell" onclick="game.inv.sellSelected()" style="color:#ffff00; border-color:#ffff00;">出售</button>
+        </div>
+        
+        <div class="side-section" id="stash-section">
+            <div class="section-title">避難所倉庫 (點擊取出)</div>
+            <div id="stash-list" class="stash-list"></div>
+        </div>
+    </div>
+
+    <footer id="footer-controls"></footer>
+</div>
+
+<div id="overlay">
+    <div class="modal">
+        <div id="modal-content"></div>
+        <button onclick="document.getElementById('overlay').style.display='none'" style="margin-top:20px; width:100%;">關閉</button>
+    </div>
+</div>
+
+<script>
+/* --- CONFIG --- */
+const SLOT_SIZE = 50;
+const COLS = 5;
+const BASE_ROWS = 4; // 20 Slots
+
+/* --- ITEM DB --- */
+const ITEMS = {
+    "發霉麵包": { w:1, h:1, type:'food', val:5, hun:15, desc:"發霉的食物。" },
+    "巧克力棒": { w:1, h:1, type:'food', val:15, hun:10, sta:10, desc:"高熱量零食。" },
+    "蔬菜罐頭": { w:1, h:1, type:'food', val:25, hun:20, heal:5, desc:"健康的綠色蔬菜。" },
+    "咖啡": { w:1, h:1, type:'food', val:20, sta:40, hun:5, desc:"熱咖啡，大幅恢復體力。" },
+    "狗罐頭": { w:1, h:1, type:'food', val:20, hun:30, desc:"味道不錯。" },
+    "午餐肉": { w:2, h:1, type:'food', val:40, hun:50, desc:"珍貴的肉類罐頭。" },
+    "牛肉罐頭": { w:2, h:1, type:'food', val:60, hun:70, desc:"頂級物資。" },
+    "能量飲料": { w:1, h:1, type:'food', val:35, sta:50, hun:5, desc:"恢復體力。" },
+    "髒水": { w:1, h:2, type:'food', val:5, sta:10, hun:5, hp:-2, desc:"可能含有病毒。" },
+    "淨水": { w:1, h:2, type:'food', val:25, sta:30, hun:10, desc:"乾淨的瓶裝水。" },
+    "伏特加": { w:1, h:2, type:'food', val:80, san:40, sta:-10, desc:"戰鬥民族的燃料。" },
+    "軍用烈酒": { w:1, h:2, type:'food', val:120, san:60, desc:"高純度酒精。" },
+    "壓縮乾糧": { w:1, h:1, type:'food', val:40, hun:50, desc:"體積小熱量高。" },
+    "能量棒": { w:1, h:1, type:'food', val:15, sta:20, hun:10, desc:"快速補充體力。" },
+    "繃帶": { w:1, h:1, type:'med', val:15, heal:15, desc:"簡易止血。" },
+    "維生素": { w:1, h:1, type:'med', val:30, heal:5, san:5, desc:"維持身體機能。" },
+    "急救包": { w:2, h:2, type:'med', val:100, heal:60, desc:"能處理嚴重創傷。" },
+    "手術包": { w:2, h:2, type:'med', val:300, heal:100, desc:"專業外科工具。" },
+    "止痛藥": { w:1, h:1, type:'med', val:50, heal:20, san:10, desc:"暫時忘卻疼痛。" },
+    "抗生素": { w:1, h:1, type:'med', val:150, heal:10, san:10, desc:"對抗感染。" },
+    "威士忌": { w:1, h:2, type:'med', val:60, san:50, desc:"烈酒，緩解壓力。" },
+    "急救噴霧": { w:1, h:2, type:'med', val:80, heal:30, desc:"快速處理傷口。" },
+    "嗎啡": { w:1, h:1, type:'med', val:200, heal:10, san:20, desc:"強效止痛。" },
+    "箭矢": { w:1, h:1, type:'ammo', val:20, desc:"十字弓專用彈藥。" },
+    "9mm子彈": { w:1, h:1, type:'ammo', val:30, desc:"手槍彈藥。" },
+    ".357子彈": { w:1, h:1, type:'ammo', val:50, desc:"左輪手槍專用，威力大。" },
+    "散彈": { w:1, h:1, type:'ammo', val:40, desc:"散彈槍彈藥。" },
+    "步槍彈": { w:1, h:1, type:'ammo', val:60, desc:"步槍彈藥。" },
+    "7.62子彈": { w:1, h:1, type:'ammo', val:80, desc:"狙擊槍專用彈藥。" },
+    "馬格南子彈": { w:1, h:1, type:'ammo', val:80, desc:"沙漠之鷹用大口徑彈藥。" },
+    "榴彈": { w:2, h:1, type:'ammo', val:150, desc:"爆炸性彈藥。" },
+    "生鏽小刀": { w:1, h:2, type:'weapon', val:30, dmg:15, ammo:false, desc:"普通的刀。" },
+    "鐵撬": { w:1, h:3, type:'weapon', val:60, dmg:30, ammo:false, desc:"可靠的近戰武器。" },
+    "工兵鏟": { w:1, h:2, type:'weapon', val:70, dmg:35, ammo:false, desc:"邊緣鋒利。" },
+    "釘頭棒": { w:1, h:3, type:'weapon', val:50, dmg:28, ammo:false, desc:"帶釘子的球棒。" },
+    "開山刀": { w:1, h:2, type:'weapon', val:90, dmg:40, ammo:false, desc:"清理叢林和殭屍。" },
+    "警用盾牌": { w:2, h:3, type:'weapon', val:200, dmg:15, def:20, ammo:false, desc:"提供額外防禦。" },
+    "武士刀": { w:1, h:4, type:'weapon', val:300, dmg:65, ammo:false, desc:"鋒利無比。" },
+    "消防斧": { w:2, h:3, type:'weapon', val:120, dmg:45, ammo:false, desc:"重型近戰武器。" },
+    "鏈鋸": { w:4, h:2, type:'weapon', val:800, dmg:150, ammo:false, desc:"近戰絞肉機。" },
+    "十字弓": { w:3, h:2, type:'weapon', val:400, dmg:60, ammo:"箭矢", desc:"無聲殺敵。" },
+    "警用手槍": { w:2, h:1, type:'weapon', val:250, dmg:50, ammo:"9mm子彈", desc:"需9mm子彈。" },
+    "柯爾特巨蟒": { w:2, h:1, type:'weapon', val:450, dmg:75, ammo:".357子彈", desc:"經典左輪。" },
+    "沙漠之鷹": { w:2, h:1, type:'weapon', val:600, dmg:90, ammo:"馬格南子彈", desc:"手炮。" },
+    "雙管獵槍": { w:4, h:1, type:'weapon', val:500, dmg:80, ammo:"散彈", desc:"需散彈。" },
+    "MP5衝鋒槍": { w:3, h:1, type:'weapon', val:800, dmg:70, ammo:"9mm子彈", desc:"射速快。" },
+    "AK47": { w:4, h:2, type:'weapon', val:1000, dmg:85, ammo:"步槍彈", desc:"耐用且致命。" },
+    "M4A1步槍": { w:4, h:2, type:'weapon', val:1200, dmg:95, ammo:"步槍彈", desc:"精準的軍用步槍。" },
+    "AWM狙擊槍": { w:5, h:2, type:'weapon', val:2500, dmg:150, ammo:"7.62子彈", desc:"一擊必殺。" },
+    "榴彈發射器": { w:4, h:2, type:'weapon', val:2000, dmg:250, ammo:"榴彈", desc:"範圍爆炸傷害。" },
+    "厚外套": { w:2, h:2, type:'armor', val:100, def:10, desc:"基本防護。" },
+    "皮夾克": { w:2, h:2, type:'armor', val:200, def:20, desc:"比布料結實。" },
+    "摩托車夾克": { w:2, h:2, type:'armor', val:300, def:25, desc:"強化皮革。" },
+    "防暴背心": { w:2, h:2, type:'armor', val:400, def:35, desc:"警察裝備。" },
+    "戰術頭盔": { w:2, h:2, type:'armor', val:500, def:15, desc:"保護頭部。" },
+    "SWAT重甲": { w:3, h:3, type:'armor', val:1000, def:65, desc:"頂級防護。" },
+    "學生書包": { w:2, h:2, type:'pack', val:200, rows:2, desc:"+10 格 (總30格)" },
+    "登山包": { w:3, h:2, type:'pack', val:500, rows:3, desc:"+15 格 (總35格)" },
+    "戰術背包": { w:3, h:3, type:'pack', val:1000, rows:4, desc:"+20 格 (總40格)" },
+    "軍用背囊": { w:4, h:3, type:'pack', val:2000, rows:6, desc:"+30 格 (總50格)" },
+    "外骨骼系統": { w:4, h:4, type:'pack', val:5000, rows:8, desc:"+40 格 (總60格)" },
+    "空罐頭": { w:1, h:1, type:'junk', val:5, desc:"廢棄金屬。" },
+    "電子零件": { w:1, h:1, type:'junk', val:30, desc:"可交易材料。" },
+    "香菸": { w:1, h:1, type:'junk', val:50, desc:"硬通貨。" },
+    "汽油": { w:2, h:2, type:'junk', val:100, desc:"重要的燃料。" },
+    "酒精": { w:1, h:1, type:'junk', val:40, desc:"工業酒精。" },
+    "電池": { w:1, h:1, type:'junk', val:20, desc:"乾電池。" },
+    "布料": { w:1, h:1, type:'junk', val:10, desc:"乾淨的布。" },
+    "名牌手錶": { w:1, h:1, type:'junk', val:150, desc:"奢侈品。" },
+    "泰迪熊": { w:2, h:2, type:'junk', val:50, desc:"玩具。" },
+    "漫畫書": { w:1, h:1, type:'junk', val:25, desc:"消遣讀物。" },
+    "舊地圖": { w:1, h:1, type:'junk', val:30, desc:"標記了地點。" },
+    "金戒指": { w:1, h:1, type:'junk', val:200, desc:"貴重金屬。" },
+    "鑽石": { w:1, h:1, type:'junk', val:500, desc:"極高價值。" },
+    "濾水壺": { w:2, h:2, type:'junk', val:150, desc:"可以過濾水源。" },
+    "夜視鏡": { w:2, h:1, type:'junk', val:600, desc:"軍用裝備。" },
+    "蓋革計數器": { w:1, h:2, type:'junk', val:400, desc:"測量輻射量。" },
+    "整條香菸": { w:2, h:1, type:'junk', val:300, desc:"極高價值。" },
+    "登山繩": { w:2, h:2, type:'junk', val:80, desc:"結實的繩索。" },
+    "太陽能板": { w:2, h:3, type:'junk', val:500, desc:"電力來源。" },
+    "抗病毒樣本": { w:1, h:1, type:'quest', val:0, desc:"【任務】必須帶回。" },
+    "加密硬碟": { w:2, h:2, type:'quest', val:500, desc:"【任務】必須帶回。" },
+    "避難所門卡": { w:1, h:1, type:'quest', val:1000, desc:"【任務】必須帶回。" },
+    "發電機零件": { w:2, h:2, type:'quest', val:800, desc:"【任務】必須帶回。" },
+    "廣播發射器": { w:2, h:2, type:'quest', val:700, desc:"【任務】必須帶回。" },
+    "淨水過濾芯": { w:2, h:1, type:'quest', val:600, desc:"【任務】必須帶回。" },
+    "燃料棒": { w:1, h:2, type:'quest', val:1200, desc:"【任務】必須帶回。" },
+    "航海日誌": { w:2, h:1, type:'quest', val:400, desc:"【任務】必須帶回。" },
+    "飛行紀錄儀": { w:2, h:2, type:'quest', val:900, desc:"【任務】必須帶回。" },
+    "原體樣本": { w:1, h:1, type:'quest', val:1500, desc:"【任務】必須帶回。" }
+};
+
+const ZONES = [
+    { id: 1, name: "廢棄公寓", risk: 15, quest: "加密硬碟" },
+    { id: 2, name: "連鎖超市", risk: 25, quest: "淨水過濾芯" },
+    { id: 3, name: "廢棄學校", risk: 35, quest: "發電機零件" },
+    { id: 4, name: "沉船海岸", risk: 40, quest: "航海日誌" }, 
+    { id: 5, name: "下水道", risk: 45, quest: "避難所門卡" },
+    { id: 6, name: "廣播電台", risk: 55, quest: "廣播發射器" },
+    { id: 7, name: "大型購物中心", risk: 65, quest: "加密硬碟" },
+    { id: 8, name: "市區醫院", risk: 75, quest: "抗病毒樣本" },
+    { id: 9, name: "軍事機場", risk: 80, quest: "飛行紀錄儀" }, 
+    { id: 10, name: "警察局", risk: 80, quest: "避難所門卡" },
+    { id: 11, name: "CDC實驗室", risk: 90, quest: "抗病毒樣本" },
+    { id: 12, name: "生化地下室", risk: 95, quest: "原體樣本" }, 
+    { id: 13, name: "核電廠", risk: 95, quest: "燃料棒" },
+    { id: 14, name: "死亡市中心", risk: 100, quest: "避難所門卡" }
+];
+
+const ENEMIES = [
+    { 
+        name: "腐爛屍體", hp: 30, dmg: 5, riskLvl: 0, 
+        desc: "行動緩慢的初期感染者，威脅極低。", 
+        drops: [{i:"電子零件", c:0.3}, {i:"布料", c:0.4}], 
+        ability: "無" 
+    },
+    { 
+        name: "狂暴喪屍", hp: 50, dmg: 15, riskLvl: 10, 
+        desc: "保留了生前的運動能力，速度較快。", 
+        drops: [{i:"香菸", c:0.2}, {i:"名牌手錶", c:0.1}], 
+        ability: "無" 
+    },
+    { 
+        name: "屍犬群", hp: 40, dmg: 20, riskLvl: 15, 
+        desc: "成群結隊的感染野狗，速度極快。", 
+        drops: [{i:"生鏽小刀", c:0.15}], 
+        ability: "無" 
+    },
+    { 
+        name: "噴吐者", hp: 60, dmg: 30, riskLvl: 25, 
+        desc: "能進行遠程酸液攻擊。", 
+        drops: [{i:"淨水", c:0.3}, {i:"維生素", c:0.2}], 
+        ability: "無" 
+    },
+    { 
+        name: "尖嘯者", hp: 40, dmg: 10, riskLvl: 30, 
+        desc: "叫聲刺耳，會引來更多敵人。", 
+        drops: [{i:"止痛藥", c:0.3}, {i:"漫畫書", c:0.2}], 
+        ability: "尖嘯：造成傷害後，增加本區遇敵率。" 
+    },
+    { 
+        name: "武裝暴徒", hp: 80, dmg: 25, riskLvl: 35, 
+        desc: "趁火打劫的人類，持有簡易槍械。", 
+        drops: [{i:"9mm子彈", c:0.4}, {i:"狗罐頭", c:0.3}], 
+        ability: "無" 
+    },
+    { 
+        name: "自爆感染者", hp: 50, dmg: 80, riskLvl: 45, 
+        desc: "體內充滿易爆氣體，靠近極度危險。", 
+        drops: [{i:"汽油", c:0.5}], 
+        ability: "自爆：攻擊後立即死亡。" 
+    },
+    { 
+        name: "尋獵者", hp: 90, dmg: 40, riskLvl: 55, 
+        desc: "擅長在陰影中伏擊的變異體。", 
+        drops: [{i:"金戒指", c:0.2}, {i:"箭矢", c:0.3}], 
+        ability: "無" 
+    },
+    { 
+        name: "巨無霸", hp: 250, dmg: 30, riskLvl: 65, 
+        desc: "皮糙肉厚，極難殺死。", 
+        drops: [{i:"鐵撬", c:0.1}, {i:"牛肉罐頭", c:0.2}, {i:"摩托車夾克", c:0.05}], 
+        ability: "重甲：減傷20% (除非使用重武器)。" 
+    },
+    { 
+        name: "瘋狂掠奪者", hp: 120, dmg: 50, riskLvl: 75, 
+        desc: "裝備精良的武裝人員。", 
+        drops: [{i:"AK47", c:0.02}, {i:"步槍彈", c:0.4}, {i:"柯爾特巨蟒", c:0.05}], 
+        ability: "閃避：30%機率閃避攻擊。" 
+    },
+    { 
+        name: "夜魔", hp: 150, dmg: 60, riskLvl: 85, 
+        desc: "只在黑暗中出現的夢魘。", 
+        drops: [{i:"威士忌", c:0.3}, {i:"鑽石", c:0.1}, {i:"軍用烈酒", c:0.1}], 
+        ability: "無" 
+    },
+    { 
+        name: "暴君實驗體", hp: 600, dmg: 90, riskLvl: 95, 
+        desc: "完美的殺戮機器，軍方實驗產物。", 
+        drops: [{i:"M4A1步槍", c:0.05}, {i:"急救包", c:0.4}, {i:"AWM狙擊槍", c:0.02}], 
+        ability: "無" 
+    }
+];
+
+class InventorySystem {
+    constructor(gameInstance) {
+        this.game = gameInstance;
+        this.items = []; 
+        this.selectedIdx = -1;
+        this.pendingLoot = null;
+        this.isQuestPending = false;
+        this.isCollapsed = false;
+    }
+
+    getRows() {
+        const packName = this.game.state.player.gear.pack;
+        const bonus = (packName && ITEMS[packName]) ? ITEMS[packName].rows : 0;
+        return BASE_ROWS + bonus;
+    }
+
+    initGrid() {
+        const el = document.getElementById('main-grid');
+        const wrapper = document.getElementById('grid-wrapper');
+        if(!el) return;
+        el.innerHTML = '';
+        
+        const currentRows = this.getRows();
+        const totalSlots = COLS * currentRows;
+
+        el.style.gridTemplateRows = `repeat(${currentRows}, 50px)`;
+        wrapper.style.height = this.isCollapsed ? '0px' : `${currentRows * 50 + 4}px`; 
+
+        for(let i=0; i<totalSlots; i++) {
+            let d = document.createElement('div');
+            d.className = 'grid-slot';
+            d.onclick = () => this.handleSlotClick(i % COLS, Math.floor(i / COLS));
+            el.appendChild(d);
+        }
+        this.render();
+    }
+
+    toggleCollapse() {
+        this.isCollapsed = !this.isCollapsed;
+        const wrapper = document.getElementById('grid-wrapper');
+        const btn = document.getElementById('btn-collapse');
+        if(this.isCollapsed) {
+            wrapper.classList.add('collapsed');
+            btn.innerText = "[+]";
+        } else {
+            wrapper.classList.remove('collapsed');
+            wrapper.style.height = `${this.getRows() * 50 + 4}px`;
+            btn.innerText = "[-]";
+        }
+    }
+
+    loadItems(savedItems) {
+        this.items = savedItems || [];
+        this.initGrid();
+    }
+
+    addItem(name, x=null, y=null, rotated=false) {
+        const template = ITEMS[name];
+        if(!template) return false;
+
+        let w = rotated ? template.h : template.w;
+        let h = rotated ? template.w : template.h;
+        const maxRows = this.getRows();
+
+        if (x === null) {
+            let spot = this.findSpot(w, h, maxRows);
+            if (!spot) return false;
+            x = spot.x; y = spot.y;
+        } else if (!this.checkFit(x, y, w, h, maxRows)) {
+            return false;
+        }
+
+        this.items.push({
+            id: Date.now() + Math.random(),
+            name: name, x: x, y: y, w: w, h: h, rotated: rotated
+        });
+        this.render();
+        return true;
+    }
+
+    checkFit(x, y, w, h, maxRows, excludeId=null) {
+        if (x < 0 || y < 0 || x + w > COLS || y + h > maxRows) return false;
+        for (let item of this.items) {
+            if (excludeId && item.id === excludeId) continue;
+            if (x < item.x + item.w && x + w > item.x &&
+                y < item.y + item.h && y + h > item.y) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    findSpot(w, h, maxRows) {
+        for (let y = 0; y <= maxRows - h; y++) {
+            for (let x = 0; x <= COLS - w; x++) {
+                if (this.checkFit(x, y, w, h, maxRows)) return {x,y};
+            }
+        }
+        return null;
+    }
+
+    consumeItem(name) {
+        const idx = this.items.findIndex(i => i.name === name);
+        if(idx > -1) {
+            this.items.splice(idx, 1);
+            this.render();
+            return true;
+        }
+        return false;
+    }
+
+    removeItemByIdx(idx) {
+        if(idx > -1 && idx < this.items.length) {
+            this.items.splice(idx, 1);
+            this.selectedIdx = -1;
+            this.render();
+            return true;
+        }
+        return false;
+    }
+
+    render() {
+        const grid = document.getElementById('main-grid');
+        if(!grid) return;
+        grid.querySelectorAll('.grid-item').forEach(e => e.remove());
+
+        this.items.forEach((item, idx) => {
+            const el = document.createElement('div');
+            const data = ITEMS[item.name];
+            el.className = `grid-item type-${data.type}`;
+            if(this.selectedIdx === idx) el.classList.add('selected');
+            
+            el.style.width = (item.w * SLOT_SIZE - 2) + 'px';
+            el.style.height = (item.h * SLOT_SIZE - 2) + 'px';
+            el.style.left = (item.x * SLOT_SIZE + 2) + 'px';
+            el.style.top = (item.y * SLOT_SIZE + 2) + 'px';
+            el.innerText = item.name;
+            
+            el.onclick = (e) => { e.stopPropagation(); this.selectItem(idx); };
+            grid.appendChild(el);
+        });
+
+        const inSafehouse = this.game.state.game.loc === 0;
+        const btnStash = document.getElementById('btn-stash');
+        const btnSell = document.getElementById('btn-sell');
+        const btnDrop = document.getElementById('btn-drop');
+        const btnUse = document.getElementById('btn-use');
+        
+        if(btnStash) btnStash.style.display = inSafehouse ? 'inline-block' : 'none';
+        if(btnSell) btnSell.style.display = inSafehouse ? 'inline-block' : 'none';
+        
+        const hasSelection = this.selectedIdx !== -1;
+        if(btnDrop) btnDrop.disabled = !hasSelection;
+        if(btnUse) btnUse.disabled = !hasSelection;
+        if(btnStash) btnStash.disabled = !hasSelection;
+        if(btnSell) btnSell.disabled = !hasSelection;
+
+        if(hasSelection && ITEMS[this.items[this.selectedIdx].name].type === 'quest') {
+            if(btnDrop) btnDrop.disabled = true;
+        }
+        
+        const capacity = COLS * this.getRows();
+        let used = 0;
+        this.items.forEach(i => used += i.w*i.h);
+        const capEl = document.getElementById('ui-inv-cap');
+        if(capEl) capEl.innerText = `${used}/${capacity} 格`;
+    }
+
+    selectItem(idx) {
+        this.selectedIdx = (this.selectedIdx === idx) ? -1 : idx;
+        this.render();
+    }
+
+    inspectSelected() {
+        if (this.selectedIdx === -1) return;
+        const item = this.items[this.selectedIdx];
+        const data = ITEMS[item.name];
+        
+        let count = 0;
+        if(data.type === 'ammo') {
+            count = this.items.filter(i => i.name === item.name).length;
+        }
+
+        let html = `
+            <h3 style="color:var(--term-green); border-bottom:1px solid #333; padding-bottom:5px;">${item.name}</h3>
+            <div class="info-grid">
+                <div class="info-label">類型:</div><div class="info-val">${data.type.toUpperCase()}</div>
+                <div class="info-label">尺寸:</div><div class="info-val">${data.w}x${data.h}</div>
+                <div class="info-label">價值:</div><div class="info-val">$${data.val}</div>
+        `;
+        
+        if(data.type === 'ammo') html += `<div class="info-label">庫存數量:</div><div class="info-val" style="color:var(--info-color)">${count} 包</div>`;
+        if(data.dmg) html += `<div class="info-label">傷害:</div><div class="info-val" style="color:var(--alert-color)">${data.dmg}</div>`;
+        if(data.def) html += `<div class="info-label">防禦:</div><div class="info-val" style="color:var(--gold-color)">${data.def}</div>`;
+        if(data.heal) html += `<div class="info-label">治療:</div><div class="info-val" style="color:var(--term-green)">${data.heal}</div>`;
+        if(data.hun) html += `<div class="info-label">飽食:</div><div class="info-val" style="color:orange">+${data.hun}</div>`;
+        if(data.desc) html += `<div class="info-label" style="grid-column:1/-1; margin-top:10px;">${data.desc}</div>`;
+        
+        html += `</div>`;
+        document.getElementById('modal-content').innerHTML = html;
+        document.getElementById('overlay').style.display = 'flex';
+    }
+
+    handleSlotClick(x, y) {
+        if (this.selectedIdx === -1) return;
+        const item = this.items[this.selectedIdx];
+        if (this.checkFit(x, y, item.w, item.h, this.getRows(), item.id)) {
+            item.x = x; item.y = y;
+            this.selectedIdx = -1;
+            this.render();
+        }
+    }
+
+    rotateSelected() {
+        if (this.selectedIdx === -1) return;
+        const item = this.items[this.selectedIdx];
+        if (this.checkFit(item.x, item.y, item.h, item.w, this.getRows(), item.id)) {
+            [item.w, item.h] = [item.h, item.w];
+            item.rotated = !item.rotated;
+            this.render();
+        } else {
+            this.game.log("空間不足，無法旋轉。", "sys");
+        }
+    }
+
+    dropToFloor() {
+        if (this.selectedIdx === -1) return;
+        const name = this.items[this.selectedIdx].name;
+        if(ITEMS[name].type === 'quest') {
+            this.game.log("任務物品無法丟棄！", "combat");
+            return;
+        }
+        this.items.splice(this.selectedIdx, 1);
+        this.selectedIdx = -1;
+        this.game.addToFloor(name);
+        this.render();
+    }
+    
+    dropSelected() { this.dropToFloor(); }
+
+    useSelected() {
+        if (this.selectedIdx === -1) return;
+        const item = this.items[this.selectedIdx];
+        const data = ITEMS[item.name];
+
+        if (['food','med'].includes(data.type)) {
+            this.game.changeStats(data.heal, data.sta, data.hun, data.san, 0);
+            this.items.splice(this.selectedIdx, 1);
+            this.selectedIdx = -1;
+            this.game.log(`消耗了 ${item.name}`, "gain");
+        } else if (['weapon','armor','pack'].includes(data.type)) {
+            this.game.equip(item.name, data, this.selectedIdx);
+        } else if (data.type === 'ammo') {
+            this.game.log("彈藥需配合槍械在戰鬥中自動消耗。", "sys");
+        } else {
+            this.game.log("此物品無法直接使用(請出售或交付)。", "sys");
+        }
+        this.render();
+    }
+
+    stashSelected() {
+        if (this.selectedIdx === -1 || this.game.state.game.loc !== 0) return;
+        const name = this.items[this.selectedIdx].name;
+        this.game.state.player.stash.push(name);
+        this.items.splice(this.selectedIdx, 1);
+        this.selectedIdx = -1;
+        this.game.log(`存入倉庫: ${name}`, "sys");
+        this.game.save();
+        this.game.render(); 
+        this.render(); 
+    }
+
+    sellSelected() {
+        if (this.selectedIdx === -1 || this.game.state.game.loc !== 0) return;
+        const name = this.items[this.selectedIdx].name;
+        const val = ITEMS[name].val;
+        this.game.state.player.money += val;
+        this.items.splice(this.selectedIdx, 1);
+        this.selectedIdx = -1;
+        this.game.log(`出售 ${name} 獲得 $${val}`, "gold");
+        this.game.save();
+        this.game.render();
+        this.render();
+    }
+}
+
+class GameEngine {
+    constructor() {
+        window.game = this;
+        this.inv = new InventorySystem(this);
+        
+        try {
+            const saved = localStorage.getItem('ashfall_save_v112');
+            if (saved) {
+                this.state = JSON.parse(saved);
+                if(!this.state.player.invGrid) this.state.player.invGrid = [];
+                if(!this.state.game.floor) this.state.game.floor = [];
+                if(!this.state.game.dangerMod) this.state.game.dangerMod = 0;
+            } else {
+                this.resetState();
+            }
+        } catch (e) {
+            this.resetState();
+        }
+
+        setTimeout(() => {
+            this.inv.loadItems(this.state.player.invGrid);
+            this.render();
+        }, 100);
+
+        document.addEventListener('keydown', (e) => {
+            if(e.key==='r' || e.key==='R') this.inv.rotateSelected();
+        });
+    }
+
+    resetState() {
+        this.state = {
+            player: {
+                hp: 100, maxHp: 100, sta: 100, maxSta: 100, hun: 100, maxHun: 100, san: 100, maxSan: 100, money: 500,
+                stash: ["午餐肉","午餐肉","午餐肉","午餐肉","午餐肉","淨水","淨水","淨水","淨水","淨水","急救包","急救包","學生書包","警用手槍","9mm子彈","9mm子彈","繃帶"], 
+                gear: { weapon: null, armor: null, pack: null },
+                invGrid: []
+            },
+            game: { day: 0, loc: 0, mission: { progress: 0, found: false, evacTimer: null }, combat: null, availableMissions: [], bestiary: [], floor: [], dangerMod: 0 }
+        };
+        this.inv.items = [];
+        this.inv.addItem("生鏽小刀");
+        this.inv.addItem("髒水");
+        this.refreshMissions();
+        this.save();
+    }
+
+refreshMissions() {
+        // --- 修改開始：動態難度計算 ---
+        
+        // 1. 計算風險上限：基礎 30%，每天 +4%。最高 100%。
+        // Day 0: 30% | Day 10: 70% | Day 18: 100%
+        let maxRisk = Math.min(100, 30 + (this.state.game.day * 4));
+
+        // 2. 計算風險下限：避免後期一直出現太低級的圖 (可選，這裡設定較寬鬆)
+        // Day 0: 0% | Day 20: 20%
+        let minRisk = Math.min(50, Math.max(0, (this.state.game.day * 1) - 5));
+
+        // 3. 根據上下限過濾任務池
+        let validZones = ZONES.filter(z => z.risk >= minRisk && z.risk <= maxRisk);
+        
+        // 防呆機制：如果篩選完沒有地圖 (極端情況)，就用所有低於上限的地圖
+        if (validZones.length < 3) {
+            validZones = ZONES.filter(z => z.risk <= maxRisk);
+        }
+
+        // --- 修改結束 ---
+
+        let pool = [...validZones];
+        let picks = [];
+        
+        // 抽取 3 個任務
+        for(let i=0; i<3; i++) {
+            if(pool.length === 0) break;
+            let idx = Math.floor(Math.random() * pool.length);
+            picks.push(pool[idx]);
+            pool.splice(idx, 1);
+        }
+        
+        // 為了避免玩家卡關，這裡可以加入一個「保底機制」 (可選)
+        // 確保 3 個任務中，至少有一個是風險相對較低 (接近下限) 的
+        // 目前先維持隨機抽取，讓 RNG 決定命運
+        
+        this.state.game.availableMissions = picks;
+    }
+
+    save() {
+        this.state.player.invGrid = this.inv.items;
+        localStorage.setItem('ashfall_save_v112', JSON.stringify(this.state));
+    }
+
+    hardReset() {
+        if(confirm("警告：世界將被重置，所有進度丟失。")) {
+            localStorage.removeItem('ashfall_save_v112');
+            location.reload();
+        }
+    }
+
+    log(msg, type='') {
+        const p = document.getElementById('log-panel');
+        if(p) {
+            p.innerHTML += `<div class="log-entry ${type}">> ${msg}</div>`;
+            p.scrollTop = p.scrollHeight;
+        }
+    }
+
+    changeStats(hp, sta, hun, san, money) {
+        const p = this.state.player;
+        p.hp = Math.min(p.maxHp, Math.max(0, p.hp + (hp||0)));
+        p.sta = Math.min(p.maxSta, Math.max(0, p.sta + (sta||0)));
+        p.hun = Math.min(p.maxHun, Math.max(0, p.hun + (hun||0)));
+        p.san = Math.min(p.maxSan, Math.max(0, p.san + (san||0)));
+        p.money = Math.max(0, p.money + (money||0));
+
+        if (p.hp <= 0) this.gameOver();
+        this.render();
+    }
+
+    addToFloor(name) {
+        if(this.state.game.floor.length >= 100) {
+            this.log("地面已滿，物品丟失！", "combat");
+            return;
+        }
+        this.state.game.floor.push(name);
+        this.log(`掉落至地面: ${name}`, "sys");
+        this.save();
+        this.render(); // update floor UI
+    }
+
+    pickupFromFloor(index) {
+        const name = this.state.game.floor[index];
+        if(this.inv.addItem(name)) {
+            this.state.game.floor.splice(index, 1);
+            this.log(`撿起: ${name}`, "gain");
+            this.save();
+            this.render();
+        } else {
+            this.log("背包已滿！", "combat");
+        }
+    }
+
+    clearFloor() {
+        if(this.state.game.floor.length > 0) {
+            this.state.game.floor = [];
+            this.log("離開區域，地面物品消失。", "combat");
+        }
+        this.state.game.dangerMod = 0; // Reset danger mod on leave
+    }
+
+    handle(action) {
+        const p = this.state.player;
+        const g = this.state.game;
+
+        if (p.hp <= 0) return;
+        
+        // --- 新增邏輯：飢餓懲罰 ---
+        // 定義哪些動作屬於「消耗體力的行動」
+        const physicalActs = ['explore', 'investigate', 'field_rest', 'wait_evac', 'attack', 'flee', 'call_evac'];
+        
+        // 如果執行物理行動 且 飽食度為 0
+        if (physicalActs.includes(action) && p.hun <= 0) {
+            this.changeStats(-5, 0, 0, 0, 0); // 扣除 5 HP
+            this.log("⚠️ 你正處於飢餓狀態！生命流失 (HP -5)", "combat");
+            
+            // 如果因為飢餓扣血導致死亡，直接中止後續動作
+            if (p.hp <= 0) return;
+        }
+        // -------------------------
+
+        // 下面維持原本的邏輯
+        if(['rest','explore','investigate','call_evac','open_mission'].includes(action) && g.loc !== 0) {
+            // Keep floor unless leaving entirely? 
+        }
+        
+        if(action === 'open_mission' || action === 'rest') this.clearFloor();
+
+        switch(action) {
+            case 'rest':
+                if (p.hun < 30) { this.log("需30飽食度才能安全睡眠", "combat"); return; }
+                p.hp=p.maxHp; p.sta=p.maxSta; p.san=p.maxSan; p.hun-=30;
+                this.log("安全屋休息完畢，新的任務已發布。", "gain");
+                this.refreshMissions();
+                this.save();
+                break;
+            
+            case 'explore':
+                if (p.sta < 10) { this.log("體力透支", "sys"); return; }
+                this.changeStats(0,-10,-5,0,0);
+                let combatChance = 0.45 + (g.dangerMod || 0);
+                if (Math.random() < combatChance) this.triggerCombat();
+                else this.triggerLoot();
+                this.save();
+                break;
+
+            case 'investigate':
+                if (p.sta < 20) { this.log("體力透支", "sys"); return; }
+                
+                const currentZone = ZONES.find(z => z.id === g.loc);
+                const currentRisk = currentZone ? currentZone.risk : 0;
+                
+                // (保留你之前的修改或原始設定)
+                let progressGain = Math.max(5, Math.floor(25 - (currentRisk / 5)));
+                
+                this.changeStats(0,-20,-10,-5,0);
+                this.log(`搜索區域情報... (+${progressGain}%)`, "sys");
+                g.mission.progress += progressGain;
+
+                if(g.mission.progress >= 100 && !g.mission.found) {
+                    g.mission.found = true;
+                    g.mission.progress = 100; 
+                    const zone = ZONES.find(z => z.id === g.loc);
+                    this.lootQuestItem(zone.quest);
+                } else {
+                    if(Math.random()<0.6 + (g.dangerMod||0)) this.triggerCombat();
+                }
+                this.save();
+                break;
+
+            case 'field_rest':
+                if(g.combat) return;
+                this.clearFloor(); 
+                // 這裡要注意：如果飢餓，這裡的回血(+5)會被上面的扣血(-5)抵銷，變得無效，很合理
+                this.changeStats(5,40,-15,5,0);
+                this.log("尋找角落休息...", "sys");
+                this.triggerRandomEvent();
+                this.save();
+                break;
+
+            case 'call_evac':
+                const zone = ZONES.find(z => z.id === g.loc);
+                const hasItem = this.inv.items.find(i => i.name === zone.quest);
+                
+                if(!g.mission.found || !hasItem) {
+                    this.log("你沒有任務物品，無法呼叫撤離！", "combat");
+                    return; 
+                }
+                
+                g.mission.evacTimer = 3;
+                this.log("信號彈已發射！死守3回合！", "gain");
+                this.save();
+                break;
+
+            case 'wait_evac':
+                this.changeStats(0,-5,-5,0,0);
+                g.mission.evacTimer--;
+                this.log(`救援抵達倒數: ${g.mission.evacTimer}`, "sys");
+                if(Math.random()<0.8) this.triggerCombat();
+                if(!g.combat && g.mission.evacTimer<=0) this.evacSuccess();
+                this.save();
+                break;
+
+            case 'attack': this.combatRound(); break;
+            case 'flee': 
+                if(g.mission?.evacTimer !== null) { this.log("等待救援中，禁止撤退！", "combat"); return; }
+                if(Math.random()>0.5) { this.state.game.combat=null; this.log("逃跑成功", "gain"); }
+                else { this.log("被抓住了！"); this.enemyTurn(); }
+                break;
+                
+            case 'open_shop': this.renderShop(); break;
+            case 'open_mission': this.renderMissions(); break;
+        }
+        this.render();
+    }
+
+    triggerRandomEvent() {
+        if(Math.random()<0.5) { this.triggerCombat(); return; }
+        const events = [
+            {t:"在屍體上找到半包菸 (SAN+10)", san:10},
+            {t:"跌倒扭傷 (HP-10)", hp:-10},
+            {t:"找到隱藏的補給 (午餐肉)", item:"午餐肉"},
+            {t:"吸入有毒孢子 (STA-20)", sta:-20},
+            {t:"發現舊世界的雜誌 (SAN+5)", san:5},
+            {t:"踩到碎玻璃，發出聲響 (可能引來敵人)"},
+            {t:"撿到一個打火機 (獲得汽油)", item:"汽油"}
+        ];
+        const ev = events[Math.floor(Math.random()*events.length)];
+        this.log(ev.t, "event");
+        if(ev.item) this.lootItem(ev.item);
+        this.changeStats(ev.hp, ev.sta, 0, ev.san, 0);
+    }
+
+    triggerCombat() {
+        const zone = ZONES.find(z => z.id === this.state.game.loc);
+        if(!zone) return;
+        const candidates = ENEMIES.filter(e => e.riskLvl <= zone.risk + 10);
+        const base = candidates[Math.floor(Math.random()*candidates.length)] || ENEMIES[0];
+        this.state.game.combat = { ...base, maxHp: base.hp };
+        this.log(`⚠️ 遭遇威脅：${base.name}`, "combat");
+        
+        if (!this.state.game.bestiary.includes(base.name)) {
+            this.state.game.bestiary.push(base.name);
+            this.log(`圖鑑登錄：${base.name}`, "event");
+        }
+    }
+
+    combatRound() {
+        const c = this.state.game.combat;
+        const p = this.state.player;
+        
+        // Dodge Check (Mad Raider)
+        if (c.name === "瘋狂掠奪者" && Math.random() < 0.3) {
+            this.log("瘋狂掠奪者閃避了你的攻擊！", "combat");
+            this.enemyTurn();
+            return;
+        }
+
+        let dmg = 5; 
+        const wKey = p.gear.weapon;
+        let isHeavyWeapon = false;
+
+        if (wKey) {
+            const wData = ITEMS[wKey];
+            if (["AWM狙擊槍", "沙漠之鷹", "榴彈發射器"].includes(wKey)) isHeavyWeapon = true;
+
+            if (wData.ammo) {
+                const ammoName = wData.ammo;
+                const ammoItem = this.inv.items.find(i => i.name === ammoName);
+                if (ammoItem) {
+                    if(Math.random() < 0.25) {
+                        this.inv.consumeItem(ammoName);
+                        this.log(`${ammoName} 用盡！`, "combat");
+                    }
+                    dmg = wData.dmg;
+                } else {
+                    this.log(`缺少 ${ammoName}！僅造成物理傷害。`, "combat");
+                }
+            } else {
+                dmg = wData.dmg;
+            }
+        }
+        
+        // Juggernaut Armor Logic
+        if (c.name === "巨無霸" && !isHeavyWeapon) {
+            dmg = Math.floor(dmg * 0.8);
+            this.log("巨無霸的厚皮抵消了部分傷害！");
+        }
+
+        dmg += Math.floor(Math.random()*5);
+        c.hp -= dmg;
+        this.log(`造成 ${dmg} 傷害`);
+
+        if (c.hp <= 0) {
+            this.log(`消滅 ${c.name}`, "gain");
+            this.handleEnemyDrops(c);
+            this.state.game.combat = null;
+            
+            if(this.state.game.mission?.evacTimer !== null && this.state.game.mission?.evacTimer <= 0) {
+                this.evacSuccess();
+            }
+        } else {
+            this.enemyTurn();
+        }
+    }
+
+    handleEnemyDrops(enemy) {
+        const money = 10 + Math.floor(Math.random()*enemy.hp/2);
+        this.changeStats(0,0,0,5, money);
+        if (enemy.drops) {
+            enemy.drops.forEach(d => {
+                if(Math.random() < d.c) {
+                    this.log(`${enemy.name} 掉落了物品！`, "gold");
+                    this.lootItem(d.i);
+                }
+            });
+        }
+    }
+
+    enemyTurn() {
+        const c = this.state.game.combat;
+        
+        // Exploder Logic
+        if (c.name === "自爆感染者") {
+            this.log("自爆感染者爆炸了！", "combat");
+            this.changeStats(-80, 0, 0, -10, 0); // Huge dmg
+            this.state.game.combat = null;
+            return;
+        }
+
+        // Screamer Logic
+        if (c.name === "尖嘯者") {
+            this.state.game.dangerMod = (this.state.game.dangerMod || 0) + 0.2;
+            this.log("尖嘯者發出刺耳的叫聲！(遇敵率上升)", "combat");
+        }
+
+        let dmg = c.dmg + Math.floor(Math.random()*5);
+        if (this.state.player.gear.armor) {
+            dmg = Math.floor(dmg * ((100 - ITEMS[this.state.player.gear.armor].def)/100));
+        }
+        this.changeStats(-dmg,0,0,-5,0);
+        this.log(`受到 ${dmg} 傷害`, "combat");
+    }
+
+    triggerLoot() {
+        const roll = Math.random();
+        let i = "電子零件";
+        if(roll>0.95) i="金戒指"; else if(roll>0.8) i="午餐肉"; else if(roll>0.6) i="繃帶";
+        this.lootItem(i);
+    }
+
+    lootItem(name) {
+        if(this.inv.addItem(name)) {
+            this.log(`拾取：${name}`, "gain");
+        } else {
+            this.addToFloor(name);
+        }
+    }
+
+    lootQuestItem(name) {
+        if(this.inv.addItem(name)) {
+            this.log(`★ 取得任務目標：${name}`, "gain");
+        } else {
+            this.log(`★ 任務目標掉落地板！請清理背包拾取！`, "combat");
+            this.addToFloor(name);
+        }
+    }
+
+    equip(name, data, gridIdx) {
+        const type = data.type;
+        const current = this.state.player.gear[type];
+        
+        this.inv.removeItemByIdx(gridIdx); 
+        
+        if (current) {
+            if (this.inv.addItem(current)) {
+                this.state.player.gear[type] = name;
+                this.log(`更換裝備: ${name}`);
+            } else {
+                this.inv.addItem(name);
+                this.log("背包空間不足以卸下舊裝備！", "combat");
+                return;
+            }
+        } else {
+            this.state.player.gear[type] = name;
+            this.log(`裝備了 ${name}`);
+        }
+
+        if (type === 'pack') {
+            this.inv.initGrid(); 
+        }
+        
+        this.render();
+    }
+
+    unequip(slot) {
+        const current = this.state.player.gear[slot];
+        if (!current) return;
+
+        if (this.inv.addItem(current)) {
+            this.state.player.gear[slot] = null;
+            this.log(`卸下了 ${current}`);
+            if(slot === 'pack') this.inv.initGrid();
+        } else {
+            this.log("背包已滿，無法卸下！", "combat");
+        }
+        this.render();
+    }
+
+    stashToInv(idx) {
+        const item = this.state.player.stash[idx];
+        if(this.inv.addItem(item)) {
+            this.state.player.stash.splice(idx, 1);
+            this.save();
+        } else {
+            this.log("背包空間不足！", "combat");
+        }
+        this.render();
+    }
+
+    evacSuccess() {
+        this.log("撤離成功！", "gain");
+        this.state.game.day++;
+        this.state.game.loc = 0;
+        this.state.game.mission = { progress: 0, found: false, evacTimer: null };
+        this.state.game.combat = null;
+        this.clearFloor();
+        
+        const qItems = this.inv.items.filter(i => ITEMS[i.name].type === 'quest');
+        qItems.forEach(i => {
+             this.state.player.money += ITEMS[i.name].val;
+             this.inv.consumeItem(i.name);
+             this.log(`交付: ${i.name} (+$${ITEMS[i.name].val})`, "gold");
+        });
+        
+        this.refreshMissions();
+        this.save();
+        this.render();
+    }
+
+    gameOver() {
+        localStorage.removeItem('ashfall_save_v112');
+        document.body.innerHTML = `<div style="height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; color:red; background:#000;"><h1>YOU ARE DEAD</h1><p>存活天數: ${this.state.game.day}</p><button onclick="location.reload()" style="padding:20px; border:1px solid red; background:#000; color:red; cursor:pointer;">重啟世界線</button></div>`;
+    }
+
+    render() {
+        const p = this.state.player;
+        const g = this.state.game;
+        
+        document.getElementById('ui-day').innerText = g.day;
+        document.getElementById('ui-money').innerText = p.money;
+        
+        // Status Text
+        const statusEl = document.getElementById('game-status');
+        if(statusEl) {
+            if(g.mission?.evacTimer !== null && g.mission?.evacTimer > 0) {
+                statusEl.innerText = "狀態: 等待救援";
+                statusEl.className = "blink-red";
+            } else {
+                statusEl.innerText = "狀態: 探索中";
+                statusEl.className = "";
+            }
+        }
+
+        const setBar = (id, val, max) => {
+            document.getElementById(`val-${id}`).innerText = Math.floor(val);
+            document.getElementById(`bar-${id}`).style.width = (val/max*100) + '%';
+        };
+        setBar('hp', p.hp, p.maxHp);
+        setBar('sta', p.sta, p.maxSta);
+        setBar('hun', p.hun, p.maxHun);
+        setBar('san', p.san, p.maxSan);
+
+        document.getElementById('ui-gear-weapon').innerText = p.gear.weapon || '無';
+        document.getElementById('ui-gear-armor').innerText = p.gear.armor || '無';
+        document.getElementById('ui-gear-pack').innerText = p.gear.pack || '隨身腰包 (20格)';
+
+        const sDiv = document.getElementById('stash-list');
+        if(sDiv) {
+            if(g.loc === 0) {
+                sDiv.innerHTML = p.stash.map((n, i) => 
+                    `<span class="stash-item" onclick="game.stashToInv(${i})">${n}</span>`
+                ).join('') || "空";
+            } else {
+                sDiv.innerHTML = "僅限避難所";
+            }
+        }
+
+        // Floor Render
+        const floorDiv = document.getElementById('floor-grid');
+        if(floorDiv) {
+            document.getElementById('floor-count').innerText = `${g.floor.length}/100`;
+            floorDiv.innerHTML = g.floor.map((n, i) => 
+                `<div class="floor-item" onclick="game.pickupFromFloor(${i})">${n}</div>`
+            ).join('');
+        }
+
+        const mBox = document.getElementById('mission-box');
+        if(mBox) {
+            if (g.loc !== 0 && g.mission) {
+                mBox.style.display = 'block';
+                const zone = ZONES.find(z => z.id === g.loc);
+                document.getElementById('quest-name').innerText = zone ? zone.quest : "???";
+                document.getElementById('bar-intel').style.width = g.mission.progress + '%';
+            } else {
+                mBox.style.display = 'none';
+            }
+        }
+
+        const f = document.getElementById('footer-controls');
+        if(f) {
+            f.innerHTML = '';
+
+            if (g.loc === 0) {
+                f.innerHTML = `
+                    <button onclick="game.handle('open_mission')">任務板</button>
+                    <button onclick="game.handle('open_shop')">黑市</button>
+                    <button onclick="game.handle('rest')">休息</button>
+                `;
+            } else {
+                if (g.combat) {
+                    f.innerHTML = `
+                        <button class="alert" onclick="game.handle('attack')">攻擊</button>
+                        <button onclick="game.handle('flee')">逃跑</button>
+                    `;
+                } else if (g.mission?.evacTimer !== null && g.mission?.evacTimer > 0) {
+                    f.innerHTML = `<button class="alert" onclick="game.handle('wait_evac')">防守 (${g.mission.evacTimer})</button>`;
+                } else {
+                    // Dynamic Search/Evac Button
+                    const zone = ZONES.find(z => z.id === g.loc);
+                    const hasItem = this.inv.items.find(i => i.name === zone.quest);
+                    let midBtn = `<button onclick="game.handle('investigate')" style="border-color:#ffff00; color:#ffff00;">搜索目標</button>`;
+                    if (g.mission?.found) {
+                        if (hasItem) {
+                            midBtn = `<button class="alert" onclick="game.handle('call_evac')">呼叫撤離</button>`;
+                        } else {
+                            midBtn = `<button disabled style="color:#888; border-color:#888;">目標已標記 (需拾取)</button>`;
+                        }
+                    }
+
+                    f.innerHTML = `
+                        <button onclick="game.handle('explore')">探索</button>
+                        ${midBtn}
+                        <button onclick="game.handle('field_rest')">休息</button>
+                    `;
+                }
+            }
+        }
+        
+        this.inv.render();
+    }
+
+    openGM() {
+        let html = `<h3 style="color:#a020f0">GM 物品生成器</h3><div class="gm-grid">`;
+        for(let key in ITEMS) {
+            html += `<div class="gm-item" onclick="game.gmAdd('${key}')">${key}</div>`;
+        }
+        html += `</div>`;
+        document.getElementById('modal-content').innerHTML = html;
+        document.getElementById('overlay').style.display = 'flex';
+    }
+
+    gmAdd(n) {
+        this.state.player.stash.push(n);
+        this.log(`GM生成: ${n}`, "gain");
+        this.save();
+        this.render();
+    }
+
+    openBestiary() {
+        const known = this.state.game.bestiary;
+        let html = `<h3 style="color:var(--term-green)">生物圖鑑 (${known.length}/${ENEMIES.length})</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">`;
+        ENEMIES.forEach(e => {
+            const unlocked = known.includes(e.name);
+            html += `<div style="border:1px solid #333; padding:10px; cursor:${unlocked?'pointer':'default'}" 
+                onclick="${unlocked ? `game.showEnemyInfo('${e.name}')` : ''}">
+                <div style="color:${unlocked ? 'var(--alert-color)' : '#444'}">${unlocked ? e.name : '???'}</div>
+            </div>`;
+        });
+        html += `</div>`;
+        document.getElementById('modal-content').innerHTML = html;
+        document.getElementById('overlay').style.display = 'flex';
+    }
+
+    showEnemyInfo(name) {
+        const e = ENEMIES.find(x => x.name === name);
+        if(!e) return;
+        let drops = e.drops ? e.drops.map(d => `${d.i} (${d.c*100}%)`).join(', ') : "無";
+        let html = `
+            <h3 style="color:var(--alert-color)">${e.name}</h3>
+            <div style="text-align:left; font-size:0.9rem; line-height:1.6;">
+                <div>生命: ${e.hp} | 攻擊: ${e.dmg} | 危險度: ${e.riskLvl}</div>
+                <div style="color:orange; margin:5px 0;">特殊能力: ${e.ability}</div>
+                <div style="color:#aaa; margin:10px 0;">${e.desc}</div>
+                <div style="border-top:1px solid #333; padding-top:5px;">掉落: <span style="color:var(--gold-color)">${drops}</span></div>
+            </div>
+        `;
+        document.getElementById('modal-content').innerHTML = html;
+    }
+
+    renderShop() {
+        const items = ["牛肉罐頭","淨水","能量飲料","急救包","9mm子彈","散彈","步槍彈","抗生素","學生書包","登山包","戰術背包","警用手槍","M4A1步槍","防暴背心","夜視鏡"];
+        document.getElementById('modal-content').innerHTML = `
+            <h3>BLACK MARKET</h3>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                ${items.map(k => `
+                    <div style="border:1px solid #333; padding:5px; cursor:pointer;" onclick="game.buy('${k}')">
+                        <div>${k} ($${ITEMS[k].val * 2})</div>
+                        <div style="color:#666; font-size:0.8rem;">${ITEMS[k].desc}</div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        document.getElementById('overlay').style.display = 'flex';
+    }
+
+    buy(name) {
+        const cost = ITEMS[name].val * 2;
+        if(this.state.player.money >= cost) {
+            this.state.player.money -= cost;
+            this.log(`購買: ${name}`, "gold");
+            // Try inv add first
+            if(!this.inv.addItem(name)) {
+                this.addToFloor(name);
+            }
+            this.render();
+        } else {
+            alert("資金不足");
+        }
+    }
+
+    renderMissions() {
+        document.getElementById('modal-content').innerHTML = `
+            <h3>MISSION BOARD</h3>
+            ${this.state.game.availableMissions.map(z => `
+                <div style="border:1px solid #444; padding:10px; margin-bottom:5px; display:flex; justify-content:space-between;">
+                    <div>
+                        <div style="font-weight:bold; color:#fff">${z.name}</div>
+                        <div style="font-size:0.8rem; color:#888;">危險度:${z.risk}% | 目標:${z.quest}</div>
+                    </div>
+                    <button class="mini-btn" onclick="game.startMission(${z.id})">出發</button>
+                </div>
+            `).join('')}
+        `;
+        document.getElementById('overlay').style.display = 'flex';
+    }
+
+    startMission(id) {
+        document.getElementById('overlay').style.display = 'none';
+        this.state.game.loc = id;
+        this.state.game.mission = { progress: 0, found: false, evacTimer: null }; 
+        const z = ZONES.find(x => x.id === id);
+        this.log(`前往: ${z.name}`, "gain");
+        this.save();
+        this.render();
+    }
+}
+
+window.onload = function() {
+    window.game = new GameEngine();
+};
+</script>
+</body>
+</html>
