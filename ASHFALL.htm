@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASHFALL V11.2: COMPLETE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ASHFALL V11.2: MOBILE</title>
     <style>
         :root {
             --bg-color: #0d0d0d;
@@ -18,7 +18,7 @@
             --font-main: 'Consolas', 'Courier New', monospace;
         }
 
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             background-color: var(--bg-color);
@@ -28,8 +28,10 @@
             height: 100vh; overflow: hidden;
             text-shadow: 0 0 2px var(--term-dim);
             user-select: none;
+            touch-action: manipulation; /* 優化觸控 */
         }
 
+        /* 掃描線特效 */
         body::before {
             content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
@@ -39,39 +41,49 @@
         #layout {
             display: grid;
             grid-template-columns: 300px 1fr 380px;
-            grid-template-rows: 60px 1fr 100px;
+            grid-template-rows: 60px 1fr 80px;
             height: 100%; width: 100%; max-width: 1800px; margin: 0 auto;
             border: 1px solid var(--term-dim);
         }
 
-        .panel { border: 1px solid var(--term-dim); padding: 15px; overflow-y: auto; background: #080a08; position: relative; }
+        .panel { 
+            border: 1px solid var(--term-dim); padding: 15px; overflow-y: auto; 
+            background: #080a08; position: relative; 
+            scrollbar-width: thin; scrollbar-color: var(--term-green) #000;
+        }
         
         header {
             grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center;
             padding: 0 20px; border-bottom: 2px solid var(--term-green); background: #0f160f;
+            z-index: 10;
         }
         h1 { margin: 0; letter-spacing: 2px; font-size: 1.4rem; color: #fff; }
 
         /* Buttons */
         button {
             background: #000; color: var(--term-green); border: 1px solid var(--term-green);
-            padding: 5px 10px; font-family: var(--font-main); cursor: pointer; text-transform: uppercase; font-size: 0.9rem;
+            padding: 8px 12px; font-family: var(--font-main); cursor: pointer; text-transform: uppercase; font-size: 0.9rem;
+            transition: all 0.1s;
         }
+        button:active { transform: translateY(2px); }
         button:hover:not(:disabled) { background: var(--term-green); color: #000; }
         button:disabled { border-color: #333; color: #333; cursor: not-allowed; opacity: 0.5; }
         button.alert { border-color: var(--alert-color); color: var(--alert-color); }
         button.gm { border-color: #a020f0; color: #a020f0; }
         button.info { border-color: var(--info-color); color: var(--info-color); }
 
+        /* Mobile Nav (Hidden on Desktop) */
+        #mobile-nav { display: none; }
+
         /* Left Panel */
-        .stat-box { margin-bottom: 8px; }
-        .bar-frame { border: 1px solid #333; height: 10px; width: 100%; margin-top:2px; background: #000; }
+        .stat-box { margin-bottom: 8px; font-size: 1rem; }
+        .bar-frame { border: 1px solid #333; height: 12px; width: 100%; margin-top:2px; background: #000; }
         .bar-fill { height: 100%; background: var(--term-green); transition: width 0.3s; }
         
         .gear-section { margin-top: 20px; border-top: 1px solid #333; padding-top: 10px; }
         .gear-slot { 
-            border: 1px solid #333; padding: 8px; margin-bottom: 5px; cursor: pointer; 
-            font-size: 0.85rem; display: flex; justify-content: space-between; background: #111;
+            border: 1px solid #333; padding: 10px; margin-bottom: 5px; cursor: pointer; 
+            font-size: 0.9rem; display: flex; justify-content: space-between; background: #111;
         }
         .gear-slot:hover { border-color: var(--alert-color); color: #fff; }
         .gear-label { color: #888; }
@@ -80,9 +92,9 @@
         /* Floor System */
         #floor-container { margin-top: 20px; border: 1px dashed var(--floor-color); padding: 10px; background: rgba(210, 180, 140, 0.05); }
         .floor-header { color: var(--floor-color); font-weight: bold; margin-bottom: 5px; display:flex; justify-content:space-between; font-size: 0.9rem;}
-        .floor-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+        .floor-grid { display: flex; flex-wrap: wrap; gap: 8px; }
         .floor-item { 
-            border: 1px solid var(--floor-color); padding: 3px 6px; font-size: 0.75rem; 
+            border: 1px solid var(--floor-color); padding: 5px 8px; font-size: 0.85rem; 
             cursor: pointer; color: #aaa; background: #1a1515;
         }
         .floor-item:hover { border-color: #fff; color: #fff; }
@@ -95,6 +107,8 @@
             position: relative; width: 270px; margin-bottom: 10px;
             background: #000; border: 2px solid #333; transition: all 0.3s;
             flex-shrink: 0; overflow: hidden;
+            /* Mobile scroll fix */
+            margin-left: auto; margin-right: auto;
         }
         .inv-grid-wrapper.collapsed { height: 0 !important; border: none; margin: 0; }
 
@@ -103,12 +117,12 @@
 
         .grid-item {
             position: absolute; background-color: var(--item-bg); border: 1px solid var(--term-green);
-            color: #fff; font-size: 0.7rem; display: flex; justify-content: center; align-items: center; text-align: center;
+            color: #fff; font-size: 0.75rem; display: flex; justify-content: center; align-items: center; text-align: center;
             cursor: pointer; z-index: 10; box-shadow: 0 0 5px #000; overflow: hidden; padding: 2px; line-height: 1.1;
             transition: top 0.1s, left 0.1s;
         }
         .grid-item:hover { filter: brightness(1.3); z-index: 100; border-color: #fff; }
-        .grid-item.selected { border: 2px solid #fff; box-shadow: 0 0 10px #fff; z-index: 101; }
+        .grid-item.selected { border: 2px solid #fff; box-shadow: 0 0 10px #fff; z-index: 101; animation: pulse 1s infinite; }
         
         .type-weapon { border-color: #ff5555; background: #2a1111; }
         .type-med { border-color: #55ff55; background: #112a11; }
@@ -118,19 +132,19 @@
         .type-ammo { border-color: #5555ff; background: #1a1a2a; }
         .type-pack { border-color: #00ffff; background: #002a2a; }
 
-        #inv-controls { display: flex; gap: 5px; width: 100%; justify-content: center; margin-top: 5px; flex-wrap: wrap; }
-        .mini-btn { padding: 5px 10px; font-size: 0.75rem; background: #111; color: #aaa; border: 1px solid #444; cursor: pointer; }
+        #inv-controls { display: flex; gap: 8px; width: 100%; justify-content: center; margin-top: 5px; flex-wrap: wrap; }
+        .mini-btn { padding: 8px 12px; font-size: 0.85rem; background: #111; color: #aaa; border: 1px solid #444; cursor: pointer; flex: 1; min-width: 80px; }
         .mini-btn:hover:not(:disabled) { border-color: #fff; color: #fff; background: #333; }
 
         /* Side Section */
         .side-section { margin-top: 15px; border-top: 1px solid #333; padding-top: 10px; width: 100%; flex-grow: 1; overflow-y: auto; }
         .section-title { font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold; }
-        .stash-item { display: inline-block; border: 1px solid #444; padding: 4px 8px; margin: 2px; cursor: pointer; font-size: 0.8rem; background: #111; }
+        .stash-item { display: inline-block; border: 1px solid #444; padding: 6px 10px; margin: 3px; cursor: pointer; font-size: 0.85rem; background: #111; }
         .stash-item:hover { border-color: var(--term-green); color: #fff; }
 
         /* Log */
-        #log-panel { font-size: 0.95rem; line-height: 1.5; padding-bottom: 20px; }
-        .log-entry { margin-bottom: 6px; padding-left: 8px; border-left: 2px solid var(--term-dim); }
+        #log-panel { font-size: 1rem; line-height: 1.6; padding-bottom: 20px; }
+        .log-entry { margin-bottom: 8px; padding-left: 8px; border-left: 2px solid var(--term-dim); }
         .log-entry.combat { border-color: var(--alert-color); color: #ff8888; }
         .log-entry.gain { border-color: #ffff00; color: #eeffcc; }
         .log-entry.sys { color: #666; font-style: italic; border: none; }
@@ -141,7 +155,7 @@
             display: flex; justify-content: center; align-items: center; gap: 10px; 
             background: #000; padding: 10px; z-index: 100;
         }
-        footer button { padding: 10px 20px; font-size: 1rem; }
+        footer button { padding: 12px 24px; font-size: 1rem; font-weight: bold; flex: 1; max-width: 200px; }
 
         #overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -149,27 +163,68 @@
         }
         .modal { 
             border: 2px solid var(--term-green); background: #000; padding: 20px; 
-            width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+            width: 95%; max-width: 600px; max-height: 80vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
         }
-        .conflict-view { display: flex; flex-direction: column; align-items: center; gap: 10px; border: 1px dashed red; padding: 20px; }
         .info-grid { display: grid; grid-template-columns: 100px 1fr; gap: 10px; font-size: 0.9rem; text-align: left; }
         .info-label { color: #888; }
         .info-val { color: #fff; font-weight: bold; }
         
-        .gm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 5px; }
-        .gm-item { border: 1px solid #333; padding: 5px; cursor: pointer; text-align: center; font-size: 0.8rem; }
+        .gm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
+        .gm-item { border: 1px solid #333; padding: 8px; cursor: pointer; text-align: center; font-size: 0.8rem; }
         .gm-item:hover { border-color: var(--rare-color); color: #fff; }
-
-        .bestiary-entry { border: 1px solid #333; padding: 5px; margin: 2px; display:inline-block; cursor:pointer; }
-        .bestiary-entry:hover { border-color: var(--alert-color); color: var(--alert-color); }
 
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; border-color: #fff; } 100% { opacity: 1; } }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
         .blink-red { color: var(--alert-color); animation: blink 1s infinite; }
         
+        /* --- MOBILE UI OPTIMIZATION --- */
         @media (max-width: 900px) {
-            #layout { grid-template-columns: 1fr; grid-template-rows: auto auto 550px 1fr auto; display: flex; flex-direction: column; }
-            .inv-grid-wrapper { transform: scale(1); }
+            #layout { 
+                display: flex; flex-direction: column;
+                grid-template-columns: 1fr; 
+                grid-template-rows: auto auto 1fr auto; 
+                height: 100vh; overflow: hidden;
+            }
+
+            header { 
+                padding: 10px; flex-shrink: 0;
+            }
+            h1 { font-size: 1rem; }
+            header button { padding: 4px 8px; font-size: 0.8rem; }
+
+            /* Mobile Tab Bar */
+            #mobile-nav {
+                display: flex; width: 100%; border-bottom: 1px solid var(--term-dim);
+                background: #000; flex-shrink: 0;
+            }
+            .nav-tab {
+                flex: 1; text-align: center; padding: 12px;
+                color: #666; border-right: 1px solid #222; cursor: pointer;
+                font-size: 0.9rem; background: #080a08;
+            }
+            .nav-tab.active { background: var(--term-dim); color: #fff; font-weight: bold; border-bottom: 2px solid var(--term-green); }
+
+            /* Hide panels on mobile by default, shown via JS */
+            .panel { display: none; border: none; padding-bottom: 80px; } 
+            .panel.active-panel { display: block; }
+
+            /* Inventory Adjustments */
+            .inv-grid-wrapper { transform: scale(1); width: 254px; } /* Fits perfectly for 5 cols */
+            .inv-grid { gap: 1px; }
+            #inv-controls .mini-btn { font-size: 0.9rem; padding: 12px; }
+
+            /* Footer fixed at bottom */
+            footer { 
+                position: absolute; bottom: 0; left: 0; width: 100%; 
+                padding: 10px; background: rgba(0,0,0,0.9);
+                border-top: 1px solid var(--term-green);
+                height: 70px;
+            }
+            
+            #modal-content { font-size: 1rem; }
+            
+            /* Hide non-critical header items on very small screens */
+            .header-stat { display: flex; flex-direction: column; font-size: 0.8rem; }
         }
     </style>
 </head>
@@ -177,18 +232,30 @@
 
 <div id="layout">
     <header>
-        <h1>Z-DAY v11.2 <span style="font-size:0.8rem; color:var(--info-color);">// COMPLETE</span></h1>
-        <div style="display:flex; gap:10px; align-items:center;">
-            <span id="game-status">狀態: 探索中</span>
-            <span>DAY: <span id="ui-day">0</span></span>
-            <span style="color:var(--gold-color)">$: <span id="ui-money">0</span></span>
-            <button class="info" onclick="game.openBestiary()">[圖鑑]</button>
-            <button class="gm" onclick="game.openGM()">[GM]</button>
-            <button class="alert" onclick="game.hardReset()">[刪檔重置]</button>
+        <div style="display:flex; flex-direction:column;">
+            <h1 style="line-height:1;">Z-DAY v11.2</h1>
+            <span style="font-size:0.7rem; color:var(--info-color);">MOBILE EDITION</span>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+            <div class="header-stat">
+                <span>DAY <span id="ui-day" style="color:#fff">0</span></span>
+                <span style="color:var(--gold-color)">$ <span id="ui-money">0</span></span>
+            </div>
+            <button class="info" onclick="game.openBestiary()">圖鑑</button>
+            <button class="gm" onclick="game.openGM()">GM</button>
+            <button class="alert" onclick="game.hardReset()">重置</button>
         </div>
     </header>
 
-    <div class="panel">
+    <div id="mobile-nav">
+        <div class="nav-tab active" onclick="ui.switchTab('stats')">狀態 & 裝備</div>
+        <div class="nav-tab" onclick="ui.switchTab('inv')">背包 & 倉庫</div>
+        <div class="nav-tab" onclick="ui.switchTab('log')">日誌 & 訊息</div>
+    </div>
+
+    <div class="panel active-panel" id="panel-stats">
+        <div id="game-status" style="margin-bottom:10px; padding:5px; background:#111; text-align:center; border:1px solid #333;">狀態: 探索中</div>
+
         <div class="stat-box">
             <div>生命 (HP) <span id="val-hp">100</span></div>
             <div class="bar-frame"><div id="bar-hp" class="bar-fill" style="background:var(--alert-color)"></div></div>
@@ -231,15 +298,10 @@
             </div>
             <div id="floor-grid" class="floor-grid"></div>
         </div>
+        <div style="height: 50px;"></div>
     </div>
 
-    <div class="panel" id="log-panel">
-        <div class="log-entry sys">系統升級 V11.2... 地板系統與怪物能力實裝。</div>
-        <div class="log-entry">背包滿時，物品會掉落在左側的【地面】。</div>
-        <div class="log-entry">請注意：切換地點或休息時，地面物品會消失。</div>
-    </div>
-
-    <div class="panel" id="inventory-container">
+    <div class="panel" id="panel-inv" id="inventory-container">
         <div class="inv-header">
             <span>物品欄 <span id="ui-inv-cap" style="font-size:0.8rem; color:#888;">0/20</span></span>
             <button class="mini-btn" onclick="game.inv.toggleCollapse()" id="btn-collapse">[-]</button>
@@ -250,10 +312,10 @@
         </div>
 
         <div id="inv-controls">
-            <button class="mini-btn" onclick="game.inv.inspectSelected()" style="border-color:var(--info-color); color:var(--info-color);">說明書</button>
-            <button class="mini-btn" onclick="game.inv.rotateSelected()">旋轉(R)</button>
-            <button class="mini-btn alert" id="btn-drop" onclick="game.inv.dropToFloor()">丟棄(地面)</button>
-            <button class="mini-btn" id="btn-use" onclick="game.inv.useSelected()" style="color:#fff; border-color:#fff;">裝備/使用</button>
+            <button class="mini-btn" onclick="game.inv.inspectSelected()" style="border-color:var(--info-color); color:var(--info-color);">說明</button>
+            <button class="mini-btn" onclick="game.inv.rotateSelected()">旋轉</button>
+            <button class="mini-btn alert" id="btn-drop" onclick="game.inv.dropToFloor()">丟棄</button>
+            <button class="mini-btn" id="btn-use" onclick="game.inv.useSelected()" style="color:#fff; border-color:#fff;">使用/裝備</button>
             <button class="mini-btn" id="btn-stash" onclick="game.inv.stashSelected()" style="color:gold; border-color:gold;">存倉</button>
             <button class="mini-btn" id="btn-sell" onclick="game.inv.sellSelected()" style="color:#ffff00; border-color:#ffff00;">出售</button>
         </div>
@@ -262,6 +324,15 @@
             <div class="section-title">避難所倉庫 (點擊取出)</div>
             <div id="stash-list" class="stash-list"></div>
         </div>
+        <div style="height: 50px;"></div>
+    </div>
+
+    <div class="panel" id="panel-log" id="log-panel">
+        <div class="log-entry sys">MOBILE SYSTEM V1.0 STARTED.</div>
+        <div class="log-entry sys">系統升級 V11.2... 地板系統與怪物能力實裝。</div>
+        <div class="log-entry">背包滿時，物品會掉落在【狀態】頁面的地面區域。</div>
+        <div class="log-entry">請注意：切換地點或休息時，地面物品會消失。</div>
+        <div id="log-content"></div> <div style="height: 50px;"></div>
     </div>
 
     <footer id="footer-controls"></footer>
@@ -270,11 +341,32 @@
 <div id="overlay">
     <div class="modal">
         <div id="modal-content"></div>
-        <button onclick="document.getElementById('overlay').style.display='none'" style="margin-top:20px; width:100%;">關閉</button>
+        <button onclick="document.getElementById('overlay').style.display='none'" style="margin-top:20px; width:100%; padding:15px;">關閉</button>
     </div>
 </div>
 
 <script>
+/* --- UI HELPER --- */
+const ui = {
+    switchTab: (tab) => {
+        // Reset classes
+        document.querySelectorAll('.nav-tab').forEach(e => e.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(e => e.classList.remove('active-panel'));
+        
+        // Desktop check: if width > 900, don't hide, just reset logic if needed
+        if(window.innerWidth > 900) return;
+
+        // Set Active
+        let targetPanel = 'panel-stats';
+        let targetIdx = 0;
+        if(tab === 'inv') { targetPanel = 'panel-inv'; targetIdx = 1; }
+        if(tab === 'log') { targetPanel = 'panel-log'; targetIdx = 2; }
+
+        document.getElementById(targetPanel).classList.add('active-panel');
+        document.querySelectorAll('.nav-tab')[targetIdx].classList.add('active');
+    }
+};
+
 /* --- CONFIG --- */
 const SLOT_SIZE = 50;
 const COLS = 5;
@@ -850,10 +942,18 @@ refreshMissions() {
     }
 
     log(msg, type='') {
-        const p = document.getElementById('log-panel');
+        // Original log logic
+        const p = document.getElementById('log-content'); // Use content wrapper
         if(p) {
             p.innerHTML += `<div class="log-entry ${type}">> ${msg}</div>`;
-            p.scrollTop = p.scrollHeight;
+        }
+        // Auto scroll parent panel
+        const panel = document.getElementById('panel-log');
+        if(panel) panel.scrollTop = panel.scrollHeight;
+        
+        // Mobile UI Tip
+        if(window.innerWidth <= 900 && type==='combat' && !document.getElementById('panel-log').classList.contains('active-panel')) {
+            // Optional: You could add a red dot to the tab here
         }
     }
 
@@ -1033,6 +1133,9 @@ refreshMissions() {
     }
 
     triggerCombat() {
+        // Force Switch to main tab on mobile if combat starts
+        if(window.innerWidth <= 900) ui.switchTab('stats');
+        
         const zone = ZONES.find(z => z.id === this.state.game.loc);
         if(!zone) return;
         const candidates = ENEMIES.filter(e => e.riskLvl <= zone.risk + 10);
@@ -1460,6 +1563,10 @@ refreshMissions() {
 
 window.onload = function() {
     window.game = new GameEngine();
+    // Mobile Init: Default to Stats
+    if(window.innerWidth <= 900) {
+        ui.switchTab('stats');
+    }
 };
 </script>
 </body>
