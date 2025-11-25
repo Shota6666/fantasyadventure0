@@ -407,7 +407,9 @@ const CONFIG = {
         "黑暗物質": { price: 200, rarity: "rare", icon: "⚫" },
         "魔王印記": { price: 500, rarity: "epic", icon: "🔯" },
         "魔神之眼": { price: 1000, rarity: "legendary", icon: "👁️" },
-        "真實之心": { price: 5000, rarity: "mythic", icon: "💖" }
+        "真實之心": { price: 5000, rarity: "mythic", icon: "💖" },
+        "彈弓": { price: 0, rarity: "rare", icon: "🪃", desc: "遭遇哈比時必定擊退哈比，發動後消失，無法出售" },
+        "鉤子": { price: 0, rarity: "rare", icon: "🪝", desc: "遭遇跌倒事件時可以躲避一次，發動後消失，無法出售" }
     },
     itemPool: [
         { name: "生鏽匕首", type: "weapon", val: 3, rarity: "common", price: 15, icon: "🗡️" },
@@ -620,9 +622,9 @@ const Game = {
         const items = [];
         // 1. Item Pool (Equipment, Potions)
         items.push(...CONFIG.itemPool);
-        // 2. Loot Data (Materials, Boss Drops) - needs mapping
+        // 2. Loot Data (Materials, Boss Drops)
         for (let [name, data] of Object.entries(CONFIG.lootData)) {
-            items.push({ ...data, name: name, type: 'material' }); // Ensure name is set
+            items.push({ ...data, name: name, type: 'material' }); 
         }
         // 3. Phoenix Feather
         items.push(CONFIG.phoenixFeather);
@@ -863,6 +865,13 @@ const Game = {
         if (Player.depth === 501) {
             alert("警告：你已進入深層領域！所有怪物實力大幅增強！");
         }
+        
+        // Trip Event (1% after depth 100)
+        if (Player.depth > 100 && Math.random() < 0.01) {
+            this.triggerTrip();
+            this.updateUI();
+            return;
+        }
 
         if (Player.depth > 200 && Math.random() < 0.01) {
             this.triggerHarpy();
@@ -872,14 +881,6 @@ const Game = {
 
         const rand = Math.random();
         
-        // Probabilities
-        // Heal: 0.05 (5%)
-        // Statue: 0.05 (5%)
-        // Class Event: 0.03 (3%)
-        // Merchant: 0.17 (17%)
-        // Chest: 0.10 (10%)
-        // Combat: 0.60 (60%)
-
         if (rand < 0.05) {
             this.triggerHeal();
         } else if (rand < 0.10) {
@@ -895,6 +896,47 @@ const Game = {
         }
         
         this.updateUI();
+    },
+    
+    // --- New Trip Event ---
+    triggerTrip() {
+        GameState.phase = "event_end";
+        this.triggerAnim('event-icon', 'anim-damage');
+        
+        // Check for Hook
+        const hookIndex = Player.inventory.material.findIndex(i => i.name === '鉤子');
+        if (hookIndex !== -1) {
+            Player.inventory.material.splice(hookIndex, 1); // Consume hook
+            this.renderEvent("💫 差點跌倒！", "你被絆了一下...", "但是<span class='rarity-rare'>鉤子</span>勾住了岩壁，救了你的裝備！(鉤子已損壞)", "🪝");
+            this.setButtons("繼續", "nextEvent", "無", null, true);
+            return;
+        }
+
+        // Standard Trip
+        let lostItemName = null;
+        let lostType = null;
+        
+        const equippedTypes = [];
+        if (Player.equipment.weapon) equippedTypes.push('weapon');
+        if (Player.equipment.armor) equippedTypes.push('armor');
+        if (Player.equipment.shield) equippedTypes.push('shield');
+
+        if (equippedTypes.length > 0) {
+            // Randomly lose one equipped item
+            lostType = equippedTypes[Math.floor(Math.random() * equippedTypes.length)];
+            const item = Player.equipment[lostType];
+            lostItemName = item.name;
+            
+            Player.equipment[lostType] = null;
+            this.recalcStats();
+        }
+
+        if (lostItemName) {
+            this.renderEvent("💫 跌倒了！", "地面突然崩塌，你摔了一跤...", `你不小心弄丟了 <span class='damage-text'>${lostItemName}</span>！`, "🦶");
+        } else {
+            this.renderEvent("💫 跌倒了！", "地面突然崩塌，你摔了一跤...", "幸好你身上沒有裝備，拍拍屁股站了起來。", "🦶");
+        }
+        this.setButtons("繼續", "nextEvent", "無", null, true);
     },
 
     triggerClassEvent() {
@@ -1022,6 +1064,17 @@ const Game = {
         GameState.phase = "event_end";
         this.triggerAnim('event-icon', 'anim-spawn');
         
+        // Check for Slingshot
+        const slingIndex = Player.inventory.material.findIndex(i => i.name === '彈弓');
+        if (slingIndex !== -1) {
+            Player.inventory.material.splice(slingIndex, 1);
+            Player.gold += 500;
+            this.showFloatingText("+500 G", "#ffd700");
+            this.renderEvent("🦅 遭遇哈比", "一隻哈比突然襲來！", `你使用 <span class='rarity-rare'>彈弓</span> 擊退了牠！(彈弓已損壞)<br>撿到了牠掉落的 <span class='gold-text'>500 G</span>！`, "🪃");
+            this.setButtons("繼續", "nextEvent", "無", null, true);
+            return;
+        }
+
         let outcome = Math.random();
         let title = "🦅 遭遇哈比";
         let desc = "";
@@ -1174,7 +1227,7 @@ const Game = {
         let total = 0;
         let keptItems = [];
         Player.inventory.material.forEach(item => {
-            if (item.type === 'revive') {
+            if (item.type === 'revive' || item.name === '彈弓' || item.name === '鉤子') {
                 keptItems.push(item);
             } else {
                 let price = item.price; 
@@ -1195,8 +1248,8 @@ const Game = {
         
         const item = Player.inventory[category][index];
         if (!item) return;
-        if (item.type === 'revive') {
-            alert("這件物品太珍貴了，無法出售！");
+        if (item.type === 'revive' || item.name === '彈弓' || item.name === '鉤子') {
+            alert("這件物品無法出售！");
             return;
         }
 
@@ -1222,12 +1275,35 @@ const Game = {
         GameState.phase = "event_end";
         this.triggerAnim('event-icon', 'anim-spawn');
 
+        // Phoenix Feather Check
         if (Math.random() < 0.01) {
             const feather = {...CONFIG.phoenixFeather};
             this.addItemToInventory(feather);
             this.renderEvent("📦 發現寶箱", "你打開了寶箱...", "奇蹟發生了！你獲得了 <span class='rarity-legendary'>不死鳥的羽毛</span>！", "🪶");
             this.setButtons("繼續", "nextEvent", "無", null, true);
             return;
+        }
+        
+        // Slingshot Check (1%)
+        if (Math.random() < 0.01) {
+            if (CONFIG.lootData["彈弓"]) {
+                const item = { ...CONFIG.lootData["彈弓"], name: "彈弓", type: "material" };
+                this.addItemToInventory(item);
+                this.renderEvent("📦 發現寶箱", "你打開了寶箱...", `獲得了特殊的工具 <span class='rarity-rare'>彈弓</span>！`, "🪃");
+                this.setButtons("繼續", "nextEvent", "無", null, true);
+                return;
+            }
+        }
+
+        // Hook Check (1%)
+        if (Math.random() < 0.01) {
+            if (CONFIG.lootData["鉤子"]) {
+                const item = { ...CONFIG.lootData["鉤子"], name: "鉤子", type: "material" };
+                this.addItemToInventory(item);
+                this.renderEvent("📦 發現寶箱", "你打開了寶箱...", `獲得了特殊的工具 <span class='rarity-rare'>鉤子</span>！`, "🪝");
+                this.setButtons("繼續", "nextEvent", "無", null, true);
+                return;
+            }
         }
 
         const roll = Math.random();
