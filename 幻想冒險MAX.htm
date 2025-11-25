@@ -409,7 +409,7 @@ const CONFIG = {
         "魔神之眼": { price: 1000, rarity: "legendary", icon: "👁️" },
         "真實之心": { price: 5000, rarity: "mythic", icon: "💖" },
         "彈弓": { price: 0, rarity: "rare", icon: "🪃", desc: "遭遇哈比時必定擊退哈比，發動後消失，無法出售" },
-        "鉤子": { price: 0, rarity: "rare", icon: "🪝", desc: "遭遇跌倒事件時可以躲避一次，發動後消失，無法出售" }
+        "鉤子": { price: 0, rarity: "rare", icon: "🪝", desc: "遭遇跌倒事件時可以躲避一次並獲得物品，發動後消失，無法出售" }
     },
     itemPool: [
         { name: "生鏽匕首", type: "weapon", val: 3, rarity: "common", price: 15, icon: "🗡️" },
@@ -866,8 +866,8 @@ const Game = {
             alert("警告：你已進入深層領域！所有怪物實力大幅增強！");
         }
         
-        // Trip Event (1% after depth 100)
-        if (Player.depth > 100 && Math.random() < 0.01) {
+        // Trip Event (0.5% after depth 100)
+        if (Player.depth > 100 && Math.random() < 0.005) {
             this.triggerTrip();
             this.updateUI();
             return;
@@ -898,43 +898,58 @@ const Game = {
         this.updateUI();
     },
     
-    // --- New Trip Event ---
+    // --- Updated Trip Event (0.5% Prob, 70/30 or Hook) ---
     triggerTrip() {
         GameState.phase = "event_end";
         this.triggerAnim('event-icon', 'anim-damage');
         
-        // Check for Hook
+        // Check for Hook (Guarantees Good Outcome)
         const hookIndex = Player.inventory.material.findIndex(i => i.name === '鉤子');
+        let useHook = false;
         if (hookIndex !== -1) {
             Player.inventory.material.splice(hookIndex, 1); // Consume hook
-            this.renderEvent("💫 差點跌倒！", "你被絆了一下...", "但是<span class='rarity-rare'>鉤子</span>勾住了岩壁，救了你的裝備！(鉤子已損壞)", "🪝");
-            this.setButtons("繼續", "nextEvent", "無", null, true);
-            return;
+            useHook = true;
         }
 
-        // Standard Trip
-        let lostItemName = null;
-        let lostType = null;
-        
-        const equippedTypes = [];
-        if (Player.equipment.weapon) equippedTypes.push('weapon');
-        if (Player.equipment.armor) equippedTypes.push('armor');
-        if (Player.equipment.shield) equippedTypes.push('shield');
+        // Determine Outcome: 30% Good (or Hook), 70% Bad
+        // If useHook is true, we force the Good Outcome
+        const isGoodOutcome = useHook || (Math.random() < 0.3);
 
-        if (equippedTypes.length > 0) {
-            // Randomly lose one equipped item
-            lostType = equippedTypes[Math.floor(Math.random() * equippedTypes.length)];
-            const item = Player.equipment[lostType];
-            lostItemName = item.name;
-            
-            Player.equipment[lostType] = null;
-            this.recalcStats();
-        }
+        if (isGoodOutcome) {
+            // Good Outcome: Catch cliff -> Get random equipment
+            // Generate item
+            const item = this.generateSpecificItem(['weapon', 'armor', 'shield']);
+            this.addItemToInventory(item);
 
-        if (lostItemName) {
-            this.renderEvent("💫 跌倒了！", "地面突然崩塌，你摔了一跤...", `你不小心弄丟了 <span class='damage-text'>${lostItemName}</span>！`, "🦶");
+            let msg = "";
+            if (useHook) {
+                msg = `你滑倒了，但<span class='rarity-rare'>鉤子</span>勾住了岩壁！(鉤子已損壞)<br>你在岩壁上發現了 <span class='${CONFIG.rarityDisplay[item.rarity].color}'>${item.name}</span>！`;
+            } else {
+                msg = `你滑倒了，在千鈞一髮之際抓住了岩壁！<br>意外發現了 <span class='${CONFIG.rarityDisplay[item.rarity].color}'>${item.name}</span>！`;
+            }
+            this.renderEvent("💫 意外之喜", "雖然跌倒了...", msg, "🪝");
         } else {
-            this.renderEvent("💫 跌倒了！", "地面突然崩塌，你摔了一跤...", "幸好你身上沒有裝備，拍拍屁股站了起來。", "🦶");
+            // Bad Outcome (70%): Lose equipment
+            let lostItemName = null;
+            const equippedTypes = [];
+            if (Player.equipment.weapon) equippedTypes.push('weapon');
+            if (Player.equipment.armor) equippedTypes.push('armor');
+            if (Player.equipment.shield) equippedTypes.push('shield');
+
+            if (equippedTypes.length > 0) {
+                const lostType = equippedTypes[Math.floor(Math.random() * equippedTypes.length)];
+                const item = Player.equipment[lostType];
+                lostItemName = item.name;
+                Player.equipment[lostType] = null;
+                this.recalcStats();
+                this.renderEvent("💫 跌倒了！", "地面突然崩塌，你摔了一跤...", `你不小心弄丟了 <span class='damage-text'>${lostItemName}</span>！`, "🦶");
+            } else {
+                // Nothing to lose
+                const dmg = 10;
+                Player.hp = Math.max(1, Player.hp - dmg);
+                this.updateUI();
+                this.renderEvent("💫 跌倒了！", "地面突然崩塌，你摔了一跤...", `幸好身上沒裝備，但摔得不輕 (HP -${dmg})。`, "🦶");
+            }
         }
         this.setButtons("繼續", "nextEvent", "無", null, true);
     },
