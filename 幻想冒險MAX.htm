@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>幻想冒險</title>
+    <title>幻想冒險 - 新職業擴充版</title>
     <style>
         :root {
             --bg-color: #1a1a1a;
@@ -204,7 +204,7 @@
         }
         #class-modal { display: flex; }
 
-        .class-options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 500px; width: 100%; padding: 20px; }
+        .class-options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 500px; width: 100%; padding: 20px; max-height: 90vh; overflow-y: auto; }
         .class-card {
             background: #333; padding: 20px; border-radius: 8px; cursor: pointer;
             border: 2px solid #555; text-align: center; transition: 0.2s;
@@ -259,6 +259,14 @@
         <div class="class-card" onclick="Game.selectClass('cultist')">
             <div class="class-title">😈 惡魔信徒</div>
             <div class="class-desc">開局自帶<br>一個惡魔詛咒</div>
+        </div>
+        <div class="class-card" onclick="Game.selectClass('scarecrow')">
+            <div class="class-title">🌾 稻草人</div>
+            <div class="class-desc">遭遇哈比時<br>必定將其趕走</div>
+        </div>
+        <div class="class-card" onclick="Game.selectClass('ape')">
+            <div class="class-title">🦍 人猿</div>
+            <div class="class-desc">遭遇跌倒事件<br>必定抓住岩壁</div>
         </div>
     </div>
 </div>
@@ -563,7 +571,14 @@ const Game = {
             document.getElementById('class-modal').style.display = 'none';
 
             // 更新職業徽章
-            const badgeMap = { 'knight': '🛡️ 騎士', 'merchant': '💰 商販', 'thief': '🗡️ 盜賊', 'cultist': '😈 惡魔信徒' };
+            const badgeMap = { 
+                'knight': '🛡️ 騎士', 
+                'merchant': '💰 商販', 
+                'thief': '🗡️ 盜賊', 
+                'cultist': '😈 惡魔信徒',
+                'scarecrow': '🌾 稻草人',
+                'ape': '🦍 人猿'
+            };
             document.getElementById('class-badge').innerText = badgeMap[Player.class] || "";
 
             // 4. 根據當前階段(Phase)還原畫面
@@ -775,7 +790,14 @@ const Game = {
             this.updateUI();
         }
 
-        const badgeMap = { 'knight': '🛡️ 騎士', 'merchant': '💰 商販', 'thief': '🗡️ 盜賊', 'cultist': '😈 惡魔信徒' };
+        const badgeMap = { 
+            'knight': '🛡️ 騎士', 
+            'merchant': '💰 商販', 
+            'thief': '🗡️ 盜賊', 
+            'cultist': '😈 惡魔信徒',
+            'scarecrow': '🌾 稻草人',
+            'ape': '🦍 人猿'
+        };
         document.getElementById('class-badge').innerText = badgeMap[classType];
 
         this.renderEvent("準備就緒", "你的冒險即將開始...", "祝你好運！", "✨");
@@ -911,9 +933,11 @@ const Game = {
             useHook = true;
         }
 
-        // Determine Outcome: 30% Good (or Hook), 70% Bad
-        // If useHook is true, we force the Good Outcome
-        const isGoodOutcome = useHook || (Math.random() < 0.3);
+        // Check for Ape Class
+        const isApe = Player.class === 'ape';
+
+        // Determine Outcome: 30% Good (or Hook or Ape), 70% Bad
+        const isGoodOutcome = useHook || isApe || (Math.random() < 0.3);
 
         if (isGoodOutcome) {
             // Good Outcome: Catch cliff -> Get random equipment
@@ -924,6 +948,8 @@ const Game = {
             let msg = "";
             if (useHook) {
                 msg = `你滑倒了，但<span class='rarity-rare'>鉤子</span>勾住了岩壁！(鉤子已損壞)<br>你在岩壁上發現了 <span class='${CONFIG.rarityDisplay[item.rarity].color}'>${item.name}</span>！`;
+            } else if (isApe) {
+                msg = `你滑倒了，但憑藉<span class='block-text'>人猿的敏捷</span>輕鬆抓住了岩壁！<br>意外發現了 <span class='${CONFIG.rarityDisplay[item.rarity].color}'>${item.name}</span>！`;
             } else {
                 msg = `你滑倒了，在千鈞一髮之際抓住了岩壁！<br>意外發現了 <span class='${CONFIG.rarityDisplay[item.rarity].color}'>${item.name}</span>！`;
             }
@@ -960,6 +986,10 @@ const Game = {
         else if (Player.class === 'merchant') this.handleMerchantEvent();
         else if (Player.class === 'thief') this.handleThiefEvent();
         else if (Player.class === 'cultist') this.handleCultistEvent();
+        else {
+             // 稻草人和人猿目前沒有額外的隨機職業事件，直接跳到下一個事件
+             this.nextEvent();
+        }
     },
 
     handleKnightEvent() {
@@ -1079,6 +1109,16 @@ const Game = {
         GameState.phase = "event_end";
         this.triggerAnim('event-icon', 'anim-spawn');
         
+        // Check for Scarecrow Class
+        if (Player.class === 'scarecrow') {
+            Player.gold += 500;
+            this.showFloatingText("+500 G", "#ffd700");
+            this.renderEvent("🦅 遭遇哈比", "一隻哈比突然襲來！", 
+                "身為稻草人，你的外表嚇跑了哈比！<br>撿到了牠掉落的 <span class='gold-text'>500 G</span>！", "🌾");
+            this.setButtons("繼續", "nextEvent", "無", null, true);
+            return;
+        }
+
         // Check for Slingshot
         const slingIndex = Player.inventory.material.findIndex(i => i.name === '彈弓');
         if (slingIndex !== -1) {
