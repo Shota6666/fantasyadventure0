@@ -319,6 +319,31 @@
     <div id="controls">
         <button id="btn-main" class="btn-primary" onclick="Game.nextEvent()">開始冒險</button>
         <button id="btn-sub" onclick="Game.handleSubAction()" disabled>...</button>
+        <button id="btn-auto" style="background:#009688;" onclick="Game.toggleAutoBattle()">🤖 自動</button>
+        <div style="margin-top:10px; text-align:center; font-size:0.9em;">
+            <label style="color:#ccc;">自動喝藥 HP%：</label>
+                <input id="auto-heal-threshold" 
+            type="number" 
+            min="1" max="100" 
+            value="40"
+            style="width:60px; padding:3px; text-align:center;">
+                %
+                <br><br>
+                <label>
+                    <input type="checkbox" id="skip-merchant" style="transform:scale(1.2); margin-right:5px;">
+                    略過商販
+                </label>
+                    &nbsp;&nbsp;
+                <label>
+                    <input type="checkbox" id="auto-sell-materials" style="transform:scale(1.2); margin-right:5px;">
+                    販售素材
+                </label>
+                    &nbsp;&nbsp;
+                <label>
+                    <input type="checkbox" id="skip-statue" style="transform:scale(1.2); margin-right:5px;">
+                    略過祈禱
+                </label>
+        </div>
     </div>
 
     <div id="inventory-section">
@@ -917,6 +942,10 @@ const Game = {
             this.triggerCombat(false, false);
         }
         
+        if (this.autoBattle && this.autoBattlePaused) {
+            this.autoBattlePaused = false;
+        }
+
         this.updateUI();
     },
     
@@ -1173,7 +1202,7 @@ const Game = {
     },
 
     triggerStatue() {
-        GameState.phase = "event_end";
+        GameState.phase = "statue";
         this.triggerAnim('event-icon', 'anim-spawn');
         this.renderEvent("🗿 祈禱聖像", "你發現了一座古老的聖像...", "是否要進行祈禱？", "🙏");
         this.setButtons("祈禱", "pray", "離開", "nextEvent", false);
@@ -1228,6 +1257,20 @@ const Game = {
     },
 
     renderMerchantShop() {
+        // 自動模式才啟動自動賣素材
+        if (this.autoBattle) {
+            const autoSell = document.getElementById("auto-sell-materials")?.checked;
+
+            if (autoSell) {
+                const mats = Player.inventory.material || [];
+
+                // 有素材才賣
+                if (mats.length > 0) {
+                    this.sellAllMaterials();
+                }
+            }
+        }
+
         const area = document.getElementById('merchant-area');
         area.innerHTML = "";
         area.classList.remove('hidden');
@@ -1942,6 +1985,172 @@ const Game = {
             list.appendChild(div);
         });
     }
+
+};
+
+Game.autoBattle = false;
+Game.autoBattlePaused = false;
+Game.autoBattleInterval = null;
+
+Game.toggleAutoBattle = function () {
+    this.autoBattle = !this.autoBattle;
+
+    const btn = document.getElementById("btn-auto");
+    btn.innerText = this.autoBattle ? "⏹ 停止" : "🤖 自動";
+
+    if (this.autoBattle) {
+        this.startAutoBattle();
+    } else {
+        this.stopAutoBattle();
+    }
+};
+
+Game.startAutoBattle = function () {
+    // 需要等待玩家選擇的事件
+    const needPlayerChoice = [
+        "statue",
+        "merchant",
+        "select_action"
+    ];
+
+    // ---- 暫停 auto ----
+    if (needPlayerChoice.includes(GameState.phase)) {
+        Game.autoBattlePaused = true;
+        return; // 不停止，只暫停
+    }
+    // if (this.autoBattleInterval) return;
+
+    this.autoBattleInterval = setInterval(() => {
+
+        // 若 Auto 被暫停，等待玩家操作
+        if (this.autoBattlePaused) return;
+
+        // 自動喝藥
+        if (this.autoHealCheck()) return;
+
+        // HP 過低停止
+        if (Player.hp / Player.maxHp < 0.2) {
+            this.showFloatingText("HP 低於 20%，自動戰鬥停止", "orange");
+            this.stopAutoBattle();
+            return;
+        }
+
+        // 祈禱事件
+        if (GameState.phase === "statue") {
+            const skip = document.getElementById("skip-statue")?.checked;
+            if (skip) {
+                this.nextEvent();  // ⬅ 自動略過祈禱
+            } else {
+                this.autoBattlePaused = true;  // ⬅ 等待玩家選擇
+            }
+            return;
+        }
+
+        // 商人事件
+        if (GameState.phase === "merchant") {
+
+            // 強制暫停的稀有度列表
+            const rareList = ["legendary", "mythic", "ultra"];
+
+            // 檢查商人是否有任何稀有度屬於 rareList 的商品
+            const hasRareItem = GameState.merchantStock?.some(
+                item => item && rareList.includes(item.rarity)
+            );
+
+            // 有傳說／神話／極傳說 → 強制暫停自動戰鬥（優先度最高）
+            if (hasRareItem) {
+                this.autoBattlePaused = true;
+                return;
+            }
+
+            // 以下為原本的略過商販邏輯
+            const skip = document.getElementById("skip-merchant")?.checked;
+
+            if (skip) {
+                this.nextEvent();
+            } else {
+                this.autoBattlePaused = true;
+            }
+
+            return;
+        }
+
+        // 其他所有必須玩家選擇的事件（EX: select_action）
+        if (GameState.phase === "select_action") {
+            this.autoBattlePaused = true;
+            return;
+        }
+
+        // 死亡 → 停止
+        if (Player.hp <= 0) {
+            this.stopAutoBattle();
+            return;
+        }
+
+        // 戰鬥
+        if (GameState.phase === "combat") {
+            this.combatRound();
+            return;
+        }
+
+        // 事件結束 → 下一事件
+        if (GameState.phase === "event_end") {
+            this.nextEvent();
+            return;
+        }
+
+        // 探索
+        if (GameState.phase === "explore" || GameState.phase === "default") {
+            this.nextEvent();
+            return;
+        }
+
+    }, 600);// 自動行動速度（毫秒）
+};
+
+Game.stopAutoBattle = function () {
+    Game.autoBattle = false;
+    const btn = document.getElementById("btn-auto");
+    btn.innerText = "🤖 自動";
+
+    if (this.autoBattleInterval) {
+        clearInterval(this.autoBattleInterval);
+        this.autoBattleInterval = null;
+    }
+};
+
+Game.autoHealCheck = function () {
+
+    if (!Player.inventory.consumable.length) return false;
+
+    const thresholdInput = document.getElementById("auto-heal-threshold");
+    const threshold = Number(thresholdInput.value || 30);
+
+    const hpPercent = (Player.hp / Player.maxHp) * 100;
+
+    if (hpPercent >= threshold) return false;
+
+    // 找出最高回復量的藥（避免浪費）
+    const potions = Player.inventory.consumable.filter(i => i.type === "consumable");
+
+    if (potions.length === 0) return false;
+
+    // 依照回復量排序（大→小），優先喝大瓶
+    potions.sort((a, b) => b.val - a.val);
+
+    const potion = potions[0];
+    const index = Player.inventory.consumable.indexOf(potion);
+
+    if (index !== -1) {
+        Player.inventory.consumable.splice(index, 1);
+        Player.hp = Math.min(Player.maxHp, Player.hp + potion.val);
+
+        this.showFloatingText(`🧪 +${potion.val} HP`, "#69f0ae");
+        this.updateUI();
+        return true;
+    }
+
+    return false;
 };
 
 window.Game = Game;
