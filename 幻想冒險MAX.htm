@@ -246,11 +246,11 @@
     <div class="class-options">
         <div class="class-card" onclick="Game.selectClass('knight')">
             <div class="class-title">🛡️ 騎士</div>
-            <div class="class-desc">開局裝備<br>「騎士長槍」</div>
+            <div class="class-desc">開局裝備「騎士長槍」<br>爆擊強化為「渾身一擊」 (3倍傷害)</div>
         </div>
         <div class="class-card" onclick="Game.selectClass('merchant')">
             <div class="class-title">💰 商販</div>
-            <div class="class-desc">出售物品價格<br>提升為 1.2 倍</div>
+            <div class="class-desc">出售價格 1.2 倍<br>商店可購買 6 項商品</div>
         </div>
         <div class="class-card" onclick="Game.selectClass('thief')">
             <div class="class-title">🗡️ 盜賊</div>
@@ -262,7 +262,7 @@
         </div>
         <div class="class-card" onclick="Game.selectClass('scarecrow')">
             <div class="class-title">🌾 稻草人</div>
-            <div class="class-desc">遭遇哈比時<br>必定將其趕走</div>
+            <div class="class-desc">必定趕走哈比<br>無法裝備重型盾牌</div>
         </div>
         <div class="class-card" onclick="Game.selectClass('ape')">
             <div class="class-title">🦍 人猿</div>
@@ -1240,7 +1240,9 @@ showCredits() {
 
     generateMerchantStock() {
         GameState.merchantStock = [];
-        for(let i=0; i<4; i++) {
+        // [修改] 商人職業可購買 6 項商品，其餘 4 項
+        let stockCount = (Player.class === 'merchant') ? 6 : 4;
+        for(let i=0; i < stockCount; i++) {
             GameState.merchantStock.push(this.generateRandomItem());
         }
     },
@@ -1554,14 +1556,25 @@ showCredits() {
         }
 
         let pCrit = Math.random() < pCritRate;
-        if (pCrit) pDmg *= 2;
+        if (pCrit) {
+            // [修改] 騎士職業的特殊爆擊：渾身一擊 (3倍傷害)
+            if (Player.class === 'knight') {
+                pDmg *= 3;
+                logHtml += `你對 ${enemy.name} 造成 <span class='crit-text' style='font-size:1.3em'>💥 渾身一擊 ${pDmg}</span> 點傷害。<br>`;
+            } else {
+                pDmg *= 2;
+                logHtml += `你對 ${enemy.name} 造成 <span class='crit-text'>爆擊 ${pDmg}</span> 點傷害。<br>`;
+            }
+        } else {
+            logHtml += `你對 ${enemy.name} 造成 ${pDmg} 點傷害。<br>`;
+        }
         
         enemy.hp -= pDmg;
         
         this.triggerAnim('event-icon', 'anim-damage');
         this.showFloatingText(pDmg, pCrit ? "red" : "white");
         
-        logHtml += `你對 ${enemy.name} 造成 ${pCrit ? "<span class='crit-text'>爆擊 " : ""}${pDmg}${pCrit ? "</span>" : ""} 點傷害。<br>`;
+        // 刪除舊的 logHtml 賦值，已改為上方條件式處理
 
         if (enemy.hp <= 0) {
             this.combatWin();
@@ -1852,6 +1865,12 @@ showCredits() {
         const type = item.type;
 
         if (!['weapon', 'armor', 'shield'].includes(type)) return;
+
+        // [修改] 稻草人職業限制：無法裝備騎士盾和塔盾
+        if (Player.class === 'scarecrow' && (item.name === '騎士盾' || item.name === '塔盾')) {
+            alert(`稻草人太輕了，無法裝備沉重的 ${item.name}！\n請使用較輕的盾牌（如金盾牌/一般盾牌）。`);
+            return;
+        }
 
         // 1. Swap logic
         if (Player.equipment[type]) this.addItemToInventory(Player.equipment[type], false);
