@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>幻想冒險 - 新職業擴充版</title>
+    <title>幻想冒險</title>
     <style>
         :root {
             --bg-color: #1a1a1a;
@@ -291,12 +291,35 @@
     </div>
 </div>
 
+<div id="credits-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:200; flex-direction:column; align-items:center; justify-content:center;">
+    <div style="width:90%; max-width:400px; background:#222; padding:30px; border-radius:8px; border:1px solid #444; text-align:center; box-shadow: 0 0 20px rgba(0,0,0,0.8);">
+        <h2 style="color:white; margin:0 0 15px 0;">👨‍💻 作者名單</h2>
+        <p style="color:#ccc; margin-bottom:25px; line-height: 1.5;">
+            感謝遊玩《幻想冒險》！<br>歡迎關注我的社群以獲得最新資訊。
+        </p>
+        <div style="display:flex; flex-direction:column; gap:15px;">
+            <a href="https://www.threads.net/@kanda_shota_art?igshid=NTc4MTIwNjQ2YQ==" target="_blank" style="text-decoration:none;">
+                <button style="width:100%; padding:15px; background:#111; color:#fff; border:1px solid #333; font-size:1em; display:flex; align-items:center; justify-content:center; gap:10px;">
+                    <span>◉</span> Threads (@kanda_shota_art)
+                </button>
+            </a>
+            <a href="https://x.com/shota_at_?s=21" target="_blank" style="text-decoration:none;">
+                <button style="width:100%; padding:15px; background:#000; color:#fff; border:1px solid #333; font-size:1em; display:flex; align-items:center; justify-content:center; gap:10px;">
+                    <span>𝕏</span> Twitter (X)
+                </button>
+            </a>
+        </div>
+        <button onclick="document.getElementById('credits-modal').style.display='none'" style="margin-top:25px; background:#555; width: 100%;">關閉</button>
+    </div>
+</div>
+
 <div id="game-container">
     <header>
         <div style="display:flex; align-items:center; gap:10px;">
             <div style="font-weight: bold; font-size: 1.2em;">⚔️ 幻想冒險</div>
             <button onclick="Game.showAchievements()" style="padding:4px 8px; font-size:0.8em;">🏆 成就</button>
             <button onclick="Game.showCompendium()" style="padding:4px 8px; font-size:0.8em; background:#673ab7;">📖 圖鑑</button>
+<button onclick="Game.showCredits()" style="padding:4px 8px; font-size:0.8em; background:#ff5722;">👨‍💻 作者</button>
         </div>
         <div id="class-badge" class="class-badge"></div>
     </header>
@@ -695,6 +718,10 @@ const Game = {
             }
             list.appendChild(div);
         });
+    },
+
+showCredits() {
+        document.getElementById('credits-modal').style.display = 'flex';
     },
 
     // --- Achievements ---
