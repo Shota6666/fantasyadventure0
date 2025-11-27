@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>幻想冒險 - 新職業擴充版</title>
+    <title>幻想冒險</title>
     <style>
         :root {
             --bg-color: #1a1a1a;
@@ -204,7 +204,7 @@
         }
         #class-modal { display: flex; }
 
-        .class-options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 500px; width: 100%; padding: 20px; max-height: 90vh; overflow-y: auto; }
+        .class-options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 500px; width: 100%; padding: 20px; }
         .class-card {
             background: #333; padding: 20px; border-radius: 8px; cursor: pointer;
             border: 2px solid #555; text-align: center; transition: 0.2s;
@@ -237,6 +237,65 @@
         .c-item.unknown .c-name { color: #666; }
 
         .hidden { display: none !important; }
+        
+        /* NEW CSS for Shechu Mode - REVISED */
+        /* ---------------------------------- */
+        .shechu-hide-icons #game-title {
+            color: #e0e0e0 !important; 
+        }
+
+        /* 確保所有文字內容（包括按鈕和裝備/物品）都保持正常大小 */
+        .shechu-hide-icons button,
+        .shechu-hide-icons .class-title,
+        .shechu-hide-icons .equip-slot,
+        .shechu-hide-icons .item,
+        .shechu-hide-icons .m-top span {
+            font-size: initial !important; /* 確保文字大小恢復正常 */
+            line-height: initial !important; 
+            color: var(--text-color) !important; /* 移除稀有度顏色 */
+        }
+        .shechu-hide-icons .equip-slot {
+            font-size: 0.75em !important; /* 裝備槽位恢復到原本的 0.75em */
+        }
+        .shechu-hide-icons .item {
+            font-size: 0.8em !important; /* 物品列表恢復到原本的 0.8em */
+        }
+
+        /* 隱藏大型圖示 */
+        .shechu-hide-icons .monster-icon,
+        .shechu-hide-icons .c-icon {
+            font-size: 0 !important;
+            height: 0;
+            width: 0;
+            overflow: hidden;
+            margin-bottom: 0 !important;
+        }
+
+        /* 移除所有顏色、陰影和漸層效果 */
+        .shechu-hide-icons .item,
+        .shechu-hide-icons .equip-slot {
+            color: var(--text-color) !important;
+            border-color: #555 !important;
+            box-shadow: none !important;
+            background: #333 !important;
+            animation: none !important;
+        }
+        .shechu-hide-icons .item:hover {
+            background: #444 !important;
+        }
+
+        /* Restore button padding/font-size that were affected by initial rule */
+        .shechu-hide-icons button {
+            padding: 12px;
+            font-size: 1em !important;
+        }
+        .shechu-hide-icons button[onclick*="showAchievements"],
+        .shechu-hide-icons button[onclick*="showCompendium"],
+        .shechu-hide-icons button#btn-shechu-mode {
+            padding:4px 8px !important; 
+            font-size:0.8em !important;
+        }
+        /* ---------------------------------- */
     </style>
 </head>
 <body>
@@ -259,14 +318,6 @@
         <div class="class-card" onclick="Game.selectClass('cultist')">
             <div class="class-title">😈 惡魔信徒</div>
             <div class="class-desc">開局自帶<br>一個惡魔詛咒</div>
-        </div>
-        <div class="class-card" onclick="Game.selectClass('scarecrow')">
-            <div class="class-title">🌾 稻草人</div>
-            <div class="class-desc">遭遇哈比時<br>必定將其趕走</div>
-        </div>
-        <div class="class-card" onclick="Game.selectClass('ape')">
-            <div class="class-title">🦍 人猿</div>
-            <div class="class-desc">遭遇跌倒事件<br>必定抓住岩壁</div>
         </div>
     </div>
 </div>
@@ -294,9 +345,10 @@
 <div id="game-container">
     <header>
         <div style="display:flex; align-items:center; gap:10px;">
-            <div style="font-weight: bold; font-size: 1.2em;">⚔️ 幻想冒險</div>
+            <div style="font-weight: bold; font-size: 1.2em;" id="game-title">⚔️ 幻想冒險</div>
             <button onclick="Game.showAchievements()" style="padding:4px 8px; font-size:0.8em;">🏆 成就</button>
             <button onclick="Game.showCompendium()" style="padding:4px 8px; font-size:0.8em; background:#673ab7;">📖 圖鑑</button>
+            <button id="btn-shechu-mode" onclick="Game.toggleShechuMode()" style="padding:4px 8px; font-size:0.8em; background:#4CAF50;">🧑‍💻 社畜模式</button>
         </div>
         <div id="class-badge" class="class-badge"></div>
     </header>
@@ -504,6 +556,58 @@ const Game = {
             // 預設顯示職業選擇
         }
     },
+    
+    // --- 社畜模式切換 ---
+    toggleShechuMode() {
+        const body = document.body;
+        const titleEl = document.getElementById('game-title');
+        const modeButton = document.getElementById('btn-shechu-mode');
+        const isShechu = body.classList.toggle('shechu-mode'); 
+        
+        if (isShechu) {
+            titleEl.innerHTML = "📊 資料比對分析表";
+            modeButton.innerText = "💼 恢復模式";
+            body.classList.add('shechu-hide-icons');
+            
+            const badgeMapShechu = { 'knight': '業務-A', 'merchant': '業務-B', 'thief': '業務-C', 'cultist': '業務-D' };
+            document.getElementById('class-badge').innerText = badgeMapShechu[Player.class] || "業務待定";
+
+        } else {
+            titleEl.innerHTML = "⚔️ 幻想冒險";
+            modeButton.innerText = "🧑‍💻 社畜模式";
+            body.classList.remove('shechu-hide-icons');
+            
+            const badgeMapNormal = { 'knight': '🛡️ 騎士', 'merchant': '💰 商販', 'thief': '🗡️ 盜賊', 'cultist': '😈 惡魔信徒' };
+            document.getElementById('class-badge').innerText = badgeMapNormal[Player.class] || "";
+        }
+        
+        this.updateUI(); 
+        
+        // 額外處理事件圖示
+        if(document.getElementById('event-icon').innerText !== "") {
+            document.getElementById('event-icon').innerText = isShechu ? "" : Game.getEventIcon();
+        }
+    },
+    
+    getEventIcon() {
+        if (Player.class === null) return '🎲';
+        if (GameState.phase === 'combat' && GameState.currentEnemy) return GameState.currentEnemy.icon;
+        if (GameState.phase === 'merchant') return '👳';
+        // Placeholder for other events when not in shechu mode
+        if (document.getElementById('event-title').innerText.includes('休息時刻')) return '🛌';
+        if (document.getElementById('event-title').innerText.includes('祈禱聖像')) return '🙏';
+        if (document.getElementById('event-title').innerText.includes('發現寶箱')) return '📦';
+        if (document.getElementById('event-title').innerText.includes('騎士的職責')) return '🛡️';
+        if (document.getElementById('event-title').innerText.includes('黑市交易')) return '🕵️';
+        if (document.getElementById('event-title').innerText.includes('金色寶箱')) return '✨';
+        if (document.getElementById('event-title').includes('惡魔的遊戲')) return '😈';
+        if (document.getElementById('event-title').innerText.includes('浴火重生')) return '🦅';
+        if (document.getElementById('event-title').innerText.includes('跌倒了')) return '🦶';
+        if (document.getElementById('event-title').innerText.includes('意外之喜')) return '🪝';
+        if (document.getElementById('event-title').innerText.includes('遭遇哈比')) return '🦅';
+        return '✨'; // Default icon
+    },
+
 
     // --- Save & Load System (Encrypted) ---
     saveGame() {
@@ -571,14 +675,7 @@ const Game = {
             document.getElementById('class-modal').style.display = 'none';
 
             // 更新職業徽章
-            const badgeMap = { 
-                'knight': '🛡️ 騎士', 
-                'merchant': '💰 商販', 
-                'thief': '🗡️ 盜賊', 
-                'cultist': '😈 惡魔信徒',
-                'scarecrow': '🌾 稻草人',
-                'ape': '🦍 人猿'
-            };
+            const badgeMap = { 'knight': '🛡️ 騎士', 'merchant': '💰 商販', 'thief': '🗡️ 盜賊', 'cultist': '😈 惡魔信徒' };
             document.getElementById('class-badge').innerText = badgeMap[Player.class] || "";
 
             // 4. 根據當前階段(Phase)還原畫面
@@ -659,6 +756,7 @@ const Game = {
         const stats = document.getElementById('compendium-stats');
         list.innerHTML = "";
         modal.style.display = 'flex';
+        const isShechu = document.body.classList.contains('shechu-mode');
 
         const allItems = this.getAllItems();
         const unlockedCount = allItems.filter(i => Player.history.items.has(i.name)).length;
@@ -680,7 +778,7 @@ const Game = {
                 div.className = `c-item unlocked ${CONFIG.rarityDisplay[item.rarity].color}`;
                 div.title = this.getItemDesc(item) + `\n(價值: ${item.price}G)`;
                 div.innerHTML = `
-                    <div class="c-icon">${item.icon || '📦'}</div>
+                    <div class="c-icon">${isShechu ? '' : (item.icon || '📦')}</div>
                     <div class="c-name">${item.name}</div>
                 `;
             } 
@@ -689,7 +787,7 @@ const Game = {
                 div.className = 'c-item unknown';
                 div.title = "尚未獲得";
                 div.innerHTML = `
-                    <div class="c-icon">❓</div>
+                    <div class="c-icon">${isShechu ? '' : '❓'}</div>
                     <div class="c-name">???</div>
                 `;
             }
@@ -790,15 +888,15 @@ const Game = {
             this.updateUI();
         }
 
-        const badgeMap = { 
-            'knight': '🛡️ 騎士', 
-            'merchant': '💰 商販', 
-            'thief': '🗡️ 盜賊', 
-            'cultist': '😈 惡魔信徒',
-            'scarecrow': '🌾 稻草人',
-            'ape': '🦍 人猿'
-        };
+        const badgeMap = { 'knight': '🛡️ 騎士', 'merchant': '💰 商販', 'thief': '🗡️ 盜賊', 'cultist': '😈 惡魔信徒' };
         document.getElementById('class-badge').innerText = badgeMap[classType];
+        
+        const isShechu = document.body.classList.contains('shechu-mode');
+        if (isShechu) {
+            const badgeMapShechu = { 'knight': '業務-A', 'merchant': '業務-B', 'thief': '業務-C', 'cultist': '業務-D' };
+            document.getElementById('class-badge').innerText = badgeMapShechu[classType] || "業務待定";
+        }
+
 
         this.renderEvent("準備就緒", "你的冒險即將開始...", "祝你好運！", "✨");
     },
@@ -813,6 +911,7 @@ const Game = {
     },
 
     showFloatingText(text, color) {
+        if (document.body.classList.contains('shechu-mode')) return; // No floating text in shechu mode
         const display = document.getElementById('event-display');
         const div = document.createElement('div');
         div.className = 'floating-text';
@@ -933,11 +1032,9 @@ const Game = {
             useHook = true;
         }
 
-        // Check for Ape Class
-        const isApe = Player.class === 'ape';
-
-        // Determine Outcome: 30% Good (or Hook or Ape), 70% Bad
-        const isGoodOutcome = useHook || isApe || (Math.random() < 0.3);
+        // Determine Outcome: 30% Good (or Hook), 70% Bad
+        // If useHook is true, we force the Good Outcome
+        const isGoodOutcome = useHook || (Math.random() < 0.3);
 
         if (isGoodOutcome) {
             // Good Outcome: Catch cliff -> Get random equipment
@@ -948,8 +1045,6 @@ const Game = {
             let msg = "";
             if (useHook) {
                 msg = `你滑倒了，但<span class='rarity-rare'>鉤子</span>勾住了岩壁！(鉤子已損壞)<br>你在岩壁上發現了 <span class='${CONFIG.rarityDisplay[item.rarity].color}'>${item.name}</span>！`;
-            } else if (isApe) {
-                msg = `你滑倒了，但憑藉<span class='block-text'>人猿的敏捷</span>輕鬆抓住了岩壁！<br>意外發現了 <span class='${CONFIG.rarityDisplay[item.rarity].color}'>${item.name}</span>！`;
             } else {
                 msg = `你滑倒了，在千鈞一髮之際抓住了岩壁！<br>意外發現了 <span class='${CONFIG.rarityDisplay[item.rarity].color}'>${item.name}</span>！`;
             }
@@ -986,10 +1081,6 @@ const Game = {
         else if (Player.class === 'merchant') this.handleMerchantEvent();
         else if (Player.class === 'thief') this.handleThiefEvent();
         else if (Player.class === 'cultist') this.handleCultistEvent();
-        else {
-             // 稻草人和人猿目前沒有額外的隨機職業事件，直接跳到下一個事件
-             this.nextEvent();
-        }
     },
 
     handleKnightEvent() {
@@ -1049,6 +1140,29 @@ const Game = {
     },
 
     resolveThiefChest() {
+        // Thief logic: Does not encounter trap or empty chest.
+        if (Player.class === 'thief') {
+            let item;
+            if (Math.random() < 0.05) {
+                const artifacts = CONFIG.itemPool.filter(i => i.rarity === 'legendary' && ['聖劍 Excalibur', '神之光輝', '埃癸斯之盾'].includes(i.name));
+                if (artifacts.length > 0) {
+                    item = { ...artifacts[Math.floor(Math.random() * artifacts.length)] };
+                    this.addItemToInventory(item);
+                    this.renderEvent("✨ 傳說現世", "寶箱裡竟然是傳說神器！", `獲得 <span class='rarity-legendary'>${item.name}</span>`, "👑");
+                    this.setButtons("繼續", "nextEvent", "無", null, true);
+                    this.updateUI();
+                    return;
+                }
+            } 
+            item = this.generateRandomItem();
+            this.addItemToInventory(item);
+            this.renderEvent("📦 獲得物品", "", `獲得 <span class='${CONFIG.rarityDisplay[item.rarity].color}'>${item.name}</span>`, "📦");
+            this.setButtons("繼續", "nextEvent", "無", null, true);
+            this.updateUI();
+            return;
+        }
+
+        // Regular logic
         if (Math.random() < 0.05) {
             const artifacts = CONFIG.itemPool.filter(i => i.rarity === 'legendary' && ['聖劍 Excalibur', '神之光輝', '埃癸斯之盾'].includes(i.name));
             if (artifacts.length > 0) {
@@ -1058,11 +1172,11 @@ const Game = {
             } else {
                 const item = this.generateRandomItem();
                 this.addItemToInventory(item);
-                this.renderEvent("📦 獲得物品", "", `獲得 ${item.name}`, "📦");
+                this.renderEvent("📦 獲得物品", "", `獲得 <span class='${CONFIG.rarityDisplay[item.rarity].color}'>${item.name}</span>`, "📦");
             }
         } else {
-            let dmg = Math.floor(Player.hp * 0.5);
-            Player.hp -= dmg;
+            const dmg = Math.floor(Player.maxHp * 0.15);
+            Player.hp = Math.max(0, Player.hp - dmg);
             this.showFloatingText(`-${dmg} HP`, "red");
             this.renderEvent("💥 陷阱觸發", "強力的魔法炸飛了你！", `損失 <span class='damage-text'>${dmg} HP</span>`, "💣");
             if (Player.hp <= 0) { this.playerDie("死於金色寶箱陷阱"); return; }
@@ -1109,16 +1223,6 @@ const Game = {
         GameState.phase = "event_end";
         this.triggerAnim('event-icon', 'anim-spawn');
         
-        // Check for Scarecrow Class
-        if (Player.class === 'scarecrow') {
-            Player.gold += 500;
-            this.showFloatingText("+500 G", "#ffd700");
-            this.renderEvent("🦅 遭遇哈比", "一隻哈比突然襲來！", 
-                "身為稻草人，你的外表嚇跑了哈比！<br>撿到了牠掉落的 <span class='gold-text'>500 G</span>！", "🌾");
-            this.setButtons("繼續", "nextEvent", "無", null, true);
-            return;
-        }
-
         // Check for Slingshot
         const slingIndex = Player.inventory.material.findIndex(i => i.name === '彈弓');
         if (slingIndex !== -1) {
@@ -1231,6 +1335,7 @@ const Game = {
         const area = document.getElementById('merchant-area');
         area.innerHTML = "";
         area.classList.remove('hidden');
+        const isShechu = document.body.classList.contains('shechu-mode');
         
         let buyHtml = "<h4>購買商品</h4><div class='merchant-grid'>";
         GameState.merchantStock.forEach((item, idx) => {
@@ -1239,7 +1344,7 @@ const Game = {
             const rarityColor = CONFIG.rarityDisplay[item.rarity].color;
             buyHtml += `<div class="merchant-item ${rarityColor}" onclick="Game.buyItem(${idx})">
                 <div class="m-top">
-                    <span>${item.icon || '📦'} ${item.name}</span>
+                    <span>${isShechu ? '' : (item.icon || '📦')} ${item.name}</span>
                     <span class="gold-text">${item.price} G</span>
                 </div>
                 <div class="m-desc">${desc}</div>
@@ -1248,7 +1353,7 @@ const Game = {
         buyHtml += "</div>";
         
         buyHtml += `<div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
-            <h4>出售</h4>
+            <h4>${isShechu ? '出售' : '出售'}</h4>
             <button onclick="Game.sellAllMaterials()" style="padding:5px 10px; font-size:0.8em; background:#d32f2f;">一鍵出售素材</button>
         </div>
         <p style='font-size:0.8em; color:#888'>點擊下方背包物品即可出售。</p>`;
@@ -1383,7 +1488,13 @@ const Game = {
             this.addItemToInventory(item);
             desc = `獲得了 <span class='${CONFIG.rarityDisplay[item.rarity].color}'>${item.name}</span>`;
         } else if (safeRoll < 0.90) {
-            desc = "裡面空空如也...";
+            if (isThief) {
+                 const item = this.generateSpecificItem(['consumable']);
+                 this.addItemToInventory(item);
+                 desc = `(盜賊加成) 獲得了 <span class='${CONFIG.rarityDisplay[item.rarity].color}'>${item.name}</span>`;
+            } else {
+                desc = "裡面空空如也...";
+            }
         } else {
             const dmg = Math.floor(Player.maxHp * 0.15);
             Player.hp = Math.max(0, Player.hp - dmg);
@@ -1436,9 +1547,7 @@ const Game = {
             baseMonster = this.getWeightedMonster();
             let rand = Math.random();
             if (Player.depth > 300) {
-               if (rand < 0.1) tier = "normal";        // 0% -> 10%
-    else if (rand < 0.55) tier = "elite";   // 50% -> 45%
-    else tier = "boss";                     // 50% -> 45%
+                if (rand < 0.5) tier = "elite"; else tier = "boss";
             } else if (Player.depth > 100) {
                 if (rand < 0.1) tier = "boss"; else if (rand < 0.6) tier = "elite"; else tier = "normal";
             } else {
@@ -1867,7 +1976,10 @@ const Game = {
     renderEvent(title, subtitle, content, icon) {
         document.getElementById('event-title').innerText = title;
         document.getElementById('event-desc').innerHTML = `<p>${subtitle}</p><p>${content}</p>`;
-        if(icon) document.getElementById('event-icon').innerText = icon;
+        
+        const isShechu = document.body.classList.contains('shechu-mode');
+        if(icon) document.getElementById('event-icon').innerText = isShechu ? '' : icon;
+        
         if(GameState.phase !== 'merchant') document.getElementById('merchant-area').classList.add('hidden');
     },
 
@@ -1882,6 +1994,8 @@ const Game = {
     },
 
     updateUI() {
+        const isShechu = document.body.classList.contains('shechu-mode');
+
         this.updateStatsUI();
 
         const w = Player.equipment.weapon;
@@ -1889,20 +2003,44 @@ const Game = {
         const s = Player.equipment.shield;
         
         const wEl = document.getElementById('slot-weapon');
-        wEl.innerHTML = w ? `<span class="${CONFIG.rarityDisplay[w.rarity].color}">${w.icon} ${w.name} (+${w.val})</span>` : "無武器";
-        wEl.className = `equip-slot ${w ? CONFIG.rarityDisplay[w.rarity].color : ''}`;
+        // 為了移除 Emoji，直接在 JS 中處理 innerHTML
+        if (w) {
+             const content = `${w.name} (+${w.val})`;
+             wEl.innerHTML = isShechu ? content : `<span class="${CONFIG.rarityDisplay[w.rarity].color}">${w.icon} ${content}</span>`;
+             wEl.className = `equip-slot ${w ? CONFIG.rarityDisplay[w.rarity].color : ''}`;
+        } else {
+             wEl.innerHTML = "無武器";
+             wEl.className = `equip-slot ${isShechu ? '' : 'rarity-common'}`;
+        }
 
         const aEl = document.getElementById('slot-armor');
-        aEl.innerHTML = a ? `<span class="${CONFIG.rarityDisplay[a.rarity].color}">${a.icon} ${a.name} (+${a.val})</span>` : "無防具";
-        aEl.className = `equip-slot ${a ? CONFIG.rarityDisplay[a.rarity].color : ''}`;
+        if (a) {
+            const content = `${a.name} (+${a.val})`;
+            aEl.innerHTML = isShechu ? content : `<span class="${CONFIG.rarityDisplay[a.rarity].color}">${a.icon} ${content}</span>`;
+            aEl.className = `equip-slot ${a ? CONFIG.rarityDisplay[a.rarity].color : ''}`;
+        } else {
+            aEl.innerHTML = "無防具";
+            aEl.className = `equip-slot ${isShechu ? '' : 'rarity-common'}`;
+        }
         
         const sEl = document.getElementById('slot-shield');
-        sEl.innerHTML = s ? `<span class="${CONFIG.rarityDisplay[s.rarity].color}">${s.icon} ${s.name} (${s.val})</span>` : "無盾牌";
-        sEl.className = `equip-slot ${s ? CONFIG.rarityDisplay[s.rarity].color : ''}`;
+        if (s) {
+            const content = `${s.name} (${s.val})`;
+            sEl.innerHTML = isShechu ? content : `<span class="${CONFIG.rarityDisplay[s.rarity].color}">${s.icon} ${content}</span>`;
+            sEl.className = `equip-slot ${s ? CONFIG.rarityDisplay[s.rarity].color : ''}`;
+        } else {
+            sEl.innerHTML = "無盾牌";
+            sEl.className = `equip-slot ${isShechu ? '' : 'rarity-common'}`;
+        }
+
 
         this.renderInvList('inv-equip', Player.inventory.equipment, 'equipment');
         this.renderInvList('inv-consum', Player.inventory.consumable, 'consumable');
         this.renderInvList('inv-mat', Player.inventory.material, 'material');
+        
+        if (GameState.phase === 'merchant') {
+            this.renderMerchantShop();
+        }
 
         // 自動存檔觸發點：只要 UI 更新且非讀取中且活著，就自動存檔
         if (!GameState.isLoading && Player.hp > 0 && Player.class) {
@@ -1918,26 +2056,46 @@ const Game = {
         document.getElementById('depth-val').innerText = Player.depth;
         
         const buffEl = document.getElementById('buff-display');
+        const isShechu = document.body.classList.contains('shechu-mode');
+        
         if (Player.buff) {
             const style = Player.buff.type === 'angel' ? 'angel-text' : 'demon-text';
-            buffEl.innerHTML = `狀態: <span class="${style}">${Player.buff.name}</span> <span style="font-size:0.8em; cursor:pointer;">(點擊查看)</span>`;
+            const buffName = isShechu ? Player.buff.name.replace(/.* /g, '') : Player.buff.name; // Remove emoji in shechu mode
+            buffEl.innerHTML = `狀態: <span class="${style}">${buffName}</span> <span style="font-size:0.8em; cursor:pointer;">(點擊查看)</span>`;
             buffEl.onclick = () => alert(`${Player.buff.name}\n\n${Player.buff.desc}`);
         } else {
             buffEl.innerHTML = `狀態: 無`;
             buffEl.onclick = null;
         }
+        
+        // Update Inventory Headers
+        document.querySelector('#inventory-section .inv-col:nth-child(1) h4').innerHTML = isShechu ? '裝備' : '📦 裝備';
+        document.querySelector('#inventory-section .inv-col:nth-child(2) h4').innerHTML = isShechu ? '消耗品' : '🧪 消耗品';
+        document.querySelector('#inventory-section .inv-col:nth-child(3) h4').innerHTML = isShechu ? '素材' : '🧩 素材';
     },
 
     renderInvList(id, items, category) {
         const list = document.getElementById(id);
         list.innerHTML = "";
+        const isShechu = document.body.classList.contains('shechu-mode');
+
         items.forEach((item, idx) => {
             const div = document.createElement('div');
-            div.className = `item ${CONFIG.rarityDisplay[item.rarity].color}`;
-            if (item.rarity === 'epic') div.classList.add('rare-epic');
-            if (item.rarity === 'legendary') div.classList.add('rare-legendary');
-            if (item.rarity === 'mythic') div.classList.add('rarity-mythic');
-            div.innerHTML = `${item.icon || '📦'} ${item.name}`;
+            // 在社畜模式下，只應用 item class 和移除稀有度顏色/效果的 class
+            if (isShechu) {
+                 div.className = `item`;
+                 div.style.color = 'var(--text-color)';
+                 div.style.borderColor = '#555';
+                 div.style.boxShadow = 'none';
+            } else {
+                 div.className = `item ${CONFIG.rarityDisplay[item.rarity].color}`;
+                 if (item.rarity === 'epic') div.classList.add('rare-epic');
+                 if (item.rarity === 'legendary') div.classList.add('rare-legendary');
+                 if (item.rarity === 'mythic') div.classList.add('rarity-mythic');
+            }
+            
+            // 讓 icon 消失
+            div.innerHTML = `${isShechu ? '' : (item.icon || '📦')} ${item.name}`;
             div.onclick = () => this.handleItemClick(idx, category);
             list.appendChild(div);
         });
