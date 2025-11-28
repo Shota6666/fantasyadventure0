@@ -166,7 +166,7 @@
         .equip-slot { flex: 1; background: #333; padding: 8px; border-radius: 4px; text-align: center; font-size: 0.75em; min-height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid #444; }
         
         .inv-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-        .inv-col h4 { margin: 0 0 5px 0; font-size: 0.85em; color: #888; text-align: center; border-bottom: 1px solid #444; padding-bottom: 3px; }
+        .inv-col h4 { margin: 0 0 5px 0; font-size: 0.85em; color: #888; text-align: center; border-bottom: 1px solid #444; padding-bottom: 3px; cursor: pointer; }
         .item-list { display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto; min-height: 50px; background: #2a2a2a; padding: 5px; border-radius: 4px; }
         
         .item { padding: 4px 8px; background: #333; border-radius: 3px; font-size: 0.8em; cursor: pointer; border: 1px solid transparent; display: flex; align-items: center; gap: 5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
@@ -353,15 +353,15 @@
         
         <div class="inv-container">
             <div class="inv-col">
-                <h4>📦 裝備</h4>
+                <h4 onclick="Game.sortInventory('equipment')">📦 裝備</h4>
                 <div class="item-list" id="inv-equip"></div>
             </div>
             <div class="inv-col">
-                <h4>🧪 消耗品</h4>
+                <h4 onclick="Game.sortInventory('consumable')">🧪 消耗品</h4>
                 <div class="item-list" id="inv-consum"></div>
             </div>
             <div class="inv-col">
-                <h4>🧩 素材</h4>
+                <h4 onclick="Game.sortInventory('material')">🧩 素材</h4>
                 <div class="item-list" id="inv-mat"></div>
             </div>
         </div>
@@ -1278,6 +1278,7 @@ showCredits() {
         
         buyHtml += `<div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
             <h4>出售</h4>
+            ${Player.depth > 300 ? '<button onclick="Game.sellAllLowTierEquipments()" style="padding:5px 10px; font-size:0.8em; background:#d32f2f;">一鍵出售低階裝備</button>' : ''}
             <button onclick="Game.sellAllMaterials()" style="padding:5px 10px; font-size:0.8em; background:#d32f2f;">一鍵出售素材</button>
         </div>
         <p style='font-size:0.8em; color:#888'>點擊下方背包物品即可出售。</p>`;
@@ -1324,6 +1325,33 @@ showCredits() {
         Player.gold += total;
         this.showFloatingText("+ " + total + " G", "yellow");
         this.log(`出售了所有素材，獲得 ${total} G`);
+        this.updateUI();
+    },
+
+    sellAllLowTierEquipments() {
+        if (GameState.phase !== "merchant") return;
+        
+        let total = 0;
+        const keptItems = [];
+        Player.inventory.equipment.forEach(item => {
+            if (item.rarity === 'common' || item.rarity === 'uncommon') {
+                let price = item.price; 
+                if (['weapon', 'armor', 'shield'].includes(item.type)) {
+                    price = Math.floor(price * 0.8);
+                }
+                if (Player.class === 'merchant') {
+                    price = Math.floor(price * 1.2);
+                }
+                total += price;
+            } else {
+                keptItems.push(item);
+            }
+        });
+        
+        Player.inventory.equipment = keptItems;
+        Player.gold += total;
+        this.showFloatingText("+ " + total + " G", "yellow");
+        this.log(`出售了所有低階裝備，獲得 ${total} G`);
         this.updateUI();
     },
 
@@ -1840,6 +1868,25 @@ showCredits() {
             Player.inventory.material.push(item);
         }
         if (render) this.updateUI();
+    },
+
+    sortInventory(category) {
+        // Sort all inventories by rarity (descending) then by name
+        const sortByRarityThenName = (a, b) => {
+            const rarityA = CONFIG.rarityDisplay[a.rarity]?.val || 0;
+            const rarityB = CONFIG.rarityDisplay[b.rarity]?.val || 0;
+            if (rarityA !== rarityB) return rarityB - rarityA;
+            return a.name.localeCompare(b.name);
+        };
+
+        if (category === 'equipment') {
+            Player.inventory.equipment.sort(sortByRarityThenName);
+        } else if (category === 'consumable') {
+            Player.inventory.consumable.sort(sortByRarityThenName);
+        } else if (category === 'material') {
+            Player.inventory.material.sort(sortByRarityThenName);
+        }
+        this.updateUI();
     },
 
     handleItemClick(index, category) {
