@@ -1278,7 +1278,7 @@ showCredits() {
         
         buyHtml += `<div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
             <h4>出售</h4>
-            ${Player.depth > 150 ? '<button onclick="Game.sellAllLowTierEquipments()" style="padding:5px 10px; font-size:0.8em; background:#d32f2f;">一鍵出售低階裝備</button>' : ''}
+            ${Player.depth > 100 ? '<button onclick="Game.sellAllLowTierEquipments()" style="padding:5px 10px; font-size:0.8em; background:#d32f2f;">一鍵出售低階裝備</button>' : ''}
             <button onclick="Game.sellAllMaterials()" style="padding:5px 10px; font-size:0.8em; background:#d32f2f;">一鍵出售素材</button>
         </div>
         <p style='font-size:0.8em; color:#888'>點擊下方背包物品即可出售。</p>`;
