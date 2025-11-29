@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>幻想冒險 - 職業平衡更新版</title>
+    <title>幻想冒險</title>
     <style>
         :root {
             --bg-color: #1a1a1a;
@@ -268,6 +268,10 @@
             <div class="class-title">🦍 人猿</div>
             <div class="class-desc">遭遇跌倒事件<br>必定抓住岩壁</div>
         </div>
+<div class="class-card" onclick="Game.selectClass('challenger')">
+    <div class="class-title">🧗 挑戰者</div>
+    <div class="class-desc">無任何特殊技能<br>開局獲得一瓶「強力藥水」</div>
+</div>
     </div>
 </div>
 
@@ -605,7 +609,8 @@ const Game = {
                 'thief': '🗡️ 盜賊', 
                 'cultist': '😈 惡魔信徒',
                 'scarecrow': '🌾 稻草人',
-                'ape': '🦍 人猿'
+                'ape': '🦍 人猿',
+'challenger': '🧗 挑戰者'
             };
             document.getElementById('class-badge').innerText = badgeMap[Player.class] || "";
 
@@ -812,9 +817,16 @@ showCredits() {
         
         if (classType === 'knight') {
             const lance = { name: "騎士長槍", type: "weapon", val: 12, rarity: "uncommon", price: 80, icon: "🔱" };
-            this.addItemToInventory(lance, false); // Don't render yet
-            this.equip(0, 'equipment'); // Will render
-        } else if (classType === 'cultist') {
+            this.addItemToInventory(lance, false); 
+            this.equip(0, 'equipment'); 
+        } 
+        else if (classType === 'challenger') {
+            // 給予一瓶強力藥水 (回復 80 HP)
+            const potion = { name: "強力藥水", type: "consumable", val: 80, rarity: "uncommon", price: 60, icon: "🍷", desc: "恢復80點生命" };
+            this.addItemToInventory(potion, false);
+            this.updateUI();
+        }
+        else if (classType === 'cultist') {
             const demonBuffs = Object.values(CONFIG.buffs).filter(b => b.type === 'demon');
             Player.buff = demonBuffs[Math.floor(Math.random() * demonBuffs.length)];
             this.updateUI();
@@ -828,7 +840,8 @@ showCredits() {
             'thief': '🗡️ 盜賊', 
             'cultist': '😈 惡魔信徒',
             'scarecrow': '🌾 稻草人',
-            'ape': '🦍 人猿'
+            'ape': '🦍 人猿',
+            'challenger': '🧗 挑戰者'
         };
         document.getElementById('class-badge').innerText = badgeMap[classType];
 
