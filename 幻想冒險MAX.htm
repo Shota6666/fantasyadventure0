@@ -308,6 +308,11 @@
                     <span>𝕏</span> Twitter (X)
                 </button>
             </a>
+            <a href="https://www.buymeacoffee.com/maker.shota" target="_blank" style="text-decoration:none;">
+                <button style="width:100%; padding:15px; background:#FFDD00; color:#000; border:none; font-size:1em; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px;">
+                    <span>⚔️</span> 贊助我前進
+                </button>
+            </a>
         </div>
         <button onclick="document.getElementById('credits-modal').style.display='none'" style="margin-top:25px; background:#555; width: 100%;">關閉</button>
     </div>
@@ -1868,7 +1873,7 @@ showCredits() {
 
         // [修改] 稻草人職業限制：無法裝備騎士盾和塔盾
         if (Player.class === 'scarecrow' && (item.name === '騎士盾' || item.name === '塔盾')) {
-            alert(`稻草人太輕了，無法裝備沉重的 ${item.name}！\n請使用較輕的盾牌（如金盾牌/一般盾牌）。`);
+            alert(`稻草人太輕了，無法裝備沉重的 ${item.name}！\n請使用較輕的金盾牌`);
             return;
         }
 
