@@ -169,7 +169,7 @@
         .inv-col h4 { margin: 0 0 5px 0; font-size: 0.85em; color: #888; text-align: center; border-bottom: 1px solid #444; padding-bottom: 3px; }
         .item-list { display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto; min-height: 50px; background: #2a2a2a; padding: 5px; border-radius: 4px; }
         
-        .item { padding: 4px 8px; background: #333; border-radius: 3px; font-size: 0.8em; cursor: pointer; border: 1px solid transparent; display: flex; align-items: center; gap: 5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .item { padding: 4px 8px; background: #333; border-radius: 3px; font-size: 0.8em; cursor: pointer; border: 1px solid transparent; display: flex; align-items: center; gap: 5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; flex-shrink: 0; }
         .item:hover { background: #444; }
 
         /* Rarity */
@@ -237,6 +237,84 @@
         .c-item.unknown .c-name { color: #666; }
 
         .hidden { display: none !important; }
+
+        .dialog-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: dialogFadeIn 0.2s ease;
+        }
+
+        .dialog-box {
+            background: var(--panel-color);
+            border: 2px solid #555;
+            border-radius: var(--border-radius);
+            padding: 24px;
+            max-width: 400px;
+            min-width: 300px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+            animation: dialogSlideIn 0.3s ease;
+        }
+
+        .dialog-content {
+            color: var(--text-color);
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+        }
+
+        .dialog-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .dialog-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+            font-family: var(--font-main);
+        }
+
+        .dialog-btn-primary {
+            background: var(--accent-color);
+            color: #000;
+        }
+
+        .dialog-btn-primary:hover {
+            background: #ffa726;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(255,152,0,0.4);
+        }
+
+        .dialog-btn-secondary {
+            background: #555;
+            color: var(--text-color);
+        }
+
+        .dialog-btn-secondary:hover {
+            background: #666;
+        }
+
+        @keyframes dialogFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes dialogSlideIn {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -383,6 +461,73 @@
 
 <script>
 (function() {
+const Dialog = {
+    show(message, buttonConfigs, callback) {
+        const overlay = document.getElementById('customDialog');
+        const dialogBox = overlay.querySelector('.dialog-box');
+        const content = document.getElementById('dialogContent');
+        const buttonsDiv = document.getElementById('dialogButtons');
+
+        content.textContent = message;
+        buttonsDiv.innerHTML = ''; 
+        overlay.style.display = 'flex';
+
+        const createdButtons = [];
+        buttonConfigs.forEach((config, index) => {
+            const btn = document.createElement('button');
+            btn.className = `dialog-btn dialog-btn-${config.style}`;
+            btn.textContent = config.text;
+
+            btn.onclick = () => {
+                overlay.style.display = 'none';
+                document.removeEventListener('keydown', handleEsc);
+                overlay.onclick = null;
+                if (callback) callback(config.value);
+            };
+
+            buttonsDiv.appendChild(btn);
+            createdButtons.push(btn);
+            if (index === buttonConfigs.length - 1) btn.focus();
+        });
+
+        const handleEsc = (e) => {
+            if (e.key === 'Escape') {
+                createdButtons[0].click();
+            }
+        };
+        document.addEventListener('keydown', handleEsc);
+
+        overlay.onclick = (e) => {
+            if (e.target === overlay) {
+                createdButtons[0].click();
+            }
+        };
+
+        dialogBox.onclick = (e) => {
+            e.stopPropagation();
+        };
+    },
+
+    alert(message, callback) {
+        this.show(
+            message,
+            [{ text: '確定', style: 'primary', value: 'ok' }],
+            callback
+        );
+    },
+
+    confirm(message, callback) {
+        this.show(
+            message,
+            [
+                { text: '取消', style: 'secondary', value: false },
+                { text: '確定', style: 'primary', value: true }
+            ],
+            callback
+        );
+    }
+};
+
 const CONFIG = {
     rarityProb: { common: 0.5, uncommon: 0.3, rare: 0.15, epic: 0.04, legendary: 0.01 },
     rarityDisplay: {
@@ -650,18 +795,21 @@ const Game = {
 
         } catch (e) {
             console.error(e);
-            alert("存檔損毀，開始新遊戲。");
-            localStorage.removeItem('fantasy_adventure_save');
+            Dialog.alert("存檔損毀，開始新遊戲。", () => {
+                localStorage.removeItem('fantasy_adventure_save');
+            });
         } finally {
             GameState.isLoading = false;
         }
     },
 
     manualRestart() {
-        if (confirm("⚠ 確定要重新開始遊戲嗎？\n\n按下確定後，現有的進度將會被刪除且無法復原！")) {
-            localStorage.removeItem('fantasy_adventure_save');
-            location.reload();
-        }
+        Dialog.confirm("⚠ 確定要重新開始遊戲嗎？\n\n按下確定後，現有的進度將會被刪除且無法復原！", (confirmed) => {
+            if (confirmed) {
+                localStorage.removeItem('fantasy_adventure_save');
+                location.reload();
+            }
+        });
     },
 
     // --- Compendium ---
@@ -930,7 +1078,7 @@ showCredits() {
         }
         
         if (Player.depth === 501) {
-            alert("警告：你已進入深層領域！所有怪物實力大幅增強！");
+            Dialog.alert("警告：你已進入深層領域！所有怪物實力大幅增強！");
         }
         
         // Trip Event (0.5% after depth 100)
@@ -1066,7 +1214,7 @@ showCredits() {
     },
 
     resolveMerchantTrade() {
-        if (Player.gold < 66) { alert("金幣不足！"); return; }
+        if (Player.gold < 66) { Dialog.alert("金幣不足！"); return; }
         Player.gold -= 66;
         this.showFloatingText("-66 G", "gold");
 
@@ -1315,14 +1463,14 @@ showCredits() {
             this.updateUI();
             this.renderMerchantShop();
         } else {
-            alert("金幣不足！");
+            Dialog.alert("金幣不足！");
         }
     },
 
     sellAllMaterials() {
         if (GameState.phase !== "merchant") return;
         if (Player.inventory.material.length === 0) {
-            alert("沒有可出售的素材。");
+            Dialog.alert("沒有可出售的素材。");
             return;
         }
         
@@ -1351,7 +1499,7 @@ showCredits() {
         const item = Player.inventory[category][index];
         if (!item) return;
         if (item.type === 'revive' || item.name === '彈弓' || item.name === '鉤子') {
-            alert("這件物品無法出售！");
+            Dialog.alert("這件物品無法出售！");
             return;
         }
 
@@ -1363,14 +1511,16 @@ showCredits() {
         if (Player.class === 'merchant') {
             price = Math.floor(price * 1.2);
         }
-        
-        if(confirm(`確定要以 ${price} G 出售 ${item.name} 嗎？`)) {
-            Player.inventory[category].splice(index, 1);
-            Player.gold += price;
-            this.showFloatingText("+ " + price + " G", "yellow");
-            this.log(`出售 ${item.name} 獲得 ${price} G`);
-            this.updateUI();
-        }
+
+        Dialog.confirm(`確定要以 ${price} G 出售 ${item.name} 嗎？`, (confirmed) => {
+            if (confirmed) {
+                Player.inventory[category].splice(index, 1);
+                Player.gold += price;
+                this.showFloatingText("+ " + price + " G", "yellow");
+                this.log(`出售 ${item.name} 獲得 ${price} G`);
+                this.updateUI();
+            }
+        });
     },
 
     triggerChest() {
@@ -1870,11 +2020,15 @@ showCredits() {
         }
         const item = Player.inventory[category][index];
         if (['weapon', 'armor', 'shield'].includes(item.type)) {
-            if(confirm(`要裝備 ${item.name} (${this.getItemDesc(item)}) 嗎？`)) this.equip(index, category);
+            Dialog.confirm(`要裝備 ${item.name} (${this.getItemDesc(item)}) 嗎？`, (confirmed) => {
+                if (confirmed) this.equip(index, category);
+            });
         } else if (item.type === 'consumable') {
-            if(confirm(`要使用 ${item.name} (${item.desc}) 嗎？`)) this.useItem(index, category);
+            Dialog.confirm(`要使用 ${item.name} (${item.desc}) 嗎？`, (confirmed) => {
+                if (confirmed) this.useItem(index, category);
+            });
         } else {
-             alert(`${item.name}: ${item.desc || "素材/戰利品"}`);
+             Dialog.alert(`${item.name}: ${item.desc || "素材/戰利品"}`);
         }
     },
 
@@ -1886,7 +2040,7 @@ showCredits() {
 
         // [修改] 稻草人職業限制：無法裝備騎士盾和塔盾
         if (Player.class === 'scarecrow' && (item.name === '騎士盾' || item.name === '塔盾')) {
-            alert(`稻草人太輕了，無法裝備沉重的 ${item.name}！\n請使用較輕的金盾牌`);
+            Dialog.alert(`稻草人太輕了，無法裝備沉重的 ${item.name}！\n請使用較輕的金盾牌`);
             return;
         }
 
@@ -1985,7 +2139,7 @@ showCredits() {
         if (Player.buff) {
             const style = Player.buff.type === 'angel' ? 'angel-text' : 'demon-text';
             buffEl.innerHTML = `狀態: <span class="${style}">${Player.buff.name}</span> <span style="font-size:0.8em; cursor:pointer;">(點擊查看)</span>`;
-            buffEl.onclick = () => alert(`${Player.buff.name}\n\n${Player.buff.desc}`);
+            buffEl.onclick = () => Dialog.alert(`${Player.buff.name}\n\n${Player.buff.desc}`);
         } else {
             buffEl.innerHTML = `狀態: 無`;
             buffEl.onclick = null;
@@ -2012,5 +2166,13 @@ window.Game = Game;
 Game.init();
 })();
 </script>
+
+<div id="customDialog" class="dialog-overlay" style="display:none;">
+    <div class="dialog-box">
+        <div class="dialog-content" id="dialogContent"></div>
+        <div class="dialog-buttons" id="dialogButtons"></div>
+    </div>
+</div>
+
 </body>
 </html>
