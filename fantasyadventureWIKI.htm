@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幻想冒險 WIKI (非官方指南)</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --panel-bg: #1e1e1e;
+            --accent: #ff9800;
+            --border: #333;
+            
+            /* Rarity Colors */
+            --common: #b0b0b0;
+            --uncommon: #4caf50;
+            --rare: #2196f3;
+            --epic: #9c27b0;
+            --legendary: #ffd700;
+            --mythic: #ff0055;
+            --ultra: #00ffcc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding-bottom: 50px;
+        }
+
+        h1, h2, h3 {
+            color: var(--accent);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        h1 { text-align: center; font-size: 2.5em; border: none; }
+
+        /* Navigation */
+        .nav {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav a {
+            background: var(--panel-bg);
+            color: var(--text-color);
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+            transition: 0.3s;
+        }
+
+        .nav a:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: var(--panel-bg);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: #333;
+            color: var(--accent);
+        }
+
+        tr:hover { background-color: #2a2a2a; }
+
+        /* Rarity Classes */
+        .common { color: var(--common); }
+        .uncommon { color: var(--uncommon); }
+        .rare { color: var(--rare); }
+        .epic { color: var(--epic); }
+        .legendary { color: var(--legendary); font-weight: bold; }
+        .mythic { color: var(--mythic); font-weight: bold; text-shadow: 0 0 2px rgba(255,0,85,0.3); }
+        .ultra { color: var(--ultra); font-weight: bold; text-shadow: 0 0 2px rgba(0,255,204,0.3); }
+
+        .note {
+            font-size: 0.9em;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        /* Go to top button */
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--accent);
+            color: #000;
+            padding: 10px;
+            border-radius: 50%;
+            text-decoration: none;
+            font-weight: bold;
+            display: none;
+        }
+        
+        /* Highlight Box for Sins */
+        .highlight-box {
+            border: 2px solid var(--mythic);
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(255, 0, 85, 0.05);
+            margin-bottom: 30px;
+            margin-top: 30px;
+        }
+        .highlight-box h3 {
+            color: var(--mythic);
+            border-bottom-color: var(--mythic);
+            margin-top: 0;
+        }
+        
+        .update-tag {
+            background: #ff3333;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+
+        /* Author Section Styles */
+        .author-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .author-links a {
+            flex: 1;
+            min-width: 200px;
+            background: #333;
+            color: white;
+            padding: 15px;
+            text-decoration: none;
+            border-radius: 8px;
+            border: 1px solid #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.2s;
+            font-size: 1.1em;
+        }
+        .author-links a:hover {
+            background: #444;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .sponsor-btn {
+            background: #FFDD00 !important;
+            color: #000 !important;
+            font-weight: bold;
+            border-color: #e6c600 !important;
+        }
+        .sponsor-btn:hover {
+            background: #ffe64a !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>⚔️ 幻想冒險 WIKI <span style="font-size:0.5em; color:#666;">(v1.1 Updated)</span></h1>
+    
+    <div class="nav">
+        <a href="#classes">職業介紹</a>
+        <a href="#items">裝備與武器</a>
+        <a href="#acc-general">飾品一覽</a>
+        <a href="#materials">素材與特殊</a>
+        <a href="#events">事件指南</a>
+        <a href="#monster-skills">煉獄怪物</a>
+        <a href="#achievements">成就</a>
+        <a href="#credits" style="background:var(--accent); color:black; border-color:var(--accent);">作者社群</a>
+    </div>
+
+    <section id="classes">
+        <h2>🛡️ 職業介紹</h2>
+        <p>遊戲開始時可選擇的職業，影響初始裝備與被動能力。</p>
+        <table>
+            <thead><tr><th>職業</th><th>圖示</th><th>特性與能力</th></tr></thead>
+            <tbody>
+                <tr><td>騎士</td><td>🛡️</td><td>開局獲得「騎士長槍」。暴擊傷害由 2 倍提升為 <b>3 倍</b>。</td></tr>
+                <tr><td>商販</td><td>💰</td><td>出售物品價格為 <b>1.2 倍</b>。商店顯示商品數量增加至 6 項。</td></tr>
+                <tr><td>盜賊</td><td>🗡️</td><td>開啟寶箱時，<b>100% 不會觸發陷阱</b>或遇到空箱。</td></tr>
+                <tr><td>惡魔信徒</td><td>😈</td><td>開局隨機獲得一個惡魔 Buff (財富、破壞、強化或賭約)。</td></tr>
+                <tr><td>稻草人</td><td>🌾</td><td>遭遇「哈比」時必定將其嚇跑 (獲得 500G)。<br><span style="color:#ff5252">缺點：無法裝備騎士盾與塔盾。</span></td></tr>
+                <tr><td>人猿</td><td>🦍</td><td>遭遇「跌倒事件」時，必定能抓住岩壁並發現物品。</td></tr>
+                <tr><td>挑戰者</td><td>🧗</td><td>無特殊被動。開局獲得一瓶「強力藥水」。</td></tr>
+                <tr><td>屠龍者</td><td>🐉</td><td><b>[v1.1新增]</b> 開局裝備「屠龍刀」與「龍鱗鎧甲」。</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section id="items">
+        <h2>🎒 裝備與物品圖鑑</h2>
+        
+        <h3>⚔️ 武器 (Weapons)</h3>
+        <table>
+            <thead><tr><th>名稱</th><th>稀有度</th><th>效果/描述</th></tr></thead>
+            <tbody>
+                <tr><td>生鏽匕首</td><td class="common">一般</td><td>攻擊力 +3</td></tr>
+                <tr><td>木棒</td><td class="common">一般</td><td>攻擊力 +4</td></tr>
+                <tr><td>騎士長槍</td><td class="uncommon">優質</td><td>攻擊力 +12</td></tr>
+                <tr><td>秘銀劍</td><td class="rare">稀有</td><td>攻擊力 +30</td></tr>
+                <tr><td>屠龍刀</td><td class="epic">史詩</td><td>攻擊力 +60 (屠龍者開局/屠龍劍轉換)</td></tr>
+                <tr><td>屠龍劍</td><td class="epic">史詩</td><td>攻擊力 +60</td></tr>
+                <tr><td>聖劍 Excalibur</td><td class="legendary">傳說</td><td>攻擊力 +150 (合成真魔王條件之一)</td></tr>
+                <tr><td>諸神黃昏</td><td class="mythic">神話</td><td>[煉獄] 攻擊力 +2000。<br><b>5% 機率一擊必殺</b> (對神無效)。</td></tr>
+                <tr><td>牛頭人戰斧</td><td class="mythic">神話</td><td>[煉獄] 攻擊力 +3000。<br>擊殺敵人時 1% 機率永久提升 3% 基礎暴擊率。</td></tr>
+                <tr><td>噬魂鐮刀</td><td class="mythic">神話</td><td>[煉獄] 攻擊力 +1500。<br>造成傷害的 5% 轉為生命力 (吸血)。</td></tr>
+                <tr><td>破滅大劍</td><td class="mythic">神話</td><td>[煉獄] 攻擊力 +3000。單純且極致的破壞力。</td></tr>
+                <tr><td>夢魘穿刺者</td><td class="mythic">神話</td><td>[煉獄] 攻擊力 +1500。<br>首回合攻擊力翻倍。若未擊殺，下回合自身暈眩。</td></tr>
+                <tr><td>理智鞭笞</td><td class="mythic">神話</td><td>[煉獄] 攻擊力浮動 (500~5000)。<br>10% 機率使敵人混亂 (攻擊自己)。</td></tr>
+                <tr><td>虛空破滅劍</td><td class="mythic">神話</td><td>[煉獄] 攻擊力 +2000。<br>擊殺敵人時 10% 機率永久增加 100 點基礎攻擊力。</td></tr>
+                <tr><td>滅世之槍</td><td class="mythic">神話</td><td>[煉獄] 攻擊力 +5000。<br>50% 機率支配敵人 (每回合扣血且必掉落物品)。</td></tr>
+                <tr><td>原初之劍</td><td class="ultra">極傳說</td><td>[終極] 攻擊力 +33333。<br>無視神之代行者的【聖潔力場】，造成真實傷害。</td></tr>
+            </tbody>
+        </table>
+
+        <h3>🛡️ 防具與盾牌 (Armor & Shields)</h3>
+        <table>
+            <thead><tr><th>名稱</th><th>類型</th><th>稀有度</th><th>效果/描述</th></tr></thead>
+            <tbody>
+                <tr><td>布衣</td><td>防具</td><td class="common">一般</td><td>生命上限 +10</td></tr>
+                <tr><td>鎖子甲</td><td>防具</td><td class="uncommon">優質</td><td>生命上限 +40</td></tr>
+                <tr><td>板甲</td><td>防具</td><td class="rare">稀有</td><td>生命上限 +100</td></tr>
+                <tr><td>龍鱗鎧甲</td><td>防具</td><td class="epic">史詩</td><td>生命上限 +250</td></tr>
+                <tr><td>神之光輝</td><td>防具</td><td class="legendary">傳說</td><td>生命上限 +400 (合成真魔王條件之一)</td></tr>
+                <tr><td>騎士盾</td><td>盾牌</td><td class="rare">稀有</td><td>可抵擋 2 次攻擊 (稻草人不可用)</td></tr>
+                <tr><td>塔盾</td><td>盾牌</td><td class="epic">史詩</td><td>可抵擋 5 次攻擊 (稻草人不可用)</td></tr>
+                <tr><td>埃癸斯之盾</td><td>盾牌</td><td class="legendary">傳說</td><td>可抵擋 8 次攻擊</td></tr>
+                <tr><td>虛空行者斗篷</td><td>防具</td><td class="mythic">神話</td><td>[煉獄] 生命上限 +3000。敵方攻擊有 10% 機率落空。</td></tr>
+                <tr><td>地心熔爐鎧</td><td>防具</td><td class="mythic">神話</td><td>[煉獄] 生命上限 +2000。受傷-20%。<br>回合開始雙方各扣 5% HP (燃燒)。</td></tr>
+                <tr><td>末世之鎧</td><td>防具</td><td class="mythic">神話</td><td>[煉獄] 生命上限 +1000。<br>攻擊時 1% 機率永久增加 100 點基礎生命。</td></tr>
+                <tr><td>逆鱗龍裝</td><td>防具</td><td class="mythic">神話</td><td>[煉獄] 生命上限 +4000。<br>被暴擊時 10% 機率斬殺敵人。</td></tr>
+                <tr><td>魔神之壁</td><td>盾牌</td><td class="mythic">神話</td><td>[煉獄] 絕對防禦。可抵擋 10 次攻擊。</td></tr>
+                <tr><td>虛空之鏡</td><td>盾牌</td><td class="mythic">神話</td><td>[煉獄] 可擋暴擊。70% 機率不消耗耐久，並反彈 50% 傷害。</td></tr>
+            </tbody>
+        </table>
+
+        <h3 id="acc-general">💍 一般與其他飾品 (General Accessories)</h3>
+        <table>
+            <thead><tr><th>系列/名稱</th><th>稀有度</th><th>效果</th></tr></thead>
+            <tbody>
+                <tr><td>史萊姆系列</td><td class="common">一般~史詩</td><td>每回合/事件回復生命 (最高 +10 HP)。</td></tr>
+                <tr><td>哥布林系列</td><td class="common">一般~史詩</td><td>增加金幣獲取量 (最高 +20%)。</td></tr>
+                <tr><td>狂狼系列</td><td class="common">一般~史詩</td><td>增加暴擊率 (最高 +8%)。</td></tr>
+                <tr><td>骷髏系列</td><td class="common">一般~史詩</td><td>減少受到的傷害 (最高 -15%)。</td></tr>
+                <tr><td>半獸人系列</td><td class="common">一般~史詩</td><td>增加擊退哈比的機率 (最高 100%)。</td></tr>
+                <tr><td>幽靈系列</td><td class="common">一般~史詩</td><td>增加逃跑成功率 (最高 +10%)。</td></tr>
+                <tr><td>石巨人系列</td><td class="common">一般~史詩</td><td>增加生命上限 (最高 +200)。</td></tr>
+                <tr><td>食人妖系列</td><td class="common">一般~史詩</td><td>增加攻擊力 (最高 +35)。</td></tr>
+                <tr><td>雙足飛龍系列</td><td class="common">一般~史詩</td><td>增加對首領的傷害 (最高 +20%)。</td></tr>
+                <tr><td>魔王系列</td><td class="rare">稀有~傳說</td><td>全能力提升 (攻/血/暴擊)。</td></tr>
+                <tr><td>紅布</td><td class="mythic">神話</td><td>暴擊率 +10%，遭遇牛頭人衝撞時完全免疫。</td></tr>
+                <tr><td>命運之輪</td><td class="mythic">神話</td><td>暴擊率歸 0，每 <b>20%</b> 暴率轉化為 1 倍傷害。</td></tr>
+                <tr><td>混沌魔方</td><td class="mythic">神話</td><td>每回合隨機骰出 0.5~3.0 倍攻擊倍率。</td></tr>
+                <tr><td>超越魔方</td><td class="mythic">神話</td><td>每回合隨機骰出 1.0~5.0 倍攻擊倍率 (可與混沌疊加)。</td></tr>
+                <tr><td>暗影替身</td><td class="mythic">神話</td><td>10% 機率無效化傷害並反擊 (反彈 10% 防禦值)。</td></tr>
+                <tr><td>亡者項鍊</td><td class="mythic">神話</td><td>死亡時進入「靈魂型態」3 回合 (攻x2)，擊殺敵人則復活。</td></tr>
+                <tr><td>血之契約書</td><td class="mythic">神話</td><td>MaxHP 減半，減少值轉為攻擊。副作用：<b>無法使用藥水</b>。</td></tr>
+                <tr><td>永生護符</td><td class="mythic">神話</td><td>擊殺累積靈魂 (Max 200)。致死時耗 50 魂復活 50% HP。</td></tr>
+            </tbody>
+        </table>
+        
+        <div id="sins-items" class="highlight-box">
+            <h3>😈 七宗罪神話飾品 (Sins Accessories)</h3>
+            <p>煉獄世界中通過特定試煉才能獲得的頂級飾品。全部集齊可獲得「原罪之冠」。</p>
+            <table>
+                <thead><tr><th>對應罪名</th><th>飾品名稱</th><th>稀有度</th><th>特殊能力</th></tr></thead>
+                <tbody>
+                    <tr><td><b>🦁 傲慢</b></td><td>傲慢之眼</td><td class="mythic">神話</td><td>攻擊力 <b>+100%</b>，但受到傷害 +50%。</td></tr>
+                    <tr><td><b>🦊 嫉妒</b></td><td>嫉妒魔盒</td><td class="mythic">神話</td><td>攻擊時 10% 機率完全恢復生命。</td></tr>
+                    <tr><td><b>😡 暴怒</b></td><td>暴怒指虎</td><td class="mythic">神話</td><td>攻擊力 <b>+1000</b>，且攻擊時 10% 機率造成兩次傷害。</td></tr>
+                    <tr><td><b>💤 怠惰</b></td><td>眠戒</td><td class="mythic">神話</td><td>逃跑失敗時受到的傷害減少 50%。</td></tr>
+                    <tr><td><b>🐷 貪婪</b></td><td>金色聖像</td><td class="mythic">神話</td><td>擊殺怪物獲得金幣 +100%。</td></tr>
+                    <tr><td><b>🍲 暴食</b></td><td>暴食之牙</td><td class="mythic">神話</td><td>每次攻擊恢復 10% 最大生命。</td></tr>
+                    <tr><td><b>💋 色慾</b></td><td>魅魔香水</td><td class="mythic">神話</td><td>每場戰鬥的第一次攻擊必定暴擊。</td></tr>
+                    <tr><td colspan="4" style="text-align:center; background:#220011;">
+                        <span class="ultra">👑 集齊以上七件可自動獲得：【原罪之冠】 (挑戰真神的資格)</span>
+                    </td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3 id="materials">🧩 素材圖鑑 (Materials)</h3>
+        <p>用於在製作台合成飾品或在煉獄爐火鍛造神器。</p>
+        <table>
+            <thead><tr><th>圖示/名稱</th><th>稀有度</th><th>來源怪物</th><th>用途 (製作對象)</th></tr></thead>
+            <tbody>
+                <tr><td>💧 史萊姆黏液</td><td class="common">一般</td><td>史萊姆 (一般)</td><td>凝膠戒指</td></tr>
+                <tr><td>✨ 史萊姆精華</td><td class="uncommon">優質</td><td>史萊姆 (菁英)</td><td>精華護身符</td></tr>
+                <tr><td>👑 史萊姆王冠</td><td class="rare">稀有</td><td>史萊姆 (首領)</td><td>黏液皇冠</td></tr>
+                <tr><td>🧶 破布</td><td class="common">一般</td><td>哥布林 (一般)</td><td>破布背包</td></tr>
+                <tr><td>💍 哥布林耳環</td><td class="uncommon">優質</td><td>哥布林 (菁英)</td><td>金耳環</td></tr>
+                <tr><td>🦷 哥布林金牙</td><td class="rare">稀有</td><td>哥布林 (首領)</td><td>貪婪金牙</td></tr>
+                <tr><td>🧵 狼皮</td><td class="common">一般</td><td>狂狼 (一般)</td><td>狼皮手套</td></tr>
+                <tr><td>🦴 狼牙</td><td class="uncommon">優質</td><td>狂狼 (菁英)</td><td>狼牙項鍊</td></tr>
+                <tr><td>🧣 狼王披風</td><td class="rare">稀有</td><td>狂狼 (首領)</td><td>血月披風</td></tr>
+                <tr><td>🦴 骨頭</td><td class="common">一般</td><td>骷髏兵 (一般)</td><td>骨戒</td></tr>
+                <tr><td>👻 靈魂碎片</td><td class="uncommon">優質</td><td>骷髏兵 (菁英)</td><td>靈魂容器</td></tr>
+                <tr><td>💀 死靈頭骨</td><td class="rare">稀有</td><td>骷髏兵 (首領)</td><td>死靈護符</td></tr>
+                <tr><td>🗡️ 斷劍</td><td class="common">一般</td><td>半獸人 (一般)</td><td>斷劍掛飾</td></tr>
+                <tr><td>🧿 半獸人護符</td><td class="uncommon">優質</td><td>半獸人 (菁英)</td><td>蠻族護符</td></tr>
+                <tr><td>📯 戰爭號角</td><td class="rare">稀有</td><td>半獸人 (首領)</td><td>威望號角</td></tr>
+                <tr><td>🌫️ 靈質</td><td class="common">一般</td><td>幽靈 (一般)</td><td>靈質斗篷</td></tr>
+                <tr><td>👿 怨念集合體</td><td class="uncommon">優質</td><td>幽靈 (菁英)</td><td>怨念念珠</td></tr>
+                <tr><td>🏮 幽靈提燈</td><td class="rare">稀有</td><td>幽靈 (首領)</td><td>冥界提燈</td></tr>
+                <tr><td>🪨 石塊</td><td class="common">一般</td><td>石巨人 (一般)</td><td>石塊徽章</td></tr>
+                <tr><td>🔮 魔力核心</td><td class="rare">稀有</td><td>石巨人 (菁英)</td><td>魔導核心</td></tr>
+                <tr><td>💎 大地之心</td><td class="epic">史詩</td><td>石巨人 (首領)</td><td>磐石之心</td></tr>
+                <tr><td>🪵 巨棒</td><td class="common">一般</td><td>食人妖 (一般)</td><td>木棒護身符</td></tr>
+                <tr><td>🩸 食人妖之血</td><td class="rare">稀有</td><td>食人妖 (菁英)</td><td>鮮血瓶</td></tr>
+                <tr><td>🗿 食人妖圖騰</td><td class="epic">史詩</td><td>食人妖 (首領)</td><td>古老圖騰</td></tr>
+                <tr><td>🛡️ 龍鱗</td><td class="uncommon">優質</td><td>雙足飛龍 (一般)</td><td>龍鱗片</td></tr>
+                <tr><td>💧 龍之淚</td><td class="rare">稀有</td><td>雙足飛龍 (菁英)</td><td>龍淚墜飾</td></tr>
+                <tr><td>❤️ 龍心</td><td class="epic">史詩</td><td>雙足飛龍 (首領)</td><td>真龍之心</td></tr>
+                <tr><td>⚫ 黑暗物質</td><td class="rare">稀有</td><td>魔王 (一般)</td><td>黑暗碎片</td></tr>
+                <tr><td>🔯 魔王印記</td><td class="epic">史詩</td><td>魔王 (菁英)</td><td>魔君徽章</td></tr>
+                <tr><td>👁️ 魔神之眼</td><td class="legendary">傳說</td><td>魔王 (首領)</td><td>混沌魔眼</td></tr>
+                <tr><td>⚫ 暗影凝膠</td><td class="mythic">神話</td><td>暗影史萊姆</td><td>[煉獄] 暗影替身</td></tr>
+                <tr><td>🌫️ 虛空之塵</td><td class="mythic">神話</td><td>虛空魔眼</td><td>[煉獄] 虛空之鏡</td></tr>
+                <tr><td>🔥 熔岩核心</td><td class="mythic">神話</td><td>熔岩魔像</td><td>[煉獄] 地心熔爐鎧</td></tr>
+                <tr><td>🦄 夢魘之角</td><td class="mythic">神話</td><td>夢魘戰馬</td><td>[煉獄] 夢魘穿刺者</td></tr>
+                <tr><td>🛡️ 腐朽鎧甲</td><td class="mythic">神話</td><td>墮落騎士</td><td>[煉獄] 亡者項鍊</td></tr>
+                <tr><td>🧠 混沌神經</td><td class="mythic">神話</td><td>混沌觸手</td><td>[煉獄] 理智鞭笞</td></tr>
+                <tr><td>🩸 鮮血精華</td><td class="mythic">神話</td><td>鮮血伯爵</td><td>[煉獄] 血之契約書</td></tr>
+                <tr><td>💀 命匣碎片</td><td class="mythic">神話</td><td>巫妖王</td><td>[煉獄] 永生護符</td></tr>
+                <tr><td>🐲 魔龍逆鱗</td><td class="mythic">神話</td><td>深淵魔龍</td><td>[煉獄] 逆鱗龍裝</td></tr>
+                <tr><td>🐙 不可名狀之物</td><td class="ultra">極傳說</td><td>舊日支配者</td><td>[煉獄] 滅世之槍</td></tr>
+            </tbody>
+        </table>
+
+        <h3 id="special">✨ 特殊與重要物品 (Special Items)</h3>
+        <p>擁有獨特效果或與關鍵機制相關的重要道具。</p>
+        <table>
+            <thead><tr><th>名稱</th><th>稀有度</th><th>效果與描述</th></tr></thead>
+            <tbody>
+                <tr><td>🪃 彈弓</td><td class="rare">稀有</td><td>[工具] 遭遇哈比時自動使用，<b>100% 擊退</b>並獲得掉落物。使用後損壞。</td></tr>
+                <tr><td>🪝 鉤子</td><td class="rare">稀有</td><td>[工具] 遭遇跌倒事件時自動使用，<b>必定發現物品</b>且不受傷。使用後損壞。</td></tr>
+                <tr><td>🧰 攜帶式工作檯</td><td class="rare">稀有</td><td>[工具] 消耗品。使用後隨時隨地開啟一般製作視窗。</td></tr>
+                <tr><td>📜 煉獄爐卷軸</td><td class="mythic">神話</td><td>[工具] 消耗品。使用後隨時隨地召喚煉獄爐火 (僅限一次)。</td></tr>
+                <tr><td>🪶 不死鳥的羽毛</td><td class="legendary">傳說</td><td>[復活] 死亡時自動消耗，以 50% 生命復活。</td></tr>
+                <tr><td>📕 煉獄聖經</td><td class="mythic">神話</td><td>[鑰匙] 消耗 2 顆「真實之心」合成。使用後開啟通往<b>煉獄世界</b>的大門。</td></tr>
+                <tr><td>💖 真實之心</td><td class="mythic">神話</td><td>[素材] 從「魔王真身」身上掉落。用於合成煉獄聖經。</td></tr>
+                <tr><td>⏳ 輪迴沙漏</td><td class="ultra">極傳說</td><td>[終極] 擊敗神之代行者獲得。使用後可重置遊戲，並<b>繼承一件飾品</b>至下一輪迴。</td></tr>
+                <tr><td>👑 原罪之冠</td><td class="ultra">極傳說</td><td>[終極] 集齊七宗罪飾品後獲得。持有時戰鬥會使敵人變強，可用於召喚真神。</td></tr>
+            </tbody>
+        </table>
+
+        <p class="note">※ 治療藥水、精靈藥劑等一般消耗品未列於此。</p>
+    </section>
+
+    <section id="events">
+        <h2>🎲 事件指南</h2>
+
+        <h3>表層世界</h3>
+        <ul>
+            <li><b>🧚 湖中精靈：</b> 消耗所有金幣，強化基礎能力 (每次 +100 HP/Atk，上限 5 次)。</li>
+            <li><b>💫 跌倒事件：</b> 機率受傷、掉裝備，或發現物品 (人猿/鉤子必勝)。</li>
+            <li><b>🦅 哈比襲擊：</b> 機率搶走金幣/裝備/道具。可用彈弓、半獸人飾品或稻草人職業反制。</li>
+            <li><b>⚒️ 製作台：</b> 可製作飾品與特殊道具 (使用 2 次後損壞)。</li>
+            <li><b>🗿 祈禱聖像：</b> 隨機獲得天使(正面)或惡魔(雙面刃) Buff。</li>
+            <li><b>🗝️ 金色寶箱 (盜賊事件)：</b> 5% 機率獲得傳說神器，或觸發陷阱 (盜賊必得)。</li>
+            <li><b>⚖️ 黑市商人 (商販事件)：</b> 花費金幣購買隨機物品 (可能被騙)。</li>
+            <li><b>⚔️ 救援行動 (騎士事件)：</b> 戰鬥勝利獲金幣，失敗扣血。</li>
+        </ul>
+
+        <h3>🔥 煉獄世界 (使用煉獄聖經後)</h3>
+        <p class="note">煉獄世界中無法自然回血，且怪物強度大幅提升。</p>
+        <p class="note" style="color:#ff3333;">★ 新手保護：第 1-10 層的怪物能力大幅削弱 (保留 30% 數值)。</p>
+        <ul>
+            <li><b>👑 史萊姆長老：</b> 消耗所有金幣，大幅強化基礎能力 (<b>+600 HP / +600 Atk</b>，上限 5 次)。<br><small>※ 第 10 層必定觸發一次。</small></li>
+            <li><b>🦅 煉獄哈比：</b> 一隻不攻擊的哈比飛過，並留下 <b>「不死鳥的羽毛」</b> (復活道具)。</li>
+            <li><b>🔥 煉獄爐火：</b> 可製作強大的神話裝備 (每次事件限造 1 件)。</li>
+            <li><b>🌌 虛空裂隙：</b> 50% 機率獲得神話寶物，50% 機率受到 50% 最大生命的真實傷害。</li>
+            <li><b>🩸 鮮血祭壇：</b> 獻祭 50% 當前生命，20% 機率獲得煉獄神器。</li>
+            <li><b>🐮 牛頭人衝撞：</b> 撞飛身上一件飾品或造成傷害 (裝備「紅布」可免疫)。</li>
+            <li><b>🕸️ 米諾陶諾斯迷宮：</b> 探索可能獲得紅布、戰斧，或遭遇牛頭人。</li>
+            <li><b>😈 惡魔商人：</b> 販售神話裝備與特殊卷軸 (可購買不死鳥羽毛)。</li>
+            <li><b>🌸 寧靜的花園：</b> 極低機率出現。可挑戰「勇者殘魂」，獲勝必得「原初之劍」。</li>
+            <li><b>🗿 亡者的雕像：</b> 持有「原罪之冠」時機率觸發。放入皇冠將召喚最終隱藏 Boss <b>「神之代行者」</b>。</li>
+        </ul>
+
+        <h3>😈 七宗罪試煉事件</h3>
+        <p>通過這些試煉可獲得上方列表中的神話飾品。</p>
+        <ul>
+            <li><b>🦁 傲慢：</b> 必須卸下防具與盾牌與鏡像戰鬥。</li>
+            <li><b>🦊 嫉妒：</b> 要求交換你身上兩件稀有裝備。</li>
+            <li><b>😡 暴怒：</b> 無盡戰鬥的狂戰士，可能復活 (需撐過復活或直接擊殺)。</li>
+            <li><b>💤 怠惰：</b> 誘惑你休息 (全回血但中詛咒)。</li>
+            <li><b>🐷 貪婪：</b> 拿取金幣獲得詛咒，或挑戰黃金巨像。</li>
+            <li><b>🍲 暴食：</b> 吞噬背包所有消耗品或獻祭裝備。</li>
+            <li><b>💋 色慾：</b> 誘惑你獻出生命 (HP扣減) 以換取力量。</li>
+        </ul>
+    </section>
+
+    <section id="monster-skills">
+        <h2>🔥 煉獄怪物固有技能 (Inferno Bestiary)</h2>
+        <p>煉獄中的怪物擁有打破規則的特殊能力，知己知彼方能百戰百勝。</p>
+        <p class="note">※ 點擊遊戲中的怪物圖示，也可即時查看該怪物的當前狀態。</p>
+
+        <h3>一般與菁英怪物</h3>
+        <table>
+            <thead><tr><th>怪物</th><th>固有技能</th><th>效果描述</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>🌑 暗影史萊姆</td>
+                    <td class="mythic">流體閃避</td>
+                    <td>受到攻擊時 <b>15% 機率完全閃避</b>，並對玩家造成 5% 最大生命的反噬傷害。</td>
+                </tr>
+                <tr>
+                    <td>👁️ 虛空魔眼</td>
+                    <td class="mythic">視線折射</td>
+                    <td><b>永久反射 10%</b> 受到的傷害回攻擊者身上。(盾牌可抵擋此反傷，但會碎裂)</td>
+                </tr>
+                <tr>
+                    <td>🌋 熔岩魔像</td>
+                    <td class="mythic">過熱光環</td>
+                    <td>每回合結束時，高溫將<b>燃燒敵我雙方 5% 最大生命值</b>。</td>
+                </tr>
+                <tr>
+                    <td>🦄 夢魘戰馬</td>
+                    <td class="mythic">恐懼衝鋒</td>
+                    <td>爆發力極強。在戰鬥的 <b>第 1 回合，攻擊力提升 100%</b>。</td>
+                </tr>
+                <tr>
+                    <td>🤺 墮落騎士</td>
+                    <td class="mythic">亡者意志</td>
+                    <td>受到致死傷害時<b>不會死亡</b>，強制鎖血 1 回合，並發動「迴光返照」(攻擊力x1.5)。</td>
+                </tr>
+                <tr>
+                    <td>🦑 混沌觸手</td>
+                    <td class="mythic">思維污染</td>
+                    <td>攻擊時有 15% 機率造成<b>「混亂」</b>，使玩家下回合無法行動。</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>首領與傳說生物 (Bosses)</h3>
+        <table>
+            <thead><tr><th>怪物</th><th>固有技能</th><th>效果描述</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>🧛 鮮血伯爵</td>
+                    <td class="mythic">生命汲取</td>
+                    <td>造成的傷害會轉化為自身 <b>50% 的治療量</b>，戰鬥拖越久越不利。</td>
+                </tr>
+                <tr>
+                    <td>💀 巫妖王</td>
+                    <td class="mythic">命匣護盾</td>
+                    <td><b>每 3 回合</b>獲得一次靈魂護盾，<b>完全免疫</b>該回合受到的所有傷害。</td>
+                </tr>
+                <tr>
+                    <td>🐲 深淵魔龍</td>
+                    <td class="mythic">逆鱗之怒</td>
+                    <td>受到「暴擊」傷害時會被激怒，<b>立即進行一次反擊</b> (造成 1.5倍 攻擊傷害)。</td>
+                </tr>
+                <tr>
+                    <td>🐙 舊日支配者</td>
+                    <td class="mythic">不可名狀</td>
+                    <td>隨著回合數增加，對玩家堆疊越來越高的<b>真實傷害</b> (每回合 +50)。</td>
+                </tr>
+                <tr>
+                    <td>👻 勇者殘魂</td>
+                    <td class="ultra">花園守護</td>
+                    <td>[隱藏Boss] 位於寧靜花園。攻防數值極高，擊敗後獲得原初之劍。</td>
+                </tr>
+                <tr>
+                    <td>⚜️ 神之代行者</td>
+                    <td class="ultra">神之權能</td>
+                    <td>
+                        1. <b>威壓</b>: 封印玩家暴擊。<br>
+                        2. <b>聖潔力場</b>: 單次受傷上限 111,111 (原初之劍可無視)。<br>
+                        3. <b>審判之眼</b>: 每 3 回合強制將玩家 HP 歸 1。<br>
+                        4. <b>規則破壞</b>: 機率粉碎盾牌或燒毀復活羽毛。
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section id="achievements">
+        <h2>🏆 成就達成條件</h2>
+
+        <h3>一般成就</h3>
+        <ul>
+            <li><b>深淵的呼喚 / 百層 / 永夜 / 千層：</b> 到達第 50 / 100 / 500 / 1000 層。</li>
+            <li><b>行囊滿載：</b> 收集 20 種不同的物品。</li>
+            <li><b>魔物博學者：</b> 取得所有一般與菁英怪物的掉落物。</li>
+            <li><b>萬物洞察者：</b> 取得表層世界所有怪物的掉落物 (含首領)。</li>
+            <li><b>虛偽的終焉：</b> 擊敗表層世界的魔王 (1000層)。</li>
+            <li><b>涅槃的餘燼：</b> 取得「不死鳥的羽毛」。</li>
+        </ul>
+
+        <h3>煉獄與神話成就</h3>
+        <ul>
+            <li><b>黑曜石的錘音：</b> 在「煉獄爐火」打造一件神話裝備。</li>
+            <li><b>不可名狀的恐懼：</b> 擊敗煉獄深處的「舊日支配者」。</li>
+            <li><b>鬥牛士的榮耀：</b> 同時持有「紅布」與「牛頭人戰斧」。</li>
+            <li><b>征服傲慢/嫉妒/暴怒/怠惰/貪婪/暴食/色慾：</b> 獲得對應的七宗罪飾品。</li>
+            <li><b>原罪的背負者：</b> 集齊七件罪惡飾品，獲得「原罪之冠」。</li>
+        </ul>
+
+        <h3>隱藏與終極成就</h3>
+        <ul>
+            <li><b>登峰造極：</b> 將精靈與史萊姆長老的強化全部修練至滿級 (各5次)。</li>
+            <li><b>逆天改命：</b> 擊敗神之代行者，獲得「輪迴沙漏」。</li>
+            <li><b>輪迴的起點：</b> 使用沙漏穿越時空，並保留了記憶。</li>
+            <li><b>全知的境界：</b> 獲得圖鑑中所有的物品。</li>
+            <li><b>深淵的盡頭：</b> 通過第 10000 層 (見證無盡傳說的誕生)。</li>
+        </ul>
+        
+    </section>
+
+    <section id="credits">
+        <h2>👨‍💻 作者與社群</h2>
+        <p>感謝遊玩《幻想冒險》！<br>本遊戲由 Shota 開發。歡迎關注社群以獲得最新改版資訊，或給予贊助支持。</p>
+        <div class="author-links">
+            <a href="https://www.threads.net/@kanda_shota_art?igshid=NTc4MTIwNjQ2YQ==" target="_blank">
+                <span>◉</span> Threads (@kanda_shota_art)
+            </a>
+            <a href="https://x.com/shota_at_?s=21" target="_blank">
+                <span>𝕏</span> Twitter (X)
+            </a>
+            <a href="https://www.buymeacoffee.com/maker.shota" target="_blank" class="sponsor-btn">
+                <span>⚔️</span> 贊助我前進
+            </a>
+        </div>
+    </section>
+</div>
+
+<a href="#" class="back-to-top" style="display: block;">Top</a>
+
+</body>
+</html>
