@@ -228,7 +228,25 @@
         .equip-slot { flex: 1; background: #333; padding: 8px; border-radius: 4px; text-align: center; font-size: 0.75em; min-height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid #444; }
         body.inferno-mode .equip-slot { background: #331111; border-color: #550000; }
         
-        .inv-container { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
+        /* 預設（電腦版）：維持 4 欄，讓寬螢幕可以一列看完 */
+.inv-container { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr 1fr 1fr; 
+    gap: 10px; 
+}
+
+/* 手機版適配：當螢幕寬度小於 600px 時，自動改為 2 欄 */
+@media screen and (max-width: 600px) {
+    .inv-container {
+        grid-template-columns: 1fr 1fr; /* 改為一列只顯示 2 個分類 */
+    }
+    
+    /* 額外優化：讓標題字體在手機上稍微縮小，避免擠壓 */
+    .inv-col h4 {
+        font-size: 0.85em;
+        white-space: nowrap; /* 強制標題文字不換行 */
+    }
+}
         .inv-col h4 { margin: 0 0 5px 0; font-size: 0.85em; color: #888; text-align: center; border-bottom: 1px solid #444; padding-bottom: 3px; }
         .item-list { display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto; min-height: 50px; background: #2a2a2a; padding: 5px; border-radius: 4px; }
         body.inferno-mode .item-list { background: #1a0505; }
@@ -2928,6 +2946,13 @@ combatRound() {
                 this.triggerAnim('event-icon', 'anim-damage');
                 this.showFloatingText(pDmg, isCrit ? "red" : "white");
                 logHtml += `你造成 ${isCrit ? "<span class='crit-text'>爆擊 " : ""}${pDmg}${isCrit ? "</span>" : ""} 傷害。<br>`;
+
+if (Player.buff && Player.buff.id === 'demon_wealth') {
+                    Player.gold += 5;
+                    this.showFloatingText("+5 G", "gold");
+                    // logHtml += " <span class='gold-text'>(財富+5G)</span>"; // 如果想要文字紀錄顯示也可加上這行
+                }
+
             }
 
             // 檢查反傷致死
@@ -3873,6 +3898,14 @@ else {
             }
             
             this.triggerAnim('event-icon', 'anim-lunge');
+
+if (Player.buff && Player.buff.id === 'demon_wealth') {
+                let loss = 5;
+                if (Player.gold < 5) loss = Player.gold; // 避免扣到負數
+                Player.gold -= loss;
+                this.showFloatingText(`-${loss} G`, "gray");
+                msg += `<br><span class='damage-text'>惡魔的契約生效：金幣 -${loss}</span>`;
+            }
 
             if (s && s.val > 0) {
                 s.val--;
@@ -5458,3 +5491,4 @@ Game.init();
 </script>
 </body>
 </html>
+
