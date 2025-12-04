@@ -2946,6 +2946,13 @@ combatRound() {
                 this.triggerAnim('event-icon', 'anim-damage');
                 this.showFloatingText(pDmg, isCrit ? "red" : "white");
                 logHtml += `你造成 ${isCrit ? "<span class='crit-text'>爆擊 " : ""}${pDmg}${isCrit ? "</span>" : ""} 傷害。<br>`;
+
+if (Player.buff && Player.buff.id === 'demon_wealth') {
+                    Player.gold += 5;
+                    this.showFloatingText("+5 G", "gold");
+                    // logHtml += " <span class='gold-text'>(財富+5G)</span>"; // 如果想要文字紀錄顯示也可加上這行
+                }
+
             }
 
             // 檢查反傷致死
@@ -3891,6 +3898,14 @@ else {
             }
             
             this.triggerAnim('event-icon', 'anim-lunge');
+
+if (Player.buff && Player.buff.id === 'demon_wealth') {
+                let loss = 5;
+                if (Player.gold < 5) loss = Player.gold; // 避免扣到負數
+                Player.gold -= loss;
+                this.showFloatingText(`-${loss} G`, "gray");
+                msg += `<br><span class='damage-text'>惡魔的契約生效：金幣 -${loss}</span>`;
+            }
 
             if (s && s.val > 0) {
                 s.val--;
@@ -5476,3 +5491,4 @@ Game.init();
 </script>
 </body>
 </html>
+
