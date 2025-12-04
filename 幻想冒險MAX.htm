@@ -2886,25 +2886,32 @@ combatRound() {
 
             // 2. 👁️ 虛空魔眼 - 視線折射
             else if (enemy.name.includes("虛空魔眼")) {
-                let reflect = Math.floor(pDmg * 0.1); // 改為 10%
+                let reflect = Math.floor(pDmg * 0.1); // 10% 反傷
                 pDmg = Math.floor(pDmg * 0.9);        // 實際傷害剩 90%
                 
-                // --- 盾牌格擋判定 ---
-                let s = Player.equipment.shield;
-                if (s && s.val > 0) {
-                    s.val--; 
-                    logHtml += `<span style='color:#2196f3'>🛡️ 你的 ${s.name} 擋住了視線折射！(抵消 ${reflect} 反傷)</span><br>`;
-                    reflect = 0; 
-                    
-                    if (s.val <= 0) {
-                        Player.equipment.shield = null;
-                        logHtml += `<span class='damage-text'>💔 盾牌在強光中碎裂了！</span><br>`;
-                        this.recalcStats();
-                    }
+                // [新增修正] 預判死亡：如果這一擊能打死怪物，則不觸發反傷
+                if (enemy.hp - pDmg <= 0) {
+                    logHtml += `<span style='color:#00bcd4'>👁️ 【視線折射】 致命一擊！魔眼破碎前無法反傷！</span><br>`;
                 } else {
-                    Player.hp -= reflect;
-                    // 文字敘述同步更新為 10%
-                    logHtml += `<span style='color:#00bcd4'>👁️ 【視線折射】 10% 傷害反射回你身上！(-${reflect} HP)</span><br>`;
+                    // 怪物沒死，才執行原本的盾牌判定與反傷
+                    
+                    // --- 盾牌格擋判定 ---
+                    let s = Player.equipment.shield;
+                    if (s && s.val > 0) {
+                        s.val--; 
+                        logHtml += `<span style='color:#2196f3'>🛡️ 你的 ${s.name} 擋住了視線折射！(抵消 ${reflect} 反傷)</span><br>`;
+                        reflect = 0; 
+                        
+                        if (s.val <= 0) {
+                            Player.equipment.shield = null;
+                            logHtml += `<span class='damage-text'>💔 盾牌在強光中碎裂了！</span><br>`;
+                            this.recalcStats();
+                        }
+                    } else {
+                        Player.hp -= reflect;
+                        // 文字敘述同步更新為 10%
+                        logHtml += `<span style='color:#00bcd4'>👁️ 【視線折射】 10% 傷害反射回你身上！(-${reflect} HP)</span><br>`;
+                    }
                 }
             }
 
