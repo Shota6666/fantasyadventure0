@@ -2924,10 +2924,40 @@ combatRound() {
             // --- [煉獄生態系] 反擊技能 ---
             
             // 4. 🐲 深淵魔龍 - 逆鱗之怒 (暴擊反擊)
-            if (enemy.name.includes("深淵魔龍") && isCrit) {
-                let wrathDmg = Math.floor(enemy.atk * 1.5);
-                Player.hp -= wrathDmg;
-                logHtml += `<span style='color:red; font-weight:bold;'>🐲 【逆鱗之怒】 魔龍被暴擊激怒，瞬間反咬一口！(-${wrathDmg} HP)</span><br>`;
+        if (enemy.name.includes("深淵魔龍") && isCrit) {
+            let wrathDmg = Math.floor(enemy.atk * 1.5);
+            
+            // --- [修改開始] 加入盾牌格擋邏輯 ---
+            let s = Player.equipment.shield;
+            let isBlocked = false;
+
+            if (s && s.val > 0) {
+                isBlocked = true; // 標記為已格擋
+
+                // 特殊處理：虛空之鏡 (70% 機率不消耗耐久 + 反彈)
+                if (s.id === 'shield_void') {
+                     let consume = Math.random() < 0.3; // 30% 機率消耗
+                     if (consume) s.val--;
+                     
+                     // 虛空之鏡反彈 50% 傷害給魔龍
+                     let reflect = Math.floor(wrathDmg * 0.5);
+                     enemy.hp -= reflect;
+
+                     let durText = consume ? "消耗耐久" : "耐久維持";
+                     logHtml += `<span class='block-text'>🪞 虛空之鏡折射了逆鱗！(${durText} / 反彈 ${reflect})</span><br>`;
+                } 
+                // 一般盾牌 (消耗 1 耐久)
+                else {
+                    s.val--;
+                    logHtml += `<span class='block-text'>🛡️ 你的 ${s.name} 及時擋住了逆鱗之怒！(剩餘耐久 ${s.val})</span><br>`;
+                }
+
+                // 檢查盾牌是否碎裂
+                if (s.val <= 0) {
+                    Player.equipment.shield = null;
+                    logHtml += `<span class='damage-text'>💔 盾牌在巨大的衝擊中碎裂了！</span><br>`;
+                    this.recalcStats(); // 重新計算數值(扣除盾牌加成)
+                }
             }
 
             // 結算玩家攻擊
