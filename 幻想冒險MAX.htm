@@ -2921,9 +2921,7 @@ combatRound() {
                 logHtml += `<span style='color:#9c27b0'>💀 【命匣護盾】 巫妖王被靈魂護盾包圍，傷害無效！</span><br>`;
             }
 
-            // --- [煉獄生態系] 反擊技能 ---
-            
-            // 4. 🐲 深淵魔龍 - 逆鱗之怒 (暴擊反擊)
+                        // 4. 🐲 深淵魔龍 - 逆鱗之怒 (暴擊反擊)
         if (enemy.name.includes("深淵魔龍") && isCrit) {
             let wrathDmg = Math.floor(enemy.atk * 1.5);
             
@@ -2958,7 +2956,14 @@ combatRound() {
                     logHtml += `<span class='damage-text'>💔 盾牌在巨大的衝擊中碎裂了！</span><br>`;
                     this.recalcStats(); // 重新計算數值(扣除盾牌加成)
                 }
+            } 
+            
+            // 如果沒有格擋成功 (沒裝盾牌 或 耐久歸零)，才執行扣血
+            if (!isBlocked) {
+                Player.hp -= wrathDmg;
+                logHtml += `<span style='color:red; font-weight:bold;'>🐲 【逆鱗之怒】 魔龍被暴擊激怒，瞬間反咬一口！(-${wrathDmg} HP)</span><br>`;
             }
+ }
 
             // 結算玩家攻擊
             if (pDmg > 0) {
