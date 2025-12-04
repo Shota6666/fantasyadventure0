@@ -1224,9 +1224,21 @@ if (GameState.merchantRefreshed === undefined) GameState.merchantRefreshed = fal
                 `HP: ${enemy.hp} | 攻擊: ${enemy.atk}`, 
                 "戰鬥繼續！", enemy.icon);
             document.getElementById('event-icon').className = iconClass;
-            // [NEW] 恢復時檢查是否為特殊戰鬥 (如七宗罪無法逃跑)
-            const canFlee = !enemy.isSin && !enemy.isOldOne && enemy.tier !== 'boss' && !enemy.isGod;
-            this.setButtons("戰鬥", "combatRound", "逃跑", "flee", !canFlee);
+            // 1. 定義可逃跑的 BOSS 名單 (需與 triggerCombatWithEnemy 保持一致)
+            const escapableBosses = ['鮮血伯爵', '巫妖王', '深淵魔龍'];
+            const isEscapable = escapableBosses.some(name => enemy.name.includes(name));
+
+            // 2. 判斷是否強制禁止逃跑：
+            // 條件：是神 OR 是七宗罪 OR 是舊日支配者 OR (是BOSS 且 不在可逃跑名單內)
+            // 例外：花園勇者 (isGardenBoss) 總是可逃跑
+            const forceNoFlee = (
+                enemy.isGod || 
+                enemy.isSin || 
+                enemy.isOldOne || 
+                (enemy.tier === 'boss' && !isEscapable)
+            ) && !enemy.isGardenBoss;
+
+            this.setButtons("戰鬥", "combatRound", "逃跑", "flee", forceNoFlee);
         } 
         else if (GameState.phase === 'sin_event') {
     // 修正：重新觸發該罪惡事件，而不是跳過
@@ -2847,6 +2859,15 @@ combatRound() {
             }
 
             let pDmg = this.getAtk();
+if (enemy.tier === 'boss' || enemy.tier === 'elite' || enemy.isGod || enemy.isOldOne) {
+    Player.equipment.accessories.forEach(acc => {
+        if (!acc) return;
+        if (acc.id === 'acc_wyv_1') pDmg = Math.floor(pDmg * 1.05); // 龍鱗片 +5%
+        if (acc.id === 'acc_wyv_2') pDmg = Math.floor(pDmg * 1.08); // 龍淚墜飾 +8%
+        if (acc.id === 'acc_wyv_3') pDmg = Math.floor(pDmg * 1.20); // 真龍之心 +20%
+    });
+}
+
             let rawCrit = this.getCritRate(); 
             
             // 神的威壓
