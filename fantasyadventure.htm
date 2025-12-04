@@ -2859,6 +2859,15 @@ combatRound() {
             }
 
             let pDmg = this.getAtk();
+if (enemy.tier === 'boss' || enemy.tier === 'elite' || enemy.isGod || enemy.isOldOne) {
+    Player.equipment.accessories.forEach(acc => {
+        if (!acc) return;
+        if (acc.id === 'acc_wyv_1') pDmg = Math.floor(pDmg * 1.05); // 龍鱗片 +5%
+        if (acc.id === 'acc_wyv_2') pDmg = Math.floor(pDmg * 1.08); // 龍淚墜飾 +8%
+        if (acc.id === 'acc_wyv_3') pDmg = Math.floor(pDmg * 1.20); // 真龍之心 +20%
+    });
+}
+
             let rawCrit = this.getCritRate(); 
             
             // 神的威壓
