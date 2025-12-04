@@ -1979,7 +1979,9 @@ if (Player.equipment.accessories.some(a => a && a.id === 'acc_transcendence')) {
         this.checkSinCollection();
         
         // --- 煉獄之門觸發邏輯 ---
-        if (!Player.inInferno && Player.history.items.has("煉獄聖經")) {
+        const hasBibleInBag = Player.inventory.material.some(i => i.name === "煉獄聖經");
+        
+        if (!Player.inInferno && hasBibleInBag) {
             this.triggerInfernoGate();
             return;
         }
