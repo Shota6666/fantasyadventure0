@@ -228,7 +228,25 @@
         .equip-slot { flex: 1; background: #333; padding: 8px; border-radius: 4px; text-align: center; font-size: 0.75em; min-height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid #444; }
         body.inferno-mode .equip-slot { background: #331111; border-color: #550000; }
         
-        .inv-container { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
+        /* 預設（電腦版）：維持 4 欄，讓寬螢幕可以一列看完 */
+.inv-container { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr 1fr 1fr; 
+    gap: 10px; 
+}
+
+/* 手機版適配：當螢幕寬度小於 600px 時，自動改為 2 欄 */
+@media screen and (max-width: 600px) {
+    .inv-container {
+        grid-template-columns: 1fr 1fr; /* 改為一列只顯示 2 個分類 */
+    }
+    
+    /* 額外優化：讓標題字體在手機上稍微縮小，避免擠壓 */
+    .inv-col h4 {
+        font-size: 0.85em;
+        white-space: nowrap; /* 強制標題文字不換行 */
+    }
+}
         .inv-col h4 { margin: 0 0 5px 0; font-size: 0.85em; color: #888; text-align: center; border-bottom: 1px solid #444; padding-bottom: 3px; }
         .item-list { display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto; min-height: 50px; background: #2a2a2a; padding: 5px; border-radius: 4px; }
         body.inferno-mode .item-list { background: #1a0505; }
