@@ -4465,7 +4465,7 @@ const protectedNames = ['彈弓', '鉤子', '充滿魔力的巧克力', '紙條'
             desc = `是陷阱！受到了 <span class='damage-text'>${dmg}</span> 點傷害。`;
             this.triggerAnim('game-container', 'anim-screen-shake');
             this.showFloatingText(`-${dmg} HP`, "red");
-            if(Player.hp === 0) { this.playerDie("死於寶箱陷阱"); return; }
+            if(Player.hp === 0) { this.checkDeath("死於寶箱陷阱"); return; }
         }
 
         this.renderEvent(title, "你打開了寶箱...", desc, icon);
