@@ -3835,7 +3835,7 @@ else {
                 fleeRate = 0.8;
                 if (Math.random() < 0.01) {
                     Player.hp = 0;
-                    this.playerDie("死於惡魔賭約");
+                    this.checkDeath("死於惡魔賭約");
                     return;
                 }
             }
@@ -3964,7 +3964,7 @@ if (Player.buff && Player.buff.id === 'demon_wealth') {
             Player.hp -= dmg;
             this.showFloatingText(`-${dmg} HP`, "red");
             this.renderEvent("⚔️ 救援失敗", "怪物太強了，你受了重傷...", `損失 <span class='damage-text'>${dmg} HP</span>`, "🩸");
-            if (Player.hp <= 0) { this.playerDie("死於救援行動"); return; }
+            if (Player.hp <= 0) { this.checkDeath("死於救援行動"); return; }
         }
         this.setButtons("繼續", "nextEvent", "無", null, true);
         this.updateUI();
