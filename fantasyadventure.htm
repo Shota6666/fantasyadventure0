@@ -670,7 +670,7 @@ const CONFIG = {
         { id: "w_ragnarok", name: "諸神黃昏", type: "weapon", val: 2000, rarity: "mythic", price: 10000, icon: "☄️", desc: "[真實傷害] 5% 機率一擊必殺 (對支配者與神無效)" },
 { id: "acc_red_cloth", name: "紅布", type: "accessory", rarity: "mythic", price: 5000, icon: "🧣", desc: "[鬥牛士] 暴擊率 +10%，遭遇牛頭人衝撞時必定免疫" },
         { id: "w_minotaur", name: "牛頭人戰斧", type: "weapon", val: 3000, rarity: "mythic", price: 8000, icon: "🪓", desc: "[嗜血成長] 擊殺敵人時 1% 機率永久提升 3% 基礎暴擊率" },
-        { id: "w_soulreaver", name: "噬魂鐮刀", type: "weapon", val: 1500, rarity: "mythic", price: 8000, icon: "☠️", desc: "[吸血] 造成傷害的 10% 轉為生命力" },
+        { id: "w_soulreaver", name: "噬魂鐮刀", type: "weapon", val: 1500, rarity: "mythic", price: 8000, icon: "☠️", desc: "[吸血] 造成傷害的 5% 轉為生命力" },
         { id: "a_voidwalker", name: "虛空行者斗篷", type: "armor", val: 3000, rarity: "mythic", price: 9000, icon: "👻", desc: "[絕對迴避] 敵方攻擊有 10% 機率落空" },
         { 
             id: "acc_wheel", 
@@ -2988,6 +2988,16 @@ combatRound() {
                 this.triggerAnim('event-icon', 'anim-damage');
                 this.showFloatingText(pDmg, isCrit ? "red" : "white");
                 logHtml += `你造成 ${isCrit ? "<span class='crit-text'>爆擊 " : ""}${pDmg}${isCrit ? "</span>" : ""} 傷害。<br>`;
+
+if (Player.equipment.weapon && Player.equipment.weapon.id === 'w_soulreaver') {
+                    const heal = Math.floor(pDmg * 0.05); // 吸血 10%
+                    if (heal > 0) {
+                        Player.hp = Math.min(Player.maxHp, Player.hp + heal);
+                        // 顯示綠色回復文字
+                        logHtml += `<span style='color:#69f0ae'>☠️ 噬魂鐮刀：吸取 ${heal} HP</span><br>`;
+                    }
+                }
+
 
 if (Player.buff && Player.buff.id === 'demon_wealth') {
                     Player.gold += 5;
