@@ -569,6 +569,9 @@ pointer-events: none;
     </div>
 </div>
 
+
+
+
 <div id="sell-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:310; flex-direction:column; align-items:center; justify-content:center;">
     <div style="background:#2d2d2d; padding:20px; border-radius:8px; width:80%; max-width:400px; text-align:center; border: 1px solid #ff9800; box-shadow: 0 0 20px rgba(255, 152, 0, 0.2);">
         <h3 style="color:#ff9800; margin-top:0;">💰 選擇要出售的分類</h3>
@@ -578,6 +581,29 @@ pointer-events: none;
             </div>
 
         <button onclick="document.getElementById('sell-modal').style.display='none'" style="margin-top:20px; background:#555; width:100%;">取消</button>
+    </div>
+</div>
+
+<div id="system-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:500; flex-direction:column; align-items:center; justify-content:center;">
+    <div style="background:#2d2d2d; padding:20px; border-radius:8px; width:90%; max-width:500px; border: 2px solid #009688; box-shadow: 0 0 30px rgba(0, 150, 136, 0.2);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:10px;">
+            <h3 style="color:#009688; margin:0;">💾 存檔轉移</h3>
+            <button onclick="document.getElementById('system-modal').style.display='none'" style="background:#555; padding:5px 15px;">關閉</button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:15px;">
+            <div style="background:#222; padding:10px; border-radius:4px;">
+                <h4 style="margin:0 0 5px 0; color:#b2dfdb;">📤 匯出存檔 (產生代碼)</h4>
+                <p style="font-size:0.8em; color:#888; margin:0 0 5px 0;">複製代碼並保存，可用於備份或轉移裝置。</p>
+                <textarea id="export-area" readonly style="width:100%; height:60px; background:#111; color:#00ffcc; border:1px solid #333; font-size:0.8em; resize:none; padding:5px; box-sizing:border-box;"></textarea>
+                <button onclick="Game.exportSave()" style="width:100%; margin-top:5px; background:#00796b;">📋 複製代碼</button>
+            </div>
+            <div style="background:#222; padding:10px; border-radius:4px;">
+                <h4 style="margin:0 0 5px 0; color:#ffccbc;">📥 匯入存檔 (讀取代碼)</h4>
+                <p style="font-size:0.8em; color:#888; margin:0 0 5px 0;">貼上代碼以覆蓋目前進度。</p>
+                <textarea id="import-area" placeholder="在此貼上存檔代碼..." style="width:100%; height:60px; background:#111; color:#fff; border:1px solid #333; font-size:0.8em; resize:none; padding:5px; box-sizing:border-box;"></textarea>
+                <button onclick="Game.importSave()" style="width:100%; margin-top:5px; background:#d84315;">⚠️ 讀取存檔 (覆蓋進度)</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -675,9 +701,10 @@ pointer-events: none;
             </div>
         </div>
 
-    <div style="margin-top: 20px; border-top: 1px solid #444; padding-top: 15px;">
-        <button onclick="Game.manualRestart()" style="width: 100%; background: #d32f2f; opacity: 0.8;">🔄 重新開始遊戲</button>
-    </div>
+    <div style="margin-top: 20px; border-top: 1px solid #444; padding-top: 15px; display:flex; flex-direction:column; gap:10px;">
+    <button onclick="Game.manualRestart()" style="width: 100%; background: #d32f2f; opacity: 0.8;">🔄 重新開始遊戲</button>
+    <button onclick="Game.openSystemModal()" style="width: 100%; background: #009688; color:white;">💾 存檔轉移 (匯出/匯入)</button>
+</div>
 </div>
 <script>
 const LILITH_HTML = `
@@ -3447,6 +3474,44 @@ openPortableCrafting(mode = 'normal') {
         modal.style.display = 'flex';
         this.renderPortableCrafting();
     },
+
+openSystemModal() {
+        document.getElementById('system-modal').style.display = 'flex';
+        document.getElementById('export-area').value = "";
+        document.getElementById('import-area').value = "";
+    },
+
+    exportSave() {
+        const saveData = localStorage.getItem('fantasy_adventure_save_v2');
+        if (!saveData) { alert("目前沒有存檔可匯出！"); return; }
+        try {
+            const code = btoa(unescape(encodeURIComponent(saveData)));
+            const textArea = document.getElementById('export-area');
+            textArea.value = code;
+            textArea.select();
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(code).then(() => alert("✅ 存檔代碼已複製！")).catch(() => alert("代碼已生成，請手動複製。"));
+            } else {
+                document.execCommand('copy');
+                alert("✅ 存檔代碼已複製！");
+            }
+        } catch (e) { console.error(e); alert("匯出失敗"); }
+    },
+
+    importSave() {
+        const code = document.getElementById('import-area').value.trim();
+        if (!code) { alert("請先貼上代碼！"); return; }
+        if (!confirm("⚠️ 警告：這將會覆蓋你目前的進度，確定嗎？")) return;
+        try {
+            const jsonString = decodeURIComponent(escape(atob(code)));
+            const data = JSON.parse(jsonString);
+            if (!data.player) throw new Error("無效的存檔");
+            localStorage.setItem('fantasy_adventure_save_v2', jsonString);
+            alert("✅ 讀取成功！遊戲將重新啟動。");
+            location.reload();
+        } catch (e) { alert("❌ 代碼無效，請確認是否複製完整。"); }
+    },
+
 
     // [修改] 渲染列表 (根據模式顯示不同清單)
     renderPortableCrafting() {
