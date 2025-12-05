@@ -2883,17 +2883,27 @@ combatRound() {
         
         // 1. 🌋 熔岩魔像 - 過熱光環
         if (enemy.name.includes("熔岩魔像")) {
-            const burn = Math.floor(Player.maxHp * 0.05);
-            Player.hp -= burn;
-            logHtml += `<span style='color:orange'>🌋 【過熱光環】 空氣灼燒著你的肺部！(HP -${burn})</span><br>`;
+            // ▼▼▼ 修改開始：靈魂型態免疫高溫 ▼▼▼
+            if (Player.ghostTurns > 0) {
+                logHtml += `<span style='color:#ccc'>👻 【靈魂型態】 靈魂免疫了物理高溫！(未受傷)</span><br>`;
+            } else {
+                const burn = Math.floor(Player.maxHp * 0.05);
+                Player.hp -= burn;
+                logHtml += `<span style='color:orange'>🌋 【過熱光環】 空氣灼燒著你的肺部！(HP -${burn})</span><br>`;
+            }
         }
 
-        // 2. 🐙 舊日支配者 - 不可名狀的低語 (堆疊真實傷害)
         if (enemy.isOldOne) {
             enemy.rageStack = (enemy.rageStack || 0) + 1;
-            const madnessDmg = 50 * enemy.rageStack;
-            Player.hp -= madnessDmg;
-            logHtml += `<span style='color:purple'>🐙 【精神崩壞】 腦海中的低語越來越大聲... (HP -${madnessDmg})</span><br>`;
+            
+            // ▼▼▼ 修改開始：靈魂型態免疫精神傷害 ▼▼▼
+            if (Player.ghostTurns > 0) {
+                 logHtml += `<span style='color:#ccc'>👻 【靈魂型態】 靈魂免疫了精神崩壞！</span><br>`;
+            } else {
+                const madnessDmg = 50 * enemy.rageStack;
+                Player.hp -= madnessDmg;
+                logHtml += `<span style='color:purple'>🐙 【精神崩壞】 腦海中的低語越來越大聲... (HP -${madnessDmg})</span><br>`;
+            }
         }
 
         // 3. 👁️ 審判之眼 (神之代行者)
@@ -5770,14 +5780,3 @@ Game.init();
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
