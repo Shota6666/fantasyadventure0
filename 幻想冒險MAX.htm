@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>幻想冒險v1.1 </title>
+    <title>幻想冒險v1.1.1 </title>
     <style>
         :root {
             /* 原本的變數 */
@@ -110,33 +111,70 @@
 
         .stat-item span { font-weight: bold; color: var(--accent-color); }
         
-        #buff-display {
-            grid-column: span 2;
-            border-top: 1px solid #444;
-            padding-top: 5px;
-            margin-top: 5px;
-            font-size: 0.85em;
-            color: #aaa;
-            cursor: help;
-            transition: 0.2s;
-        }
-        #buff-display:hover { background: #333; }
+		#buff-display {
+			grid-column: span 2;
+			border-top: 1px solid #444;
+			padding-top: 5px;
+			margin-top: 5px;
+			font-size: 0.85em;
+			color: #aaa;
+			cursor: help;
+			transition: 0.2s;
 
-        /* Main Event Area */
-        #event-display {
-            min-height: 200px;
-            background: #222;
-            border-radius: var(--border-radius);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            border: 1px solid #444;
-            position: relative;
-            overflow: hidden;
-        }
+			/* 讓狀態文字 + 勾選框同行排列 */
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 8px;
+		}
+		#buff-display:hover { background: #333; }
+
+		/* 勾選框那一側的樣式 */
+		.opt-auto-skip {
+			display: flex;
+			align-items: center;
+			gap: 4px;
+			font-size: 0.8em;
+			color: #aaa;
+			cursor: default;             /* 不要顯示「說明」的問號 */
+		}
+		.opt-auto-skip input {
+			cursor: pointer;
+		}
+
+
+		/* 外層：高度固定，負責置中 event-inner */
+		#event-display {
+			background: #222;
+			border-radius: var(--border-radius);
+			padding: 20px;
+			border: 1px solid #444;
+			position: relative;
+
+			display: flex;
+			flex-direction: column;
+			align-items: center;   /* ✅ 保留你要的置中 */
+			justify-content: center;
+			text-align: center;
+
+			height: 550px;         /* ✅ 固定高度，想高一點自己調 */
+			overflow: hidden;      /* 外層不捲，由內層捲 */
+		}
+
+		/* 內層：真正滾動的區塊，裝 icon＋標題＋敘述＋商店 */
+		#event-inner {
+			max-height: 100%;
+			width: 100%;
+			overflow-y: auto;      /* ✅ 全部一起變成垂直捲動 */
+			overflow-x: hidden;
+		}
+
+		/* 商店 / 製作稍微留個空隙，看起來比較不擠 */
+		#merchant-area,
+		#crafting-area {
+			margin-top: 10px;
+		}
+
         
         body.inferno-mode #event-display {
             background: #110000;
@@ -557,19 +595,34 @@ pointer-events: none;
     </header>
 
     <div class="stats-grid">
-        <div class="stat-item">生命: <span id="hp-val">100</span> / <span id="max-hp-val">100</span></div>
-        <div class="stat-item">攻擊: <span id="atk-val">5</span></div>
-        <div class="stat-item">暴擊: <span id="crit-val">5</span>%</div> <div class="stat-item">金幣: <span id="gold-val">100</span></div>
+        <div class="stat-item">生命: <span id="hp-val">300000000</span> / <span id="max-hp-val">100</span></div>
+        <div class="stat-item">攻擊: <span id="atk-val">30000000</span></div>
+        <div class="stat-item">暴擊: <span id="crit-val">100</span>%</div> <div class="stat-item">金幣: <span id="gold-val">100</span></div>
         <div class="stat-item">深度: <span id="depth-val">0</span> 層</div>
-        <div id="buff-display" title="點擊查看詳細效果">狀態: 無</div>
+        <div id="buff-display" title="點擊查看詳細效果">
+        <span id="buff-text">狀態: 無</span>
+
+        <label class="opt-auto-skip" onclick="event.stopPropagation();">
+            <input 
+                type="checkbox" 
+                id="opt-auto-skip-statue" 
+                onchange="Game.toggleAutoSkipStatue(this.checked)"
+            >
+            自動略過「祈禱聖像」
+        </label>
+		</div>	
     </div>
 
+
+
     <div id="event-display">
-        <div id="event-icon" class="monster-icon">🎲</div>
-        <h3 id="event-title">準備冒險</h3>
-        <div id="event-desc">請先選擇職業...</div>
-        <div id="merchant-area" class="hidden"></div>
-        <div id="crafting-area" class="hidden"></div>
+		<div id="event-inner">
+			<div id="event-icon" class="monster-icon">🎲</div>
+			<h3 id="event-title">準備冒險</h3>
+			<div id="event-desc">請先選擇職業...</div>
+			<div id="merchant-area" class="hidden"></div>
+			<div id="crafting-area" class="hidden"></div>
+		</div>
     </div>
 
     <div id="controls">
@@ -1098,7 +1151,10 @@ debuff: null,
         lustActive: false, // 是否有媚氣環繞
         greedActive: false // 是否有黃金枷鎖
     },
-    succubusStage: 0 // [NEW] 0=初遇, 1=認識, 2=害羞, 3=完成
+    succubusStage: 0, // [NEW] 0=初遇, 1=認識, 2=害羞, 3=完成
+	
+	// [NEW] 自動略過祈禱聖像
+    autoSkipStatue: false
 };
 
 const GameState = {
@@ -1168,6 +1224,8 @@ const Game = {
             if(!Player.sinState) Player.sinState = { slothCount: 0, wrathRevive: 0, lustActive: false, greedActive: false };
             if (typeof Player.lilithBlessing === 'undefined') Player.lilithBlessing = false;
             if (typeof Player.lilithSacrificed === 'undefined') Player.lilithSacrificed = false;
+            if (typeof Player.autoSkipStatue === 'undefined') Player.autoSkipStatue = false;
+			
 
             Player.achievements = new Set(data.player.achievements);
             Player.history.items = new Set(data.player.history.items);
@@ -1210,6 +1268,20 @@ if (GameState.merchantRefreshed === undefined) GameState.merchantRefreshed = fal
             GameState.isLoading = false;
         }
     },
+
+	    
+    toggleAutoSkipStatue(on) {
+	// [NEW] 選項：切換自動略過祈禱聖像
+        Player.autoSkipStatue = !!on;
+        this.saveGame();  // 讓選項寫進存檔
+
+        // 小提示文字，可有可無
+        this.showFloatingText(
+            on ? "已開啟：自動略過祈禱聖像" : "已關閉：自動略過祈禱聖像",
+            "#cccccc"
+        );
+    },
+
 
     restoreScreenState() {
         if (GameState.phase === 'combat' && GameState.currentEnemy) {
@@ -4130,6 +4202,13 @@ if (Player.buff && Player.buff.id === 'demon_wealth') {
     },
     triggerStatue() {
         GameState.phase = "event_end";
+		// [NEW] 若已勾選自動略過，直接當作按「離開」
+        if (Player.autoSkipStatue) {
+            // 給個小提示（可視需要拿掉）
+            this.showFloatingText("略過祈禱聖像", "#888888");
+            this.nextEvent();   // 直接跳到下一個事件
+            return;
+        }
         this.triggerAnim('event-icon', 'anim-spawn');
         this.renderEvent("🗿 祈禱聖像", "你發現了一座古老的聖像...", "是否要進行祈禱？", "🙏");
         this.setButtons("祈禱", "pray", "離開", "nextEvent", false);
@@ -5345,16 +5424,42 @@ getEnemySkillDesc(name) {
         if(GameState.phase !== 'merchant' && GameState.phase !== 'demon_merchant') document.getElementById('merchant-area').classList.add('hidden');
         if(GameState.phase !== 'crafting') document.getElementById('crafting-area').classList.add('hidden');
     },
-    setButtons(mainText, mainAction, subText, subAction, disableSub) {
-        const b1 = document.getElementById('btn-main');
-        const b2 = document.getElementById('btn-sub');
-        b1.innerText = mainText;
-        // [FIX] 確保在 action 存在時才設置 onclick
-        if (Game[mainAction]) b1.onclick = () => Game[mainAction](); else b1.onclick = null; 
-        b2.innerText = subText;
-        if (subAction && Game[subAction]) b2.onclick = () => Game[subAction](); else b2.onclick = null;
-        b2.disabled = disableSub;
-    },
+	setButtons(mainText, mainAction, subText, subAction, disableSub) {
+		const b1 = document.getElementById('btn-main');
+		const b2 = document.getElementById('btn-sub');
+
+		// 共用一個小工具：包住真正的動作，避免捲動
+		const wrapAction = (btn, actionName) => {
+			if (!Game[actionName]) return null;
+
+			return (ev) => {
+				// 記錄點擊前的捲動位置
+				const x = window.scrollX;
+				const y = window.scrollY;
+
+				// 阻止瀏覽器預設行為（包含部分自動捲動邏輯）
+				if (ev) ev.preventDefault();
+
+				// 先把按鈕的焦點拿掉，避免之後再觸發捲動
+				btn.blur();
+
+				// 執行原本的遊戲邏輯
+				Game[actionName]();
+
+				// 還原到點下去之前的位置
+				window.scrollTo(x, y);
+			};
+		};
+
+		// 主按鈕
+		b1.innerText = mainText;
+		b1.onclick = wrapAction(b1, mainAction);
+
+		// 副按鈕
+		b2.innerText = subText;
+		b2.onclick = subAction ? wrapAction(b2, subAction) : null;
+		b2.disabled = disableSub;
+	},
     updateUI() {
         this.updateStatsUI();
         
@@ -5386,6 +5491,11 @@ getEnemySkillDesc(name) {
         this.renderInvList('inv-consum', Player.inventory.consumable, 'consumable');
         this.renderInvList('inv-mat', Player.inventory.material, 'material');
 
+		// [NEW] 同步自動略過聖像的 checkbox
+        const chk = document.getElementById('opt-auto-skip-statue');
+        if (chk) chk.checked = !!Player.autoSkipStatue;
+
+
         if (!GameState.isLoading && Player.hp > 0 && Player.class) {
             this.saveGame();
         }
@@ -5401,6 +5511,7 @@ getEnemySkillDesc(name) {
         
         // --- 下面是原本的狀態顯示邏輯 (保持不變) ---
         const buffEl = document.getElementById('buff-display');
+		const buffTextEl = document.getElementById('buff-text');
         let statusHtml = "狀態: ";
         let hasStatus = false;
 
@@ -5451,7 +5562,7 @@ getEnemySkillDesc(name) {
 
         if (!hasStatus) statusHtml += "無";
         
-        buffEl.innerHTML = statusHtml;
+        if (buffTextEl) buffTextEl.innerHTML = statusHtml;
         
         // 點擊顯示詳細資訊
         buffEl.onclick = () => {
@@ -5566,4 +5677,14 @@ Game.init();
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
 
