@@ -1862,14 +1862,26 @@ triggerCombatWithEnemy(enemyData, canFlee) {
     },
 
 checkSinCollection() {
-        // 將 w_wrath 改為 acc_wrath
-        const required = ['acc_pride', 'acc_envy', 'acc_wrath', 'acc_sloth', 'acc_greed', 'acc_gluttony', 'acc_lust'];
-        const hasAll = required.every(id => {
-            const itemDef = CONFIG.sinItems.find(i => i.id === id);
-            // 這裡需要用 itemDef.name 來檢查歷史紀錄
-            return Player.history.items.has(itemDef.name);
-        });
-        if (hasAll && !Player.history.items.has("原罪之冠")) {
+        // [FIX] 修正：改為檢查「當前持有」的飾品，而不是「歷史紀錄」
+        // 定義七宗罪飾品的名稱
+        const requiredNames = ['傲慢之眼', '嫉妒魔盒', '暴怒指虎', '眠戒', '金色聖像', '暴食之牙', '魅魔香水'];
+        
+        // 1. 收集當前身上所有的飾品 (包含背包內 + 已裝備的)
+        const currentHoldings = [
+            ...Player.inventory.accessory, 
+            ...Player.equipment.accessories.filter(a => a !== null)
+        ];
+
+        // 2. 檢查是否集齊
+        const hasAll = requiredNames.every(name => 
+            currentHoldings.some(item => item.name === name)
+        );
+
+        // 3. 檢查當前背包是否已經有原罪之冠 (避免重複給予)
+        const hasCrown = Player.inventory.material.some(i => i.name === "原罪之冠");
+
+        // 觸發條件：集齊 7 樣且身上目前沒有王冠
+        if (hasAll && !hasCrown) {
             const crown = CONFIG.sinItems.find(i => i.id === 'm_crown_sin');
             this.addItemToInventory({...crown});
             this.checkAchievements(); // 檢查罪惡之人成就
@@ -3094,6 +3106,18 @@ if (Player.equipment.weapon && Player.equipment.weapon.id === 'w_soulreaver') {
                 }
 
 
+// [FIX] 修復末世之鎧效果
+                if (Player.equipment.armor && Player.equipment.armor.id === 'a_apocalypse') {
+                    if (Math.random() < 0.01) { // 1% 機率
+                        Player.baseMaxHp += 100;
+                        Player.maxHp += 100;
+                        Player.hp += 100; 
+                        logHtml += `<span style='color:#ff0000; font-weight:bold;'>🛡️ 【末世之鎧】吞噬生命！永久 HP +100</span><br>`;
+                        this.showFloatingText("HP上限 +100", "#ff0000");
+                    }
+                }
+
+
 if (Player.buff && Player.buff.id === 'demon_wealth') {
                     Player.gold += 5;
                     this.showFloatingText("+5 G", "gold");
@@ -3917,19 +3941,23 @@ if (isGodKill) {
         }
 
 else {
-            // --- [FIX] 這裡是補上的：表層世界掉落邏輯 ---
-            let dName = "";
-            // 根據階級決定掉落物 (這些屬性在 CONFIG.monsters 都有定義)
-            if (enemy.tier === 'boss') dName = enemy.bossDrop;
-            else if (enemy.tier === 'elite') dName = enemy.eliteDrop;
-            else dName = enemy.drop;
+            // --- [MODIFIED] 表層世界掉落邏輯：改為階級向下兼容 (同時掉落弱版物品) ---
+            
+            // 1. 所有怪物：必定掉落基礎物品 (drop)
+            if (enemy.drop && CONFIG.lootData[enemy.drop]) {
+                drops.push({ ...CONFIG.lootData[enemy.drop], name: enemy.drop, type: "loot" });
+            }
 
-            // 確保該物品存在於 lootData 中
-            if (dName && CONFIG.lootData[dName]) {
-                drops.push({ ...CONFIG.lootData[dName], name: dName, type: "loot" });
+            // 2. 菁英以上 (elite 或 boss)：額外掉落菁英物品 (eliteDrop)
+            if ((enemy.tier === 'elite' || enemy.tier === 'boss') && enemy.eliteDrop && CONFIG.lootData[enemy.eliteDrop]) {
+                drops.push({ ...CONFIG.lootData[enemy.eliteDrop], name: enemy.eliteDrop, type: "loot" });
+            }
+
+            // 3. 只有首領 (boss)：額外掉落首領物品 (bossDrop)
+            if (enemy.tier === 'boss' && enemy.bossDrop && CONFIG.lootData[enemy.bossDrop]) {
+                drops.push({ ...CONFIG.lootData[enemy.bossDrop], name: enemy.bossDrop, type: "loot" });
             }
         }
-
 
         if (Math.random() < 0.1) {
             drops.push(this.generateRandomItem(enemy.tier));
